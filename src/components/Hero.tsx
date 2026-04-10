@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
+import ShimmerImage from '@/components/ShimmerImage';
 
 import heroBg from '@/assets/hero-bg.jpg';
 import logo from '@/assets/logo.png';
@@ -12,7 +13,12 @@ const Hero: React.FC = () => {
     <section id="home" className="relative min-h-[85vh] flex items-center justify-center overflow-hidden" dir={dir}>
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img src={heroBg} alt="Fresh fruits and smoothies" className="w-full h-full object-cover" />
+        <ShimmerImage
+          src={heroBg}
+          alt="Fresh fruits and smoothies"
+          className="w-full h-full object-cover"
+          wrapperClassName="w-full h-full"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-surface/90 via-surface/70 to-surface" />
       </div>
 
@@ -27,7 +33,13 @@ const Hero: React.FC = () => {
 
           {/* Logo */}
           <div className="mb-4 animate-fade-in flex justify-center" style={{ animationDelay: '0.1s' }}>
-            <img src={logo} alt="Natural - Healthy Drinks & Supplements" className="w-[180px] h-[180px] object-contain" />
+            <ShimmerImage
+              src={logo}
+              alt="Natural - Healthy Drinks & Supplements"
+              className="w-[180px] h-[180px] object-contain"
+              wrapperClassName="w-[180px] h-[180px] rounded-full"
+              shimmerClassName="rounded-full"
+            />
           </div>
 
           {/* Subtitle */}

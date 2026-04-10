@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ShimmerImage from '@/components/ShimmerImage';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { Product } from '@/data/products';
