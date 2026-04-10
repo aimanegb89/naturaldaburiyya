@@ -62,10 +62,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
     <div className="bg-surface-container-low rounded-xl overflow-hidden shadow-elevation-1 h-full">
       {/* Image */}
       <div className="relative h-[100px] overflow-hidden">
-        <img 
+        <ShimmerImage
           src={image} 
           alt={name} 
-          className="w-full h-full object-cover" 
+          className="w-full h-full object-cover"
+          wrapperClassName="w-full h-full"
         />
         {product.isPopular && (
           <span className="absolute top-[6px] left-[6px] px-[6px] py-[2px] bg-secondary text-secondary-foreground text-[10px] font-medium rounded-full shadow-elevation-1">
