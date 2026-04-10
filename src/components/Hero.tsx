@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
+
 import heroBg from '@/assets/hero-bg.jpg';
 
 const Hero: React.FC = () => {
@@ -62,14 +62,6 @@ const Hero: React.FC = () => {
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <a 
-          href="#menu" 
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 text-muted-foreground"
-        >
-          <span className="text-[10px]">Scroll</span>
-          <ChevronDown className="w-4 h-4 animate-bounce" />
-        </a>
       </div>
 
       {/* Decorative elements */}
