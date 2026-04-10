@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, TranslationKey } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -462,7 +462,7 @@ const Profile = () => {
                             </p>
                           </div>
                           <span className={`px-3 py-1 rounded-full md-label-small ${getStatusColor(order.status)}`}>
-                            {t(order.status)}
+                            {t(order.status as TranslationKey)}
                           </span>
                         </div>
                         <div className="space-y-1">

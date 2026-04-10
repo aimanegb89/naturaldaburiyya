@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, TranslationKey } from '@/contexts/LanguageContext';
 import { Product } from '@/data/products';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
@@ -92,7 +92,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(nutrition).map(([key, value]) => (
               <div key={key} className="flex justify-between items-center bg-surface-container-low rounded-lg px-3 py-2">
-                <span className="md-body-small text-muted-foreground capitalize">{t(key) || key}</span>
+                <span className="md-body-small text-muted-foreground capitalize">{t(key as TranslationKey) || key}</span>
                 <span className="md-label-large">{value}</span>
               </div>
             ))}
