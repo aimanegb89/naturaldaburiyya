@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
+
 import heroBg from '@/assets/hero-bg.jpg';
 
 const Hero: React.FC = () => {
