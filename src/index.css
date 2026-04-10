@@ -1,0 +1,404 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Tajawal:wght@300;400;500;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Material Design 3 Color System */
+    /* Primary - Teal/Green */
+    --md-primary: 162 63% 35%;
+    --md-on-primary: 0 0% 100%;
+    --md-primary-container: 162 52% 88%;
+    --md-on-primary-container: 162 80% 10%;
+    
+    /* Secondary - Warm Earth */
+    --md-secondary: 30 45% 42%;
+    --md-on-secondary: 0 0% 100%;
+    --md-secondary-container: 35 60% 90%;
+    --md-on-secondary-container: 30 55% 15%;
+    
+    /* Tertiary - Soft Purple */
+    --md-tertiary: 280 40% 50%;
+    --md-on-tertiary: 0 0% 100%;
+    --md-tertiary-container: 280 45% 92%;
+    --md-on-tertiary-container: 280 50% 15%;
+    
+    /* Surface colors */
+    --md-surface: 150 20% 98%;
+    --md-surface-dim: 150 15% 92%;
+    --md-surface-bright: 0 0% 100%;
+    --md-surface-container-lowest: 0 0% 100%;
+    --md-surface-container-low: 150 20% 96%;
+    --md-surface-container: 150 15% 94%;
+    --md-surface-container-high: 150 12% 91%;
+    --md-surface-container-highest: 150 10% 88%;
+    --md-on-surface: 150 20% 15%;
+    --md-on-surface-variant: 150 12% 40%;
+    
+    /* Outline */
+    --md-outline: 150 10% 60%;
+    --md-outline-variant: 150 15% 82%;
+    
+    /* Error */
+    --md-error: 0 75% 45%;
+    --md-on-error: 0 0% 100%;
+    --md-error-container: 0 80% 92%;
+    --md-on-error-container: 0 85% 20%;
+    
+    /* Inverse */
+    --md-inverse-surface: 150 20% 18%;
+    --md-inverse-on-surface: 150 15% 95%;
+    --md-inverse-primary: 162 50% 70%;
+    
+    /* Shadows */
+    --md-shadow: 150 20% 15%;
+
+    /* Map to existing tokens for compatibility */
+    --background: var(--md-surface);
+    --foreground: var(--md-on-surface);
+    --card: var(--md-surface-container-low);
+    --card-foreground: var(--md-on-surface);
+    --popover: var(--md-surface-container);
+    --popover-foreground: var(--md-on-surface);
+    --primary: var(--md-primary);
+    --primary-foreground: var(--md-on-primary);
+    --secondary: var(--md-secondary);
+    --secondary-foreground: var(--md-on-secondary);
+    --muted: var(--md-surface-container-high);
+    --muted-foreground: var(--md-on-surface-variant);
+    --accent: var(--md-tertiary);
+    --accent-foreground: var(--md-on-tertiary);
+    --destructive: var(--md-error);
+    --destructive-foreground: var(--md-on-error);
+    --border: var(--md-outline-variant);
+    --input: var(--md-outline-variant);
+    --ring: var(--md-primary);
+
+    /* Material radius */
+    --radius: 0.75rem;
+    --radius-sm: 0.5rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.75rem;
+    --radius-full: 9999px;
+
+    /* Material elevation shadows */
+    --elevation-1: 0 1px 2px 0 hsl(var(--md-shadow) / 0.05), 0 1px 3px 1px hsl(var(--md-shadow) / 0.1);
+    --elevation-2: 0 1px 2px 0 hsl(var(--md-shadow) / 0.05), 0 2px 6px 2px hsl(var(--md-shadow) / 0.1);
+    --elevation-3: 0 4px 8px 3px hsl(var(--md-shadow) / 0.1), 0 1px 3px 0 hsl(var(--md-shadow) / 0.08);
+    --elevation-4: 0 6px 10px 4px hsl(var(--md-shadow) / 0.1), 0 2px 3px 0 hsl(var(--md-shadow) / 0.08);
+    --elevation-5: 0 8px 12px 6px hsl(var(--md-shadow) / 0.1), 0 4px 4px 0 hsl(var(--md-shadow) / 0.08);
+
+    /* Legacy tokens for backwards compatibility */
+    --leaf-green: 145 70% 35%;
+    --mint: 160 45% 65%;
+    --tropical-yellow: 45 95% 60%;
+    --berry-purple: 280 50% 45%;
+    --cream: 45 40% 95%;
+
+    --sidebar-background: var(--md-surface-container-low);
+    --sidebar-foreground: var(--md-on-surface);
+    --sidebar-primary: var(--md-primary);
+    --sidebar-primary-foreground: var(--md-on-primary);
+    --sidebar-accent: var(--md-secondary-container);
+    --sidebar-accent-foreground: var(--md-on-secondary-container);
+    --sidebar-border: var(--md-outline-variant);
+    --sidebar-ring: var(--md-primary);
+  }
+
+  .dark {
+    /* Material Design 3 Dark Theme */
+    --md-primary: 162 50% 70%;
+    --md-on-primary: 162 70% 15%;
+    --md-primary-container: 162 60% 25%;
+    --md-on-primary-container: 162 50% 90%;
+    
+    --md-secondary: 35 50% 70%;
+    --md-on-secondary: 30 50% 15%;
+    --md-secondary-container: 30 40% 25%;
+    --md-on-secondary-container: 35 55% 90%;
+    
+    --md-tertiary: 280 45% 75%;
+    --md-on-tertiary: 280 50% 15%;
+    --md-tertiary-container: 280 40% 25%;
+    --md-on-tertiary-container: 280 45% 90%;
+    
+    --md-surface: 150 15% 10%;
+    --md-surface-dim: 150 12% 8%;
+    --md-surface-bright: 150 10% 20%;
+    --md-surface-container-lowest: 150 15% 6%;
+    --md-surface-container-low: 150 12% 12%;
+    --md-surface-container: 150 10% 14%;
+    --md-surface-container-high: 150 8% 18%;
+    --md-surface-container-highest: 150 6% 22%;
+    --md-on-surface: 150 10% 92%;
+    --md-on-surface-variant: 150 8% 70%;
+    
+    --md-outline: 150 8% 50%;
+    --md-outline-variant: 150 10% 30%;
+    
+    --md-error: 0 70% 65%;
+    --md-on-error: 0 80% 15%;
+    --md-error-container: 0 60% 25%;
+    --md-on-error-container: 0 75% 90%;
+    
+    --md-inverse-surface: 150 15% 92%;
+    --md-inverse-on-surface: 150 12% 15%;
+    --md-inverse-primary: 162 63% 35%;
+    
+    --md-shadow: 0 0% 0%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Roboto', 'Tajawal', sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* RTL Support */
+  [dir="rtl"] {
+    text-align: right;
+    font-family: 'Tajawal', 'Roboto', sans-serif;
+  }
+
+  [dir="ltr"] {
+    text-align: left;
+  }
+}
+
+/* Material Typography Scale */
+@layer components {
+  .md-display-large {
+    @apply text-6xl font-normal leading-tight tracking-tight;
+  }
+  .md-display-medium {
+    @apply text-5xl font-normal leading-tight tracking-tight;
+  }
+  .md-display-small {
+    @apply text-4xl font-normal leading-snug tracking-normal;
+  }
+  .md-headline-large {
+    @apply text-3xl font-normal leading-snug tracking-normal;
+  }
+  .md-headline-medium {
+    @apply text-2xl font-normal leading-snug tracking-normal;
+  }
+  .md-headline-small {
+    @apply text-xl font-normal leading-snug tracking-normal;
+  }
+  .md-title-large {
+    @apply text-xl font-medium leading-normal tracking-normal;
+  }
+  .md-title-medium {
+    @apply text-base font-medium leading-normal tracking-wide;
+  }
+  .md-title-small {
+    @apply text-sm font-medium leading-normal tracking-wide;
+  }
+  .md-body-large {
+    @apply text-base font-normal leading-relaxed tracking-normal;
+  }
+  .md-body-medium {
+    @apply text-sm font-normal leading-relaxed tracking-wide;
+  }
+  .md-body-small {
+    @apply text-xs font-normal leading-relaxed tracking-wide;
+  }
+  .md-label-large {
+    @apply text-sm font-medium leading-normal tracking-wide;
+  }
+  .md-label-medium {
+    @apply text-xs font-medium leading-normal tracking-widest uppercase;
+  }
+  .md-label-small {
+    @apply text-[11px] font-medium leading-normal tracking-widest uppercase;
+  }
+
+  /* Material Elevation */
+  .md-elevation-0 {
+    box-shadow: none;
+  }
+  .md-elevation-1 {
+    box-shadow: var(--elevation-1);
+  }
+  .md-elevation-2 {
+    box-shadow: var(--elevation-2);
+  }
+  .md-elevation-3 {
+    box-shadow: var(--elevation-3);
+  }
+  .md-elevation-4 {
+    box-shadow: var(--elevation-4);
+  }
+  .md-elevation-5 {
+    box-shadow: var(--elevation-5);
+  }
+
+  /* Material Surface */
+  .md-surface {
+    @apply bg-card rounded-xl;
+    box-shadow: var(--elevation-1);
+  }
+  .md-surface-elevated {
+    @apply bg-card rounded-xl;
+    box-shadow: var(--elevation-2);
+  }
+
+  /* Material Ripple Effect */
+  .md-ripple {
+    @apply relative overflow-hidden;
+  }
+  .md-ripple::after {
+    content: '';
+    @apply absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-200;
+    background: radial-gradient(circle, hsl(var(--md-on-surface) / 0.12) 10%, transparent 10%);
+    background-size: 1000% 1000%;
+    background-position: center;
+  }
+  .md-ripple:hover::after {
+    @apply opacity-100;
+    background-size: 100% 100%;
+  }
+  .md-ripple:active::after {
+    @apply opacity-100;
+    background: hsl(var(--md-on-surface) / 0.12);
+  }
+
+  /* State Layer */
+  .md-state-layer {
+    @apply relative;
+  }
+  .md-state-layer::before {
+    content: '';
+    @apply absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-200;
+    background: currentColor;
+  }
+  .md-state-layer:hover::before {
+    @apply opacity-[0.08];
+  }
+  .md-state-layer:focus-visible::before {
+    @apply opacity-[0.12];
+  }
+  .md-state-layer:active::before {
+    @apply opacity-[0.12];
+  }
+
+  /* Legacy classes - kept for backwards compatibility */
+  .glass-card {
+    @apply bg-card rounded-xl border border-border/50;
+    box-shadow: var(--elevation-1);
+  }
+
+  .gradient-hero {
+    @apply bg-primary;
+  }
+
+  .gradient-accent {
+    @apply bg-secondary;
+  }
+
+  .text-gradient {
+    @apply text-primary;
+  }
+
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Material animations */
+@keyframes md-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes md-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes md-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Legacy animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fade-in {
+  animation: md-fade-in 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: md-scale-in 0.2s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar - Material style */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
