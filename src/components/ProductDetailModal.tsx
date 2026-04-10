@@ -69,11 +69,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
         
         {/* Large Product Image */}
         <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-container-high">
-          <img
-            src={product.image}
-            alt={name}
-            className="w-full h-full object-cover"
-          />
+          <ShimmerImage
+  src={product.image}
+  alt={name}
+  className="w-full h-full object-cover"
+  wrapperClassName="w-full h-full"
+/>
           {product.isPopular && (
             <span className="absolute top-3 right-3 bg-secondary text-secondary-foreground md-label-small px-3 py-1 rounded-full shadow-elevation-1">
               ⭐ {t('popular') || 'Popular'}
