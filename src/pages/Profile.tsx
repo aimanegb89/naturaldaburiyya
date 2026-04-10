@@ -462,7 +462,7 @@ const Profile = () => {
                             </p>
                           </div>
                           <span className={`px-3 py-1 rounded-full md-label-small ${getStatusColor(order.status)}`}>
-                            {t(order.status)}
+                            {t(order.status as TranslationKey)}
                           </span>
                         </div>
                         <div className="space-y-1">
