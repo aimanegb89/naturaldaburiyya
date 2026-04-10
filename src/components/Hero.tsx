@@ -3,6 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 
 import heroBg from '@/assets/hero-bg.jpg';
+import logo from '@/assets/logo.png';
 
 const Hero: React.FC = () => {
   const { t, dir } = useLanguage();
@@ -24,21 +25,9 @@ const Hero: React.FC = () => {
             <span className="text-xs text-muted-foreground">Daburiyya, Israel</span>
           </div>
 
-          {/* Logo Title */}
-          <div className="mb-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <h1 className="flex flex-col items-center gap-1">
-              <span className="text-3xl font-medium text-primary tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
-                Natural
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-px bg-gradient-to-r from-transparent to-primary/50 rounded-full" />
-                <span className="text-base">🍃</span>
-                <span className="w-6 h-px bg-gradient-to-l from-transparent to-primary/50 rounded-full" />
-              </div>
-              <span className="text-lg text-foreground/90">
-                {t('heroTitle').split('\n').pop()}
-              </span>
-            </h1>
+          {/* Logo */}
+          <div className="mb-4 animate-fade-in flex justify-center" style={{ animationDelay: '0.1s' }}>
+            <img src={logo} alt="Natural - Healthy Drinks & Supplements" className="w-[180px] h-[180px] object-contain" />
           </div>
 
           {/* Subtitle */}
