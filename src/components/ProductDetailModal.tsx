@@ -130,9 +130,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
           <div className="md-headline-medium text-primary font-medium">
             ₪{currentPrice}
           </div>
-          <Button onClick={handleAddToCart} size="lg" className="gap-2">
-            <Plus className="w-5 h-5" />
-            {t('addToCart')}
+          <Button onClick={handleAddToCart} 
+    size="lg" 
+    className="gap-2 shrink-0 px-6 h-[48px]" 
+  >
+    <Plus className="w-5 h-5" />
+    {t('addToCart')}
           </Button>
         </div>
       </DialogContent>
