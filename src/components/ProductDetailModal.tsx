@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, TranslationKey } from '@/contexts/LanguageContext';
 import { Product } from '@/data/products';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
