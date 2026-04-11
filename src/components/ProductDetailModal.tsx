@@ -1,4 +1,5 @@
 import React from 'react';
+import ShimmerImage from '@/components/ShimmerImage';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useLanguage, TranslationKey } from '@/contexts/LanguageContext';
 import { Product } from '@/data/products';
