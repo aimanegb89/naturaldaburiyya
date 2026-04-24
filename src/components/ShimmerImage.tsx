@@ -48,6 +48,8 @@ const ShimmerImage: React.FC<ShimmerImageProps> = ({
         <img
           src={src}
           alt={alt}
+          loading="lazy"
+          decoding="async"
           className={cn(
             'transition-opacity duration-500 ease-in-out',
             isLoaded ? 'opacity-100' : 'opacity-0',

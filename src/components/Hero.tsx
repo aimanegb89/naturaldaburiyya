@@ -18,6 +18,7 @@ const Hero: React.FC = () => {
           alt="Fresh fruits and smoothies"
           className="w-full h-full object-cover"
           wrapperClassName="w-full h-full"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-surface/90 via-surface/70 to-surface" />
       </div>
@@ -39,6 +40,7 @@ const Hero: React.FC = () => {
               className="w-[180px] h-[180px] object-contain"
               wrapperClassName="w-[180px] h-[180px] rounded-full"
               shimmerClassName="rounded-full"
+              loading="eager"
             />
           </div>
 
