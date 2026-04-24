@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface CartItem {
   id: string;
@@ -23,8 +23,21 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const CART_STORAGE_KEY = 'naturaldaburiyya_cart';
+
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    try {
+      const stored = localStorage.getItem(CART_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  }, [items]);
 
   const addItem = (item: Omit<CartItem, 'quantity'>) => {
     setItems(prev => {

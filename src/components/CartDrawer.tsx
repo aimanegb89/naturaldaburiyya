@@ -50,15 +50,15 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 
     const phoneDigits = formData.phone.replace(/\D/g, '');
     if (phoneDigits.length < 9 || phoneDigits.length > 15) {
-      toast({ title: t('invalidEmail'), description: t('phoneNumber') });
+      toast({ title: t('invalidPhone'), description: t('phoneNumber') });
       return;
     }
-    
-    const orderItems = items.map(item => 
+
+    const orderItems = items.map(item =>
       `• ${getName(item)} (${item.size === 'small' ? '350ml' : '500ml'}) x${item.quantity} - ₪${item.price * item.quantity}`
     ).join('\n');
-    
-    const message = `🌿 *Natural - طلب جديد*\n\n*الاسم:* ${formData.name}\n*الهاتف:* ${formData.phone}\n\n*الطلب:*\n${orderItems}\n\n*المجموع:* ₪${totalPrice}\n\n${formData.notes ? `*ملاحظات:* ${formData.notes}` : ''}`;
+
+    const message = `🌿 *Natural - ${t('orderDetails')}*\n\n*${t('name')}:* ${formData.name}\n*${t('phoneNumber')}:* ${formData.phone}\n\n*${t('orders')}:*\n${orderItems}\n\n*${t('total')}:* ₪${totalPrice}\n\n${formData.notes ? `*${t('notes')}:* ${formData.notes}` : ''}`;
     
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
