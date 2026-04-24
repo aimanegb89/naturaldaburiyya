@@ -2,6 +2,7 @@ import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import ShimmerImage from '@/components/ShimmerImage';
+import { WHATSAPP_NUMBER } from '@/lib/constants';
 
 import heroBg from '@/assets/hero-bg.jpg';
 import logo from '@/assets/logo.png';
@@ -10,7 +11,7 @@ const Hero: React.FC = () => {
   const { t, dir } = useLanguage();
   
   return (
-    <section id="home" className="relative min-h-[85vh] flex items-center justify-center overflow-hidden" dir={dir}>
+    <section id="home" className="relative min-h-[52vh] flex items-center justify-center overflow-hidden" dir={dir}>
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <ShimmerImage
@@ -57,10 +58,12 @@ const Hero: React.FC = () => {
           {/* CTA Buttons */}
           <div className="flex gap-2.5 justify-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <Button variant="default" size="default" asChild>
-              <a href="#menu">{t('orderNow')}</a>
+              <a href="#menu">{t('viewMenu')}</a>
             </Button>
             <Button variant="outline" size="default" asChild>
-              <a href="#menu">{t('viewMenu')}</a>
+              <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer">
+                {t('contactWhatsApp')}
+              </a>
             </Button>
           </div>
         </div>

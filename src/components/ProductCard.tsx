@@ -13,7 +13,6 @@ import smoothieBerry from '@/assets/smoothie-berry.jpg';
 
 interface ProductCardProps {
   product: Product;
-  compact?: boolean;
 }
 
 const categoryImages: Record<string, string> = {
@@ -22,10 +21,10 @@ const categoryImages: Record<string, string> = {
   supplements: smoothieBerry,
   bubbles: smoothieOrange,
   yogurt: smoothieBerry,
-  proteins: smoothieBerry
+  proteins: smoothieBerry,
 };
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { language, t } = useLanguage();
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = useState<'small' | 'large'>('small');
@@ -34,8 +33,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
   const hasNoSizeOption = NO_SIZE_CATEGORIES.includes(product.category as typeof NO_SIZE_CATEGORIES[number]);
   const name = getProductName(product, language);
   const description = getProductDescription(product, language);
-
-  const currentPrice = hasNoSizeOption ? product.priceSmall : (selectedSize === 'small' ? product.priceSmall : product.priceLarge);
+  const currentPrice = hasNoSizeOption
+    ? product.priceSmall
+    : selectedSize === 'small'
+    ? product.priceSmall
+    : product.priceLarge;
   const image = product.image || categoryImages[product.category] || smoothieOrange;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -47,7 +49,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
       nameEn: product.nameEn,
       size: hasNoSizeOption ? 'small' : selectedSize,
       price: currentPrice,
-      image
+      image,
     });
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1500);
@@ -59,33 +61,33 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
   };
 
   return (
-    <div className="bg-surface-container-low rounded-xl overflow-hidden shadow-elevation-1 h-full">
-      {/* Image */}
-      <div className="relative h-[100px] overflow-hidden">
+    <div className="flex gap-3 items-center bg-surface-container-low rounded-xl p-3 shadow-elevation-1">
+      {/* Image — first in HTML so it appears on the RIGHT in RTL, LEFT in LTR */}
+      <div className="relative w-[90px] h-[90px] flex-shrink-0 rounded-xl overflow-hidden bg-surface-container-high">
         <ShimmerImage
-          src={image} 
-          alt={name} 
+          src={image}
+          alt={name}
           className="w-full h-full object-cover"
           wrapperClassName="w-full h-full"
         />
         {product.isPopular && (
-          <span className="absolute top-[6px] left-[6px] px-[6px] py-[2px] bg-secondary text-secondary-foreground text-[10px] font-medium rounded-full shadow-elevation-1">
+          <span className="absolute top-1 start-1 px-1.5 py-[2px] bg-secondary text-secondary-foreground text-[9px] font-medium rounded-full shadow-elevation-1">
             ⭐
           </span>
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-[10px]">
-        <h3 className="text-xs font-semibold text-foreground mb-[2px] line-clamp-1">{name}</h3>
-        <p className="text-[10px] text-muted-foreground mb-[6px] line-clamp-1">{description}</p>
+      {/* Text content */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-semibold text-foreground leading-tight line-clamp-1">{name}</h3>
+        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">{description}</p>
 
         {/* Size selector */}
         {!hasNoSizeOption && (
-          <div className="flex gap-[2px] mb-[6px] p-[2px] bg-surface-container-high rounded-full">
+          <div className="flex gap-[2px] mt-2 p-[2px] bg-surface-container-high rounded-full w-fit">
             <button
               onClick={(e) => handleSizeClick(e, 'small')}
-              className={`flex-1 py-[4px] px-[6px] rounded-full text-[10px] font-medium transition-all duration-200 ${
+              className={`py-[3px] px-2.5 rounded-full text-[10px] font-medium transition-all duration-200 ${
                 selectedSize === 'small'
                   ? 'bg-primary text-primary-foreground shadow-elevation-1'
                   : 'text-foreground'
@@ -95,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
             </button>
             <button
               onClick={(e) => handleSizeClick(e, 'large')}
-              className={`flex-1 py-[4px] px-[6px] rounded-full text-[10px] font-medium transition-all duration-200 ${
+              className={`py-[3px] px-2.5 rounded-full text-[10px] font-medium transition-all duration-200 ${
                 selectedSize === 'large'
                   ? 'bg-primary text-primary-foreground shadow-elevation-1'
                   : 'text-foreground'
@@ -106,17 +108,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, compact = false }) =
           </div>
         )}
 
-        {/* Price and Add button */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-primary">
-            {t('currency')}{currentPrice}
-          </span>
+        {/* Price + round add button */}
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-sm font-bold text-primary">{t('currency')}{currentPrice}</span>
           <Button
             variant={isAdded ? 'secondary' : 'default'}
             onClick={handleAddToCart}
-            className="!h-[28px] !w-[28px] min-w-0 !p-0"
+            className="h-7 w-7 p-0 rounded-full flex-shrink-0"
           >
-            {isAdded ? <Check className="w-[14px] h-[14px]" /> : <Plus className="w-[14px] h-[14px]" />}
+            {isAdded ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
           </Button>
         </div>
       </div>

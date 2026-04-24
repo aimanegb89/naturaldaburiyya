@@ -17,7 +17,7 @@ type PhoneStep = 'input' | 'otp';
 
 const Auth = () => {
   const { t, dir } = useLanguage();
-  const { user, signIn, signUp, signInWithOtp, verifyOtp, loading } = useAuth();
+  const { user, signIn, signUp, signInWithOtp, verifyOtp, resetPassword, loading } = useAuth();
   const navigate = useNavigate();
 
   const [isLogin, setIsLogin] = useState(true);
@@ -224,7 +224,23 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-[6px]">
-                  <Label htmlFor="password" className="text-xs font-medium">{t('password')}</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-xs font-medium">{t('password')}</Label>
+                    {isLogin && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!email) { toast.error(t('invalidEmail')); return; }
+                          const { error } = await resetPassword(email);
+                          if (error) toast.error(error.message);
+                          else toast.success(t('resetPassword') + ' — ' + email);
+                        }}
+                        className="text-[10px] text-primary hover:underline"
+                      >
+                        {t('resetPassword')}?
+                      </button>
+                    )}
+                  </div>
                   <div className="relative">
                     <Lock className="absolute start-[12px] top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-muted-foreground" />
                     <Input

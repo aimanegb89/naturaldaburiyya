@@ -63,82 +63,77 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-surface-container rounded-2xl shadow-elevation-3">
-        <DialogHeader>
-          <DialogTitle className="md-headline-small text-foreground">{name}</DialogTitle>
-        </DialogHeader>
-        
-        {/* Large Product Image */}
-        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-container-high">
+      <DialogContent className="sm:max-w-[400px] max-h-[88vh] overflow-y-auto bg-surface-container rounded-2xl shadow-elevation-3 p-0 gap-0">
+        {/* Image — compact fixed height */}
+        <div className="relative w-full h-[140px] overflow-hidden rounded-t-2xl bg-surface-container-high flex-shrink-0">
           <ShimmerImage
-  src={product.image}
-  alt={name}
-  className="w-full h-full object-cover"
-  wrapperClassName="w-full h-full"
-/>
+            src={product.image}
+            alt={name}
+            className="w-full h-full object-cover"
+            wrapperClassName="w-full h-full"
+          />
           {product.isPopular && (
-            <span className="absolute top-3 right-3 bg-secondary text-secondary-foreground md-label-small px-3 py-1 rounded-full shadow-elevation-1">
+            <span className="absolute top-2 start-2 bg-secondary text-secondary-foreground text-[10px] font-medium px-2 py-0.5 rounded-full shadow-elevation-1 flex items-center gap-1">
               ⭐ {t('popular') || 'Popular'}
             </span>
           )}
         </div>
 
-        {/* Description */}
-        <p className="md-body-large text-muted-foreground">{description}</p>
+        <div className="p-4 space-y-3">
+          <DialogHeader className="space-y-0.5">
+            <DialogTitle className="text-sm font-semibold text-foreground leading-tight">{name}</DialogTitle>
+            <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+          </DialogHeader>
 
-        {/* Nutrition Info */}
-        <div className="bg-surface-container-high rounded-xl p-4">
-          <h4 className="md-label-medium text-muted-foreground mb-3">
-            {t('nutritionInfo')}
-          </h4>
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(nutrition).map(([key, value]) => (
-              <div key={key} className="flex justify-between items-center bg-surface-container-low rounded-lg px-3 py-2">
-                <span className="md-body-small text-muted-foreground capitalize">{t(key as TranslationKey) || key}</span>
-                <span className="md-label-large">{value}</span>
-              </div>
-            ))}
+          {/* Nutrition grid */}
+          <div className="bg-surface-container-high rounded-xl p-3">
+            <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
+              {t('nutritionInfo')}
+            </h4>
+            <div className="grid grid-cols-2 gap-1.5">
+              {Object.entries(nutrition).map(([key, value]) => (
+                <div key={key} className="flex justify-between items-center bg-surface-container-low rounded-lg px-2.5 py-1.5">
+                  <span className="text-[10px] text-muted-foreground capitalize">{t(key as TranslationKey) || key}</span>
+                  <span className="text-[10px] font-semibold">{value}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Size Selection - Material Segmented Button */}
-        {!hasNoSize && (
-          <div className="flex gap-2 p-1 bg-surface-container-high rounded-full">
-            <button
-              onClick={() => setSelectedSize('small')}
-              className={`flex-1 py-2.5 px-4 rounded-full md-label-large transition-all duration-200 ${
-                selectedSize === 'small'
-                  ? 'bg-primary text-primary-foreground shadow-elevation-1'
-                  : 'text-foreground hover:bg-surface-container-highest'
-              }`}
-            >
-              {t('small')} - ₪{product.priceSmall}
-            </button>
-            <button
-              onClick={() => setSelectedSize('large')}
-              className={`flex-1 py-2.5 px-4 rounded-full md-label-large transition-all duration-200 ${
-                selectedSize === 'large'
-                  ? 'bg-primary text-primary-foreground shadow-elevation-1'
-                  : 'text-foreground hover:bg-surface-container-highest'
-              }`}
-            >
-              {t('large')} - ₪{product.priceLarge}
-            </button>
-          </div>
-        )}
+          {/* Size selector */}
+          {!hasNoSize && (
+            <div className="flex gap-1.5 p-1 bg-surface-container-high rounded-full">
+              <button
+                onClick={() => setSelectedSize('small')}
+                className={`flex-1 py-1.5 px-3 rounded-full text-xs font-medium transition-all duration-200 ${
+                  selectedSize === 'small'
+                    ? 'bg-primary text-primary-foreground shadow-elevation-1'
+                    : 'text-foreground'
+                }`}
+              >
+                {t('small')} — ₪{product.priceSmall}
+              </button>
+              <button
+                onClick={() => setSelectedSize('large')}
+                className={`flex-1 py-1.5 px-3 rounded-full text-xs font-medium transition-all duration-200 ${
+                  selectedSize === 'large'
+                    ? 'bg-primary text-primary-foreground shadow-elevation-1'
+                    : 'text-foreground'
+                }`}
+              >
+                {t('large')} — ₪{product.priceLarge}
+              </button>
+            </div>
+          )}
 
-        {/* Price & Add to Cart */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="md-headline-medium text-primary font-medium">
-            ₪{currentPrice}
+          {/* Price + Add */}
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-base font-bold text-primary">₪{currentPrice}</span>
+            <Button onClick={handleAddToCart} size="sm" className="gap-1.5 px-5">
+              <Plus className="w-[14px] h-[14px]" />
+              {t('addToCart')}
+            </Button>
           </div>
-          <Button onClick={handleAddToCart} 
-    size="lg" 
-    className="gap-2 shrink-0 px-6 h-[48px]" 
-  >
-    <Plus className="w-5 h-5" />
-    {t('addToCart')}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

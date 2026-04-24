@@ -53,31 +53,30 @@ const BottomNav: React.FC<BottomNavProps> = ({ onCartClick }) => {
       className="fixed bottom-0 left-0 right-0 z-50 bg-surface-container/95 backdrop-blur-md border-t border-outline-variant/30 rounded-t-2xl shadow-elevation-3"
       dir={dir}
     >
-      <div className="flex items-center justify-around h-[64px] px-2">
+      <div className="flex items-center justify-around h-[60px] px-1">
         {items.map((item) => {
           const Icon = item.icon;
           return (
             <button
               key={item.key}
               onClick={item.onClick}
-              className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 py-2 relative focus:outline-none"
+              className="flex flex-col items-center justify-center flex-1 min-w-0 h-full focus:outline-none"
             >
-              {/* Active pill indicator */}
-              <div
-                className={`absolute top-2 w-[64px] h-[32px] rounded-full transition-all duration-300 ${
-                  item.active ? 'bg-primary/15 scale-100 opacity-100' : 'scale-75 opacity-0'
-                }`}
-              />
-
-              {/* Icon + badge */}
-              <div className="relative z-10 flex items-center justify-center w-6 h-6">
+              {/* Pill + icon + badge, all in one sized container */}
+              <div className="relative flex items-center justify-center w-14 h-7">
+                {/* Active pill perfectly covers this container */}
+                <div
+                  className={`absolute inset-0 rounded-full transition-all duration-300 ${
+                    item.active ? 'bg-primary/15' : 'bg-transparent'
+                  }`}
+                />
                 <Icon
-                  className={`w-[22px] h-[22px] transition-all duration-200 ${
+                  className={`w-[20px] h-[20px] relative z-10 transition-colors duration-200 ${
                     item.active ? 'text-primary' : 'text-foreground/60'
                   }`}
                 />
                 {item.badge != null && item.badge > 0 && (
-                  <span className="absolute -top-1 -right-2 min-w-[17px] h-[17px] bg-primary text-primary-foreground rounded-full text-[10px] flex items-center justify-center font-semibold px-[3px] shadow-elevation-1">
+                  <span className="absolute top-0 right-2 min-w-[15px] h-[15px] bg-primary text-primary-foreground rounded-full text-[9px] flex items-center justify-center font-bold px-[2px] z-20 shadow-elevation-1">
                     {item.badge > 9 ? '9+' : item.badge}
                   </span>
                 )}
@@ -85,7 +84,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ onCartClick }) => {
 
               {/* Label */}
               <span
-                className={`text-[10px] transition-all duration-200 relative z-10 ${
+                className={`text-[9px] leading-none mt-[2px] transition-colors duration-200 ${
                   item.active ? 'text-primary font-semibold' : 'text-foreground/60 font-medium'
                 }`}
               >

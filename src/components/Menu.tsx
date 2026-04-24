@@ -1,12 +1,23 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { products, Product } from '@/data/products';
 import { getProductName, getProductDescription } from '@/lib/product-utils';
 import ProductCard from './ProductCard';
 import SearchBar from './SearchBar';
 import ProductDetailModal from './ProductDetailModal';
+import { SearchX } from 'lucide-react';
 
 type Category = 'all' | 'juices' | 'smoothies' | 'supplements' | 'bubbles' | 'yogurt' | 'proteins';
+
+const categoryIcons: Record<Category, string> = {
+  all: '🍽️',
+  juices: '🥤',
+  smoothies: '🥛',
+  supplements: '💊',
+  bubbles: '🧋',
+  yogurt: '🍦',
+  proteins: '💪',
+};
 
 const Menu: React.FC = () => {
   const { t, dir, language } = useLanguage();
@@ -28,8 +39,8 @@ const Menu: React.FC = () => {
   const categoryKeys = categories.filter(c => c.key !== 'all').map(c => c.key);
 
   const getFilteredProducts = (category: Category) => {
-    let filtered = category === 'all' 
-      ? products 
+    let filtered = category === 'all'
+      ? products
       : products.filter(p => p.category === category);
 
     if (searchQuery.trim()) {
@@ -48,31 +59,23 @@ const Menu: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const scrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-
   const renderCategorySection = (categoryKey: Category, categoryLabel: string) => {
     const categoryProducts = getFilteredProducts(categoryKey);
     if (categoryProducts.length === 0) return null;
 
     return (
       <div key={categoryKey} className="mb-6">
-        <h3 className="text-base font-semibold text-foreground mb-3 px-1">{categoryLabel}</h3>
-        <div className="relative">
-          <div 
-            ref={el => scrollRefs.current[categoryKey] = el}
-            className="flex gap-3 overflow-x-auto scrollbar-hide pb-3 -mx-4 px-4 snap-x snap-mandatory"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {categoryProducts.map((product) => (
-              <div
-                key={product.id}
-                onClick={() => handleProductClick(product)}
-                className="cursor-pointer flex-shrink-0 w-[160px] snap-start"
-              >
-                <ProductCard product={product} compact />
-              </div>
-            ))}
-          </div>
+        <h3 className="text-sm font-semibold text-foreground mb-2 px-1">{categoryLabel}</h3>
+        <div className="space-y-2">
+          {categoryProducts.map((product) => (
+            <div
+              key={product.id}
+              onClick={() => handleProductClick(product)}
+              className="cursor-pointer"
+            >
+              <ProductCard product={product} />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -87,8 +90,8 @@ const Menu: React.FC = () => {
     <section id="menu" className="py-8 bg-surface-dim" dir={dir}>
       <div className="px-4">
         {/* Section header */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-semibold text-primary mb-1.5">
+        <div className="text-center mb-5">
+          <h2 className="text-xl font-semibold text-primary mb-1">
             {t('menu')}
           </h2>
           <p className="text-xs text-muted-foreground max-w-xs mx-auto">
@@ -96,51 +99,68 @@ const Menu: React.FC = () => {
           </p>
         </div>
 
-        {/* Category chips */}
-        <div className="flex flex-wrap justify-center gap-1.5 mb-5">
+        {/* Category circular icons — horizontal scroll */}
+        <div className="flex gap-4 mb-5 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
           {categories.map(category => (
             <button
               key={category.key}
               onClick={() => setActiveCategory(category.key)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                activeCategory === category.key
-                  ? 'bg-primary text-primary-foreground shadow-elevation-1'
-                  : 'bg-surface-container text-foreground border border-outline-variant'
-              }`}
+              className="flex flex-col items-center gap-1.5 flex-shrink-0 focus:outline-none"
             >
-              {category.label}
+              <div
+                className={`w-[56px] h-[56px] rounded-full flex items-center justify-center text-2xl transition-all duration-200 ${
+                  activeCategory === category.key
+                    ? 'bg-primary shadow-elevation-2'
+                    : 'bg-surface-container-high'
+                }`}
+              >
+                {categoryIcons[category.key]}
+              </div>
+              <span
+                className={`text-[10px] font-medium text-center leading-tight max-w-[56px] transition-colors duration-200 ${
+                  activeCategory === category.key
+                    ? 'text-primary'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                {category.label}
+              </span>
             </button>
           ))}
         </div>
 
-        {/* Search Bar */}
+        {/* Search bar */}
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
-        {/* Products display */}
+        {/* Products — vertical list for all views */}
         {activeCategory === 'all' ? (
-          <div className="space-y-2">
+          <div>
             {categoryKeys.map(categoryKey => {
               const category = categories.find(c => c.key === categoryKey);
               return renderCategorySection(categoryKey, category?.label || '');
             })}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
             {currentProducts.map((product) => (
               <div
                 key={product.id}
                 onClick={() => handleProductClick(product)}
                 className="cursor-pointer"
               >
-                <ProductCard product={product} compact />
+                <ProductCard product={product} />
               </div>
             ))}
           </div>
         )}
 
         {currentProducts.length === 0 && (
-          <div className="text-center py-10">
-            <p className="text-sm text-muted-foreground">{t('noProducts')}</p>
+          <div className="flex flex-col items-center justify-center py-14 gap-3 text-muted-foreground">
+            <div className="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center">
+              <SearchX className="w-6 h-6 opacity-50" />
+            </div>
+            <p className="text-sm font-medium">{t('noProducts')}</p>
+            <p className="text-xs opacity-60">{t('tryDifferentSearch') || 'Try a different search'}</p>
           </div>
         )}
       </div>
