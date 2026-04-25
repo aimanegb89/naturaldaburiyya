@@ -34,6 +34,7 @@ const translations = {
   
   // Cart
   addToCart: { ar: 'أضف للسلة', he: 'הוסף לעגלה', en: 'Add to Cart' },
+  added: { ar: 'تمت الإضافة', he: 'נוסף', en: 'Added' },
   yourCart: { ar: 'سلتك', he: 'העגלה שלך', en: 'Your Cart' },
   emptyCart: { ar: 'السلة فارغة', he: 'העגלה ריקה', en: 'Cart is empty' },
   total: { ar: 'المجموع', he: 'סה"כ', en: 'Total' },

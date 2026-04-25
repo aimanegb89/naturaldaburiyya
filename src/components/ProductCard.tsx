@@ -26,7 +26,10 @@ const categoryImages: Record<string, string> = {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { language, t } = useLanguage();
-  const { addItem } = useCart();
+  const { addItem, items } = useCart();
+  const cartCount = items
+    .filter(i => i.id === product.id)
+    .reduce((sum, i) => sum + i.quantity, 0);
   const [selectedSize, setSelectedSize] = useState<'small' | 'large'>('small');
   const [isAdded, setIsAdded] = useState(false);
 
@@ -61,9 +64,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   return (
-    <div className="flex gap-3 items-center bg-surface-container-low rounded-xl p-3 shadow-elevation-1">
-      {/* Image — first in HTML so it appears on the RIGHT in RTL, LEFT in LTR */}
-      <div className="relative w-[90px] h-[90px] flex-shrink-0 rounded-xl overflow-hidden bg-surface-container-high">
+    <div className="w-[145px] flex-shrink-0 bg-surface-container-low rounded-xl overflow-hidden shadow-elevation-1">
+      {/* Image */}
+      <div className="relative h-[95px] overflow-hidden">
         <ShimmerImage
           src={image}
           alt={name}
@@ -71,23 +74,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           wrapperClassName="w-full h-full"
         />
         {product.isPopular && (
-          <span className="absolute top-1 start-1 px-1.5 py-[2px] bg-secondary text-secondary-foreground text-[9px] font-medium rounded-full shadow-elevation-1">
-            ⭐
+          <span className="absolute top-1.5 start-1.5 px-1.5 py-[2px] bg-secondary text-secondary-foreground text-[9px] font-medium rounded-full shadow-elevation-1 flex items-center gap-[2px]">
+            ⭐ {t('popular')}
+          </span>
+        )}
+        {cartCount > 0 && (
+          <span className="absolute top-1.5 end-1.5 min-w-[18px] h-[18px] bg-primary text-primary-foreground rounded-full text-[10px] font-bold flex items-center justify-center px-[3px] shadow-elevation-1">
+            {cartCount}
           </span>
         )}
       </div>
 
-      {/* Text content */}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold text-foreground leading-tight line-clamp-1">{name}</h3>
-        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">{description}</p>
+      {/* Content */}
+      <div className="p-2">
+        <h3 className="text-[11px] font-semibold text-foreground line-clamp-1 leading-tight">{name}</h3>
+        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-[2px]">{description}</p>
 
         {/* Size selector */}
         {!hasNoSizeOption && (
-          <div className="flex gap-[2px] mt-2 p-[2px] bg-surface-container-high rounded-full w-fit">
+          <div className="flex gap-[2px] mt-1.5 p-[2px] bg-surface-container-high rounded-full">
             <button
               onClick={(e) => handleSizeClick(e, 'small')}
-              className={`py-[3px] px-2.5 rounded-full text-[10px] font-medium transition-all duration-200 ${
+              className={`flex-1 py-[3px] rounded-full text-[9px] font-medium transition-all duration-200 ${
                 selectedSize === 'small'
                   ? 'bg-primary text-primary-foreground shadow-elevation-1'
                   : 'text-foreground'
@@ -97,7 +105,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </button>
             <button
               onClick={(e) => handleSizeClick(e, 'large')}
-              className={`py-[3px] px-2.5 rounded-full text-[10px] font-medium transition-all duration-200 ${
+              className={`flex-1 py-[3px] rounded-full text-[9px] font-medium transition-all duration-200 ${
                 selectedSize === 'large'
                   ? 'bg-primary text-primary-foreground shadow-elevation-1'
                   : 'text-foreground'
@@ -108,17 +116,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         )}
 
-        {/* Price + round add button */}
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-sm font-bold text-primary">{t('currency')}{currentPrice}</span>
-          <Button
-            variant={isAdded ? 'secondary' : 'default'}
-            onClick={handleAddToCart}
-            className="h-7 w-7 p-0 rounded-full flex-shrink-0"
-          >
-            {isAdded ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-          </Button>
-        </div>
+        {/* Price */}
+        <span className="text-xs font-bold text-primary mt-1.5 block">
+          {t('currency')}{currentPrice}
+        </span>
+
+        {/* Add button */}
+        <Button
+          variant={isAdded ? 'secondary' : 'default'}
+          onClick={handleAddToCart}
+          className="w-full h-[28px] text-[10px] gap-1 mt-1.5"
+        >
+          {isAdded ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+          {isAdded ? t('added') : t('addToCart')}
+        </Button>
       </div>
     </div>
   );

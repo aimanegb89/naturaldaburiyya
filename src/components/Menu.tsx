@@ -64,14 +64,17 @@ const Menu: React.FC = () => {
     if (categoryProducts.length === 0) return null;
 
     return (
-      <div key={categoryKey} className="mb-6">
-        <h3 className="text-sm font-semibold text-foreground mb-2 px-1">{categoryLabel}</h3>
-        <div className="space-y-2">
+      <div key={categoryKey} className="mb-4">
+        <h3 className="text-xs font-semibold text-foreground mb-1.5 px-1">{categoryLabel}</h3>
+        <div
+          className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 snap-x snap-mandatory"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           {categoryProducts.map((product) => (
             <div
               key={product.id}
               onClick={() => handleProductClick(product)}
-              className="cursor-pointer"
+              className="cursor-pointer snap-start"
             >
               <ProductCard product={product} />
             </div>
@@ -87,28 +90,28 @@ const Menu: React.FC = () => {
   );
 
   return (
-    <section id="menu" className="py-8 bg-surface-dim" dir={dir}>
+    <section id="menu" className="pt-4 pb-6 bg-surface-dim" dir={dir}>
       <div className="px-4">
         {/* Section header */}
-        <div className="text-center mb-5">
-          <h2 className="text-xl font-semibold text-primary mb-1">
+        <div className="text-center mb-3">
+          <h2 className="text-base font-semibold text-primary mb-0.5">
             {t('menu')}
           </h2>
-          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+          <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
             {t('heroSubtitle')}
           </p>
         </div>
 
         {/* Category circular icons — horizontal scroll */}
-        <div className="flex gap-4 mb-5 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
+        <div className="flex gap-3 mb-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-1">
           {categories.map(category => (
             <button
               key={category.key}
               onClick={() => setActiveCategory(category.key)}
-              className="flex flex-col items-center gap-1.5 flex-shrink-0 focus:outline-none"
+              className="flex flex-col items-center gap-1 flex-shrink-0 focus:outline-none"
             >
               <div
-                className={`w-[56px] h-[56px] rounded-full flex items-center justify-center text-2xl transition-all duration-200 ${
+                className={`w-[46px] h-[46px] rounded-full flex items-center justify-center text-xl transition-all duration-200 ${
                   activeCategory === category.key
                     ? 'bg-primary shadow-elevation-2'
                     : 'bg-surface-container-high'
@@ -117,7 +120,7 @@ const Menu: React.FC = () => {
                 {categoryIcons[category.key]}
               </div>
               <span
-                className={`text-[10px] font-medium text-center leading-tight max-w-[56px] transition-colors duration-200 ${
+                className={`text-[9px] font-medium text-center leading-tight max-w-[46px] transition-colors duration-200 ${
                   activeCategory === category.key
                     ? 'text-primary'
                     : 'text-muted-foreground'
@@ -141,12 +144,15 @@ const Menu: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="space-y-2">
+          <div
+            className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 snap-x snap-mandatory flex-wrap"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             {currentProducts.map((product) => (
               <div
                 key={product.id}
                 onClick={() => handleProductClick(product)}
-                className="cursor-pointer"
+                className="cursor-pointer snap-start"
               >
                 <ProductCard product={product} />
               </div>

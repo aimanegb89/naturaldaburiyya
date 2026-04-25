@@ -16,7 +16,7 @@ interface ProductDetailModalProps {
 }
 
 const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen, onClose }) => {
-  const { t, language } = useLanguage();
+  const { t, language, dir } = useLanguage();
   const { addItem } = useCart();
   const [selectedSize, setSelectedSize] = React.useState<'small' | 'large'>('small');
 
@@ -63,7 +63,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px] max-h-[88vh] overflow-y-auto bg-surface-container rounded-2xl shadow-elevation-3 p-0 gap-0">
+      <DialogContent dir={dir} className="sm:max-w-[400px] max-h-[88vh] overflow-y-auto bg-surface-container rounded-2xl shadow-elevation-3 p-0 gap-0">
         {/* Image — compact fixed height */}
         <div className="relative w-full h-[140px] overflow-hidden rounded-t-2xl bg-surface-container-high flex-shrink-0">
           <ShimmerImage
@@ -85,17 +85,17 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
             <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
           </DialogHeader>
 
-          {/* Nutrition grid */}
-          <div className="bg-surface-container-high rounded-xl p-3">
-            <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
+          {/* Nutrition — compact inline pills */}
+          <div>
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
               {t('nutritionInfo')}
-            </h4>
-            <div className="grid grid-cols-2 gap-1.5">
+            </p>
+            <div className="flex flex-wrap gap-1.5">
               {Object.entries(nutrition).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-center bg-surface-container-low rounded-lg px-2.5 py-1.5">
-                  <span className="text-[10px] text-muted-foreground capitalize">{t(key as TranslationKey) || key}</span>
-                  <span className="text-[10px] font-semibold">{value}</span>
-                </div>
+                <span key={key} className="inline-flex items-center gap-1 bg-surface-container-high rounded-full px-2.5 py-1 text-[10px]">
+                  <span className="text-muted-foreground capitalize">{t(key as TranslationKey) || key}</span>
+                  <span className="font-semibold text-foreground">{value}</span>
+                </span>
               ))}
             </div>
           </div>
