@@ -160,7 +160,7 @@ const Menu: React.FC = () => {
               <SearchX className="w-6 h-6 opacity-50" />
             </div>
             <p className="text-sm font-medium">{t('noProducts')}</p>
-            <p className="text-xs opacity-60">{t('tryDifferentSearch') || 'Try a different search'}</p>
+            <p className="text-xs opacity-60">Try a different search</p>
           </div>
         )}
       </div>
