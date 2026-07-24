@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,15 @@ const Auth = () => {
   const { t, dir } = useLanguage();
   const { user, signIn, signUp, signInWithOtp, verifyOtp, resetPassword, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Preserve the intended post-login destination (e.g. the OAuth consent URL).
+  const rawNext = searchParams.get('next') ?? '/';
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/';
+  const goNext = () => {
+    // Use a hard navigation so absolute paths like /.lovable/oauth/consent hit the router fresh.
+    window.location.href = next;
+  };
 
   const [isLogin, setIsLogin] = useState(true);
   const [authMode, setAuthMode] = useState<AuthMode>('email');
@@ -33,9 +42,10 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !loading) {
-      navigate('/');
+      goNext();
     }
-  }, [user, loading, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
