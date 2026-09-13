@@ -64,12 +64,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent dir={dir} className="sm:max-w-[400px] max-h-[88vh] overflow-y-auto bg-surface-container rounded-2xl shadow-elevation-3 p-0 gap-0">
-        {/* Image — compact fixed height */}
-        <div className="relative w-full h-[140px] overflow-hidden rounded-t-2xl bg-surface-container-high flex-shrink-0">
+        {/* Image — takes ~50% of the modal height, fully visible */}
+        <div className="relative w-full h-[45vh] max-h-[50%] overflow-hidden rounded-t-2xl bg-surface-container-high flex-shrink-0">
           <ShimmerImage
             src={product.image}
             alt={name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             wrapperClassName="w-full h-full"
           />
           {product.isPopular && (
