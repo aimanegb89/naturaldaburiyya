@@ -80,6 +80,23 @@ const translations = {
   notes: { ar: 'ملاحظات', he: 'הערות', en: 'Notes' },
   placeOrder: { ar: 'تأكيد الطلب', he: 'אשר הזמנה', en: 'Place Order' },
   orderSuccess: { ar: 'تم إرسال طلبك بنجاح!', he: 'ההזמנה נשלחה בהצלחה!', en: 'Order placed successfully!' },
+
+  // Checkout page
+  checkoutTitle: { ar: 'إتمام الطلب', he: 'סיום הזמנה', en: 'Checkout' },
+  orderSummary: { ar: 'ملخص الطلب', he: 'סיכום הזמנה', en: 'Order Summary' },
+  deliveryAddress: { ar: 'عنوان التوصيل', he: 'כתובת למשלוח', en: 'Delivery Address' },
+  selectAddress: { ar: 'اختر عنواناً محفوظاً', he: 'בחר כתובת שמורה', en: 'Choose a saved address' },
+  newAddress: { ar: 'عنوان جديد', he: 'כתובת חדשה', en: 'New address' },
+  postalCode: { ar: 'الرمز البريدي', he: 'מיקוד', en: 'Postal Code' },
+  contactDetails: { ar: 'معلومات التواصل', he: 'פרטי קשר', en: 'Contact Details' },
+  confirmOrder: { ar: 'تأكيد الطلب', he: 'אשר הזמנה', en: 'Confirm Order' },
+  orderConfirmed: { ar: 'تم تأكيد طلبك', he: 'ההזמנה אושרה', en: 'Order Confirmed' },
+  orderConfirmedDesc: { ar: 'شكراً لك! سنتواصل معك قريباً لتأكيد التوصيل.', he: 'תודה! ניצור איתך קשר בהקדם לאישור המשלוח.', en: 'Thank you! We will contact you shortly to confirm delivery.' },
+  orderNumber: { ar: 'رقم الطلب', he: 'מספר הזמנה', en: 'Order number' },
+  continueShopping: { ar: 'متابعة التسوق', he: 'המשך בקנייה', en: 'Continue Shopping' },
+  requiredFields: { ar: 'يرجى إكمال الحقول المطلوبة', he: 'נא למלא את השדות הנדרשים', en: 'Please complete the required fields' },
+  emptyCartCheckout: { ar: 'سلتك فارغة', he: 'העגלה שלך ריקה', en: 'Your cart is empty' },
+  sendViaWhatsApp: { ar: 'إرسال الطلب عبر واتساب', he: 'שלח הזמנה בוואטסאפ', en: 'Send order via WhatsApp' },
   
   // Currency
   currency: { ar: '₪', he: '₪', en: '₪' },
