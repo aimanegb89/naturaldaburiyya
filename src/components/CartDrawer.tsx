@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { ShoppingCart, Minus, Plus, Trash2, CheckCircle, ArrowLeft } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { WHATSAPP_NUMBER } from '@/lib/constants';
+import { ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,13 +24,7 @@ interface CartDrawerProps {
 const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const { language, t, dir } = useLanguage();
   const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCart();
-  const { toast } = useToast();
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    notes: '',
-  });
+  const navigate = useNavigate();
   const [deleteItemDialog, setDeleteItemDialog] = useState<{ id: string; size: 'small' | 'large' } | null>(null);
   const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
 
@@ -43,32 +34,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       case 'he': return item.nameHe;
       default: return item.nameEn;
     }
-  };
-
-  const handleSubmitOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const phoneDigits = formData.phone.replace(/\D/g, '');
-    if (phoneDigits.length < 9 || phoneDigits.length > 15) {
-      toast({ title: t('invalidPhone'), description: t('phoneNumber') });
-      return;
-    }
-
-    const orderItems = items.map(item =>
-      `• ${getName(item)} (${item.size === 'small' ? '350ml' : '500ml'}) x${item.quantity} - ₪${item.price * item.quantity}`
-    ).join('\n');
-
-    const message = `🌿 *Natural - ${t('orderDetails')}*\n\n*${t('name')}:* ${formData.name}\n*${t('phoneNumber')}:* ${formData.phone}\n\n*${t('orders')}:*\n${orderItems}\n\n*${t('total')}:* ₪${totalPrice}\n\n${formData.notes ? `*${t('notes')}:* ${formData.notes}` : ''}`;
-
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-
-    toast({ title: t('orderSuccess'), description: '✓' });
-
-    clearCart();
-    setShowCheckout(false);
-    setFormData({ name: '', phone: '', notes: '' });
-    onClose();
   };
 
   const handleConfirmDelete = () => {
@@ -100,7 +65,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 <ShoppingCart className="w-[18px] h-[18px] text-primary" />
                 {t('yourCart')}
               </SheetTitle>
-              {items.length > 0 && !showCheckout && (
+              {items.length > 0 && (
                 <button
                   onClick={() => setShowEmptyCartDialog(true)}
                   className="flex items-center gap-1 text-[10px] text-destructive hover:underline transition-all"
@@ -120,56 +85,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 </div>
                 <p className="text-sm">{t('emptyCart')}</p>
               </div>
-            ) : showCheckout ? (
-              /* Checkout Form */
-              <form onSubmit={handleSubmitOrder} className="flex-1 flex flex-col gap-4 min-h-0">
-                <h3 className="text-sm font-semibold text-foreground">{t('orderDetails')}</h3>
-
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('name')}</label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('phoneNumber')}</label>
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    required
-                    dir="ltr"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('notes')}</label>
-                  <Textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                    className="min-h-[80px] rounded-lg border-outline-variant"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="mt-auto space-y-3">
-                  <div className="flex justify-between items-center text-sm font-semibold py-3 border-t border-outline-variant">
-                    <span>{t('total')}</span>
-                    <span className="text-primary">{t('currency')}{totalPrice}</span>
-                  </div>
-                  <Button type="submit" className="w-full gap-2">
-                    <CheckCircle className="w-[16px] h-[16px]" />
-                    {t('placeOrder')}
-                  </Button>
-                  <Button type="button" variant="ghost" className="w-full gap-2" onClick={() => setShowCheckout(false)}>
-                    <ArrowLeft className="w-[16px] h-[16px] rtl:rotate-180" />
-                    {t('cart')}
-                  </Button>
-                </div>
-              </form>
             ) : (
               /* Cart Items — flat list, no individual cards */
               <>
@@ -223,7 +138,13 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                     <span>{t('total')}</span>
                     <span className="text-primary">{t('currency')}{totalPrice}</span>
                   </div>
-                  <Button className="w-full" onClick={() => setShowCheckout(true)}>
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      onClose();
+                      navigate('/checkout');
+                    }}
+                  >
                     {t('checkout')}
                   </Button>
                 </div>
