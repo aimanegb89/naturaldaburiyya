@@ -69,7 +69,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 <ShoppingCart className="w-[18px] h-[18px] text-primary" />
                 {t('yourCart')}
               </SheetTitle>
-              {items.length > 0 && !showCheckout && (
+              {items.length > 0 && (
                 <button
                   onClick={() => setShowEmptyCartDialog(true)}
                   className="flex items-center gap-1 text-[10px] text-destructive hover:underline transition-all"
@@ -89,56 +89,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 </div>
                 <p className="text-sm">{t('emptyCart')}</p>
               </div>
-            ) : showCheckout ? (
-              /* Checkout Form */
-              <form onSubmit={handleSubmitOrder} className="flex-1 flex flex-col gap-4 min-h-0">
-                <h3 className="text-sm font-semibold text-foreground">{t('orderDetails')}</h3>
-
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('name')}</label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('phoneNumber')}</label>
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    required
-                    dir="ltr"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t('notes')}</label>
-                  <Textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                    className="min-h-[80px] rounded-lg border-outline-variant"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="mt-auto space-y-3">
-                  <div className="flex justify-between items-center text-sm font-semibold py-3 border-t border-outline-variant">
-                    <span>{t('total')}</span>
-                    <span className="text-primary">{t('currency')}{totalPrice}</span>
-                  </div>
-                  <Button type="submit" className="w-full gap-2">
-                    <CheckCircle className="w-[16px] h-[16px]" />
-                    {t('placeOrder')}
-                  </Button>
-                  <Button type="button" variant="ghost" className="w-full gap-2" onClick={() => setShowCheckout(false)}>
-                    <ArrowLeft className="w-[16px] h-[16px] rtl:rotate-180" />
-                    {t('cart')}
-                  </Button>
-                </div>
-              </form>
             ) : (
               /* Cart Items — flat list, no individual cards */
               <>
