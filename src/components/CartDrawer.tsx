@@ -225,7 +225,13 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                     <span>{t('total')}</span>
                     <span className="text-primary">{t('currency')}{totalPrice}</span>
                   </div>
-                  <Button className="w-full" onClick={() => setShowCheckout(true)}>
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      onClose();
+                      navigate('/checkout');
+                    }}
+                  >
                     {t('checkout')}
                   </Button>
                 </div>
