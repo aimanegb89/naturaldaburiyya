@@ -14,10 +14,10 @@ export default defineMcp({
   title: "Natural — Healthy Drinks & Supplements",
   version: "0.1.0",
   instructions:
-    "Tools for the Natural shop. Read the signed-in user's profile, orders, and favorites, and add or remove favorites. Each user connects as themselves via OAuth.",
+    "Tools for the Natural shop. Read the signed-in user's profile, orders, and favorites, add or remove favorites, and place orders that are saved to their account order history (the shop confirms via WhatsApp). Each user connects as themselves via OAuth.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [getMyProfile, listMyOrders, listMyFavorites, addFavorite, removeFavorite],
+  tools: [getMyProfile, listMyOrders, createOrder, listMyFavorites, addFavorite, removeFavorite],
 });

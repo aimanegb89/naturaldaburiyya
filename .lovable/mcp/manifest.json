@@ -56,6 +56,97 @@
         "outputSchema": null
       },
       {
+        "name": "create_order",
+        "title": "Create order",
+        "description": "Place an order for the signed-in user. Saves the order and its items to their account so it appears in their order history (list_my_orders) even after sign-out. The shop confirms and fulfills orders via WhatsApp. Provide either a saved address_id or a new delivery address (street + city).",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "items": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "product_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Product ID."
+                  },
+                  "product_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Product display name (English)."
+                  },
+                  "size": {
+                    "type": "string",
+                    "enum": [
+                      "small",
+                      "large"
+                    ],
+                    "description": "small = 350ml, large = 500ml."
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "price": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Unit price in ILS."
+                  }
+                },
+                "required": [
+                  "product_id",
+                  "product_name",
+                  "size",
+                  "quantity",
+                  "price"
+                ]
+              },
+              "description": "Line items to order."
+            },
+            "address_id": {
+              "description": "ID of a saved address belonging to the user. If omitted, street and city are required.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "street": {
+              "description": "Street for a new delivery address.",
+              "type": "string"
+            },
+            "city": {
+              "description": "City for a new delivery address.",
+              "type": "string"
+            },
+            "postal_code": {
+              "description": "Postal code for a new delivery address.",
+              "type": "string"
+            },
+            "phone": {
+              "description": "Contact phone number.",
+              "type": "string"
+            },
+            "notes": {
+              "description": "Order notes for the shop.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "items"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
         "name": "list_my_favorites",
         "title": "List my favorites",
         "description": "List the signed-in user's favorite product IDs.",
