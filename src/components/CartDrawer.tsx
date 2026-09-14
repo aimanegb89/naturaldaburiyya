@@ -3,12 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { ShoppingCart, Minus, Plus, Trash2, CheckCircle, ArrowLeft } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { WHATSAPP_NUMBER } from '@/lib/constants';
+import { ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
