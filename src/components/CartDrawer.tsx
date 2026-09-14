@@ -40,32 +40,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const phoneDigits = formData.phone.replace(/\D/g, '');
-    if (phoneDigits.length < 9 || phoneDigits.length > 15) {
-      toast({ title: t('invalidPhone'), description: t('phoneNumber') });
-      return;
-    }
-
-    const orderItems = items.map(item =>
-      `• ${getName(item)} (${item.size === 'small' ? '350ml' : '500ml'}) x${item.quantity} - ₪${item.price * item.quantity}`
-    ).join('\n');
-
-    const message = `🌿 *Natural - ${t('orderDetails')}*\n\n*${t('name')}:* ${formData.name}\n*${t('phoneNumber')}:* ${formData.phone}\n\n*${t('orders')}:*\n${orderItems}\n\n*${t('total')}:* ₪${totalPrice}\n\n${formData.notes ? `*${t('notes')}:* ${formData.notes}` : ''}`;
-
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-
-    toast({ title: t('orderSuccess'), description: '✓' });
-
-    clearCart();
-    setShowCheckout(false);
-    setFormData({ name: '', phone: '', notes: '' });
-    onClose();
-  };
-
   const handleConfirmDelete = () => {
     if (deleteItemDialog) {
       removeItem(deleteItemDialog.id, deleteItemDialog.size);
