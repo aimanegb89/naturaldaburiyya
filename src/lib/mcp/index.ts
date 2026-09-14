@@ -1,6 +1,7 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import getMyProfile from "./tools/get-my-profile";
 import listMyOrders from "./tools/list-my-orders";
+import createOrder from "./tools/create-order";
 import listMyFavorites from "./tools/list-my-favorites";
 import addFavorite from "./tools/add-favorite";
 import removeFavorite from "./tools/remove-favorite";
