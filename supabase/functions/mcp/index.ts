@@ -76,9 +76,10 @@ var list_my_orders_default = defineTool2({
   }
 });
 
-// src/lib/mcp/tools/list-my-favorites.ts
+// src/lib/mcp/tools/create-order.ts
 import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.91.0";
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z2 } from "npm:zod@^4.4.3";
 function supabaseForUser3(ctx) {
   return createClient3(
     process.env.SUPABASE_URL,
@@ -89,7 +90,105 @@ function supabaseForUser3(ctx) {
     }
   );
 }
-var list_my_favorites_default = defineTool3({
+var create_order_default = defineTool3({
+  name: "create_order",
+  title: "Create order",
+  description: "Place an order for the signed-in user. Saves the order and its items to their account so it appears in their order history (list_my_orders) even after sign-out. The shop confirms and fulfills orders via WhatsApp. Provide either a saved address_id or a new delivery address (street + city).",
+  inputSchema: {
+    items: z2.array(
+      z2.object({
+        product_id: z2.string().min(1).describe("Product ID."),
+        product_name: z2.string().min(1).describe("Product display name (English)."),
+        size: z2.enum(["small", "large"]).describe("small = 350ml, large = 500ml."),
+        quantity: z2.number().int().min(1),
+        price: z2.number().min(0).describe("Unit price in ILS.")
+      })
+    ).min(1).describe("Line items to order."),
+    address_id: z2.string().uuid().optional().describe("ID of a saved address belonging to the user. If omitted, street and city are required."),
+    street: z2.string().optional().describe("Street for a new delivery address."),
+    city: z2.string().optional().describe("City for a new delivery address."),
+    postal_code: z2.string().optional().describe("Postal code for a new delivery address."),
+    phone: z2.string().optional().describe("Contact phone number."),
+    notes: z2.string().optional().describe("Order notes for the shop.")
+  },
+  annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
+  handler: async ({ items, address_id, street, city, postal_code, phone, notes }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser3(ctx);
+    const userId = ctx.getUserId();
+    let finalAddressId = address_id ?? null;
+    if (!finalAddressId) {
+      if (!street || !city) {
+        return {
+          content: [{ type: "text", text: "Provide address_id, or street and city for a new address." }],
+          isError: true
+        };
+      }
+      const { data: addr, error: addrError } = await supabase.from("addresses").insert({
+        user_id: userId,
+        label: "Delivery address",
+        street,
+        city,
+        postal_code: postal_code ?? null,
+        phone: phone ?? null
+      }).select("id").single();
+      if (addrError) {
+        return { content: [{ type: "text", text: addrError.message }], isError: true };
+      }
+      finalAddressId = addr.id;
+    }
+    const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const { data: order, error: orderError } = await supabase.from("orders").insert({
+      user_id: userId,
+      address_id: finalAddressId,
+      total_amount: total,
+      status: "pending",
+      notes: notes ?? null
+    }).select("id, status, total_amount, created_at").single();
+    if (orderError) {
+      return { content: [{ type: "text", text: orderError.message }], isError: true };
+    }
+    const { error: itemsError } = await supabase.from("order_items").insert(
+      items.map((i) => ({
+        order_id: order.id,
+        product_id: i.product_id,
+        product_name: i.product_name,
+        size: i.size,
+        quantity: i.quantity,
+        price: i.price
+      }))
+    );
+    if (itemsError) {
+      return { content: [{ type: "text", text: itemsError.message }], isError: true };
+    }
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Order ${order.id} created (total \u20AA${total}). The shop will confirm via WhatsApp.`
+        }
+      ],
+      structuredContent: { order: { ...order, items } }
+    };
+  }
+});
+
+// src/lib/mcp/tools/list-my-favorites.ts
+import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.91.0";
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.24.0";
+function supabaseForUser4(ctx) {
+  return createClient4(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_PUBLISHABLE_KEY,
+    {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    }
+  );
+}
+var list_my_favorites_default = defineTool4({
   name: "list_my_favorites",
   title: "List my favorites",
   description: "List the signed-in user's favorite product IDs.",
@@ -99,7 +198,7 @@ var list_my_favorites_default = defineTool3({
     if (!ctx.isAuthenticated()) {
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
-    const { data, error } = await supabaseForUser3(ctx).from("favorites").select("product_id, created_at").eq("user_id", ctx.getUserId()).order("created_at", { ascending: false });
+    const { data, error } = await supabaseForUser4(ctx).from("favorites").select("product_id, created_at").eq("user_id", ctx.getUserId()).order("created_at", { ascending: false });
     if (error) {
       return { content: [{ type: "text", text: error.message }], isError: true };
     }
@@ -111,43 +210,6 @@ var list_my_favorites_default = defineTool3({
 });
 
 // src/lib/mcp/tools/add-favorite.ts
-import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.91.0";
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.24.0";
-import { z as z2 } from "npm:zod@^4.4.3";
-function supabaseForUser4(ctx) {
-  return createClient4(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_PUBLISHABLE_KEY,
-    {
-      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-      auth: { persistSession: false, autoRefreshToken: false }
-    }
-  );
-}
-var add_favorite_default = defineTool4({
-  name: "add_favorite",
-  title: "Add favorite product",
-  description: "Add a product to the signed-in user's favorites.",
-  inputSchema: {
-    product_id: z2.string().min(1).describe("Product ID to favorite.")
-  },
-  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
-  handler: async ({ product_id }, ctx) => {
-    if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    const { data, error } = await supabaseForUser4(ctx).from("favorites").insert({ user_id: ctx.getUserId(), product_id }).select().maybeSingle();
-    if (error) {
-      return { content: [{ type: "text", text: error.message }], isError: true };
-    }
-    return {
-      content: [{ type: "text", text: JSON.stringify(data) }],
-      structuredContent: { favorite: data }
-    };
-  }
-});
-
-// src/lib/mcp/tools/remove-favorite.ts
 import { createClient as createClient5 } from "npm:@supabase/supabase-js@^2.91.0";
 import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.24.0";
 import { z as z3 } from "npm:zod@^4.4.3";
@@ -161,19 +223,56 @@ function supabaseForUser5(ctx) {
     }
   );
 }
-var remove_favorite_default = defineTool5({
+var add_favorite_default = defineTool5({
+  name: "add_favorite",
+  title: "Add favorite product",
+  description: "Add a product to the signed-in user's favorites.",
+  inputSchema: {
+    product_id: z3.string().min(1).describe("Product ID to favorite.")
+  },
+  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
+  handler: async ({ product_id }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const { data, error } = await supabaseForUser5(ctx).from("favorites").insert({ user_id: ctx.getUserId(), product_id }).select().maybeSingle();
+    if (error) {
+      return { content: [{ type: "text", text: error.message }], isError: true };
+    }
+    return {
+      content: [{ type: "text", text: JSON.stringify(data) }],
+      structuredContent: { favorite: data }
+    };
+  }
+});
+
+// src/lib/mcp/tools/remove-favorite.ts
+import { createClient as createClient6 } from "npm:@supabase/supabase-js@^2.91.0";
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z4 } from "npm:zod@^4.4.3";
+function supabaseForUser6(ctx) {
+  return createClient6(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_PUBLISHABLE_KEY,
+    {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    }
+  );
+}
+var remove_favorite_default = defineTool6({
   name: "remove_favorite",
   title: "Remove favorite product",
   description: "Remove a product from the signed-in user's favorites.",
   inputSchema: {
-    product_id: z3.string().min(1).describe("Product ID to unfavorite.")
+    product_id: z4.string().min(1).describe("Product ID to unfavorite.")
   },
   annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ product_id }, ctx) => {
     if (!ctx.isAuthenticated()) {
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
-    const { error } = await supabaseForUser5(ctx).from("favorites").delete().eq("user_id", ctx.getUserId()).eq("product_id", product_id);
+    const { error } = await supabaseForUser6(ctx).from("favorites").delete().eq("user_id", ctx.getUserId()).eq("product_id", product_id);
     if (error) {
       return { content: [{ type: "text", text: error.message }], isError: true };
     }
@@ -190,12 +289,12 @@ var mcp_default = defineMcp({
   name: "natural-mcp",
   title: "Natural \u2014 Healthy Drinks & Supplements",
   version: "0.1.0",
-  instructions: "Tools for the Natural shop. Read the signed-in user's profile, orders, and favorites, and add or remove favorites. Each user connects as themselves via OAuth.",
+  instructions: "Tools for the Natural shop. Read the signed-in user's profile, orders, and favorites, add or remove favorites, and place orders that are saved to their account order history (the shop confirms via WhatsApp). Each user connects as themselves via OAuth.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
   }),
-  tools: [get_my_profile_default, list_my_orders_default, list_my_favorites_default, add_favorite_default, remove_favorite_default]
+  tools: [get_my_profile_default, list_my_orders_default, create_order_default, list_my_favorites_default, add_favorite_default, remove_favorite_default]
 });
 
 // lovable-mcp-supabase-entry.ts
