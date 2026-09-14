@@ -28,14 +28,7 @@ interface CartDrawerProps {
 const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const { language, t, dir } = useLanguage();
   const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCart();
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    notes: '',
-  });
   const [deleteItemDialog, setDeleteItemDialog] = useState<{ id: string; size: 'small' | 'large' } | null>(null);
   const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
 
