@@ -11,6 +11,7 @@ export interface Product {
   priceLarge: number;
   image?: string;
   isPopular?: boolean;
+  isAvailable?: boolean;
 }
 
 // Import product images

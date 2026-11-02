@@ -61,6 +61,24 @@ export type Database = {
           },
         ]
       }
+      admin_push_tokens: {
+        Row: {
+          created_at: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -209,6 +227,66 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          description_ar: string
+          description_en: string
+          description_he: string
+          id: string
+          image_url: string | null
+          is_available: boolean
+          is_popular: boolean
+          name_ar: string
+          name_en: string
+          name_he: string
+          price_large: number
+          price_small: number
+          sort_order: number
+          unavailable_since: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description_ar?: string
+          description_en?: string
+          description_he?: string
+          id: string
+          image_url?: string | null
+          is_available?: boolean
+          is_popular?: boolean
+          name_ar: string
+          name_en?: string
+          name_he?: string
+          price_large?: number
+          price_small?: number
+          sort_order?: number
+          unavailable_since?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description_ar?: string
+          description_en?: string
+          description_he?: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          is_popular?: boolean
+          name_ar?: string
+          name_en?: string
+          name_he?: string
+          price_large?: number
+          price_small?: number
+          sort_order?: number
+          unavailable_since?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -239,15 +317,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -374,6 +476,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

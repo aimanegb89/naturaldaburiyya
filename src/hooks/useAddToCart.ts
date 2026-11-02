@@ -3,7 +3,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useCartDrawer } from '@/contexts/CartDrawerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getProductName } from '@/lib/product-utils';
-import { hasSizes, type CatalogProduct } from '@/lib/catalog';
+import { hasSizes, isAvailable, type CatalogProduct } from '@/lib/catalog';
 import { useTx } from '@/lib/i18n';
 
 export function useAddToCart() {
@@ -13,6 +13,10 @@ export function useAddToCart() {
   const tx = useTx();
 
   return (p: CatalogProduct, size: 'small' | 'large' = 'small', qty = 1) => {
+    if (!isAvailable(p)) {
+      toast.error(tx({ ar: 'هذا المنتج غير متوفر حاليًا', he: 'המוצר אזל כרגע', en: 'This product is currently out of stock' }));
+      return;
+    }
     const s = hasSizes(p) ? size : 'small';
     const price = s === 'large' && hasSizes(p) ? p.priceLarge : p.priceSmall;
     const existing = items.find((i) => i.id === p.id && i.size === s)?.quantity ?? 0;

@@ -87,10 +87,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, classNa
             <span className="text-[11px] text-muted-foreground">{tx({ ar: 'لا تقييمات بعد', he: 'אין דירוגים', en: 'No reviews yet' })}</span>
           )}
         </div>
-        <div className="flex items-center gap-[6px] text-[11px] text-primary font-medium">
-          <span className="w-[6px] h-[6px] rounded-full bg-primary" />
-          {tx({ ar: 'متوفر الآن', he: 'במלאי', en: 'In stock' })}
-        </div>
+        {product.isAvailable !== false ? (
+          <div className="flex items-center gap-[6px] text-[11px] text-primary font-medium">
+            <span className="w-[6px] h-[6px] rounded-full bg-primary" />
+            {tx({ ar: 'متوفر الآن', he: 'במלאי', en: 'In stock' })}
+          </div>
+        ) : (
+          <div className="flex items-center gap-[6px] text-[11px] text-destructive font-medium">
+            <span className="w-[6px] h-[6px] rounded-full bg-destructive" />
+            {tx({ ar: 'غير متوفر', he: 'אזל', en: 'Out of stock' })}
+          </div>
+        )}
         <div className="mt-auto pt-[8px] flex items-center justify-between gap-[6px]">
           <div className="leading-none">
             {hasSizes(product) && <span className="text-[10px] text-muted-foreground block mb-[2px]">{tx({ ar: 'من', he: 'החל מ', en: 'From' })}</span>}
@@ -108,8 +115,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, classNa
             )}
             <button
               onClick={() => add(product)}
+              disabled={product.isAvailable === false}
               aria-label={t('addToCart')}
-              className="w-[36px] h-[36px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-soft transition-all hover:bg-primary/90 active:scale-90"
+              className="disabled:opacity-40 disabled:pointer-events-none w-[36px] h-[36px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-soft transition-all hover:bg-primary/90 active:scale-90"
             >
               <Plus className="w-[18px] h-[18px]" />
             </button>
