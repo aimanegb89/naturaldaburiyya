@@ -23,7 +23,7 @@
 - When a category is opened from the home page, the Shop page shows a back button (arrow points the right way in RTL) that returns to Home.
 
 ## 6. Theme back to original green and white
-- Light mode: white/cream background, sage-green primary, charcoal text, terracotta/gold accents (the original look).
+- Light mode: white background, sage-green primary, charcoal text. No gold accents — badges and highlights use green shades (terracotta kept only for sale/warning tags).
 - Dark mode: a matching dark green version. Light / Dark / Auto toggle stays.
 
 ## Technical notes
