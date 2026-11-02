@@ -3,11 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Dynamic PWA & Canonical Setup for Safari/iOS -->
+    <script>
+      (function() {
+        var isAdmin = window.location.pathname.indexOf('/admin') === 0;
+        var head = document.head;
+
+        // 1. Manifest Dynamic Setup
+        var manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = isAdmin ? '/manifest-admin.webmanifest' : '/manifest.webmanifest';
+        head.appendChild(manifestLink);
+
+        // 2. Apple App Title
+        var titleMeta = document.createElement('meta');
+        titleMeta.name = 'apple-mobile-web-app-title';
+        titleMeta.content = isAdmin ? 'Natural Admin' : 'Natural';
+        head.appendChild(titleMeta);
+
+        // 3. Apple Touch Icon
+        var iconLink = document.createElement('link');
+        iconLink.rel = 'apple-touch-icon';
+        iconLink.href = isAdmin ? '/admin-icon-180.png' : '/icon-180.png'; // يمكن استبدال الأيقونة الخاصة بالإدارة هنا
+        head.appendChild(iconLink);
+
+        // 4. Canonical Link (فقط للمتجر العادي لمنع اختطاف مسار الإدارة)
+        if (!isAdmin) {
+          var canonicalLink = document.createElement('link');
+          canonicalLink.rel = 'canonical';
+          canonicalLink.href = 'https://natural-shop.com';
+          head.appendChild(canonicalLink);
+        }
+      })();
+    </script>
+
     <title>Natural | عصائر طازجة وسموذي طبيعي - دبورية</title>
-    <meta name="description" content="متجر Natural للعصائر الطازجة والسموذي الطبيعي والمكملات الغذائية. اطلب الآن أونلاين من دبورية، منطقة هعمكيم. Natural fresh juice and smoothie shop in Daburiyya." />
+    <meta
+      name="description"
+      content="متجر Natural للعصائر الطازجة والسموذي الطبيعي والمكملات الغذائية. اطلب الآن أونلاين من دبورية، منطقة هعمكيم. Natural fresh juice and smoothie shop in Daburiyya."
+    />
     <meta name="keywords" content="عصائر طازجة, سموذي, مكملات طبيعية, دبورية, Natural, juice, smoothie, supplements" />
-    <link rel="canonical" href="https://natural-shop.com" />
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Natural | عصائر طازجة وسموذي طبيعي" />
@@ -15,24 +52,15 @@
     <meta property="og:locale" content="ar_SA" />
     <meta property="og:locale:alternate" content="he_IL" />
     <meta property="og:locale:alternate" content="en_US" />
-    
+
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Natural | عصائر طازجة وسموذي طبيعي" />
     <meta name="twitter:description" content="متجر Natural للعصائر الطازجة والسموذي الطبيعي - دبورية" />
-    
+
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#0D0E11" />
-    <link rel="apple-touch-icon" href="/icon-180.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Natural" />
-    <script>
-      if (location.pathname.indexOf('/admin') === 0) {
-        document.querySelector('link[rel="manifest"]').setAttribute('href', '/manifest-admin.webmanifest');
-        document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute('content', 'Natural Admin');
-      }
-    </script>
   </head>
   <body>
     <div id="root"></div>
