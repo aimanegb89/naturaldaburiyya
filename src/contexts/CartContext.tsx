@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { getCatalogProduct, isAvailable, unitPrice, useCatalog, hasSizes } from '@/lib/catalog';
 
 export const MAX_QTY = 50;
@@ -56,20 +57,22 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Reconcile with the live catalog: refresh prices/names, drop deleted or unavailable products.
   const { version, loaded } = useCatalog();
+  const { language } = useLanguage();
   useEffect(() => {
     if (!loaded) return;
     setItems((prev) => {
       const removed: string[] = [];
       const next = prev.flatMap((i) => {
         const p = getCatalogProduct(i.id);
-        if (!p || !isAvailable(p)) { removed.push(i.nameAr); return []; }
+        if (!p || !isAvailable(p)) { removed.push((language === 'he' ? i.nameHe : language === 'en' ? i.nameEn : i.nameAr) || i.nameAr); return []; }
         const size = hasSizes(p) ? i.size : 'small';
         return [{ ...i, size, price: unitPrice(p, size), nameAr: p.nameAr, nameHe: p.nameHe, nameEn: p.nameEn }];
       });
-      if (removed.length) setTimeout(() => toast.warning(`${removed.join('، ')} ✕`), 0);
+      if (removed.length) setTimeout(() => toast.warning({ ar: 'أُزيلت من السلة لأنها غير متوفرة:', he: 'הוסרו מהעגלה כי אזלו:', en: 'Removed from cart (unavailable):' }[language] + ' ' + removed.join(', ')), 0);
       const same = next.length === prev.length && next.every((n, k) => n.price === prev[k].price && n.size === prev[k].size && n.nameAr === prev[k].nameAr);
       return same ? prev : next;
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [version, loaded]);
 
   const addItem = (item: Omit<CartItem, 'quantity'>) => {
