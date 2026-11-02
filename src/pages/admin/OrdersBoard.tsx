@@ -28,6 +28,9 @@ export default function OrdersBoard() {
   const [tab, setTab] = useState<string>('new');
 
   const load = async () => {
+    const { data: st } = await supabase.from('store_settings').select('auto_done_minutes').eq('id', 1).maybeSingle();
+    await supabase.from('orders').update({ status: 'done' }).in('status', ['new', 'preparing'])
+      .lt('created_at', new Date(Date.now() - (st?.auto_done_minutes ?? 60) * 60000).toISOString());
     const { data } = await supabase.from('orders')
       .select('id,order_number,status,total_amount,notes,created_at,customer_name,customer_phone,delivery_address,order_items(product_name,size,quantity,price,product_id)')
       .order('created_at', { ascending: false }).limit(200);

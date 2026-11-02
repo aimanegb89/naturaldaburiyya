@@ -10,4 +10,4 @@
 - Manager app: `/admin` (Admin shell with OrdersBoard) and `/admin/settings` (channel toggle, push, ProductsManager).
 - Order tracking: public lookups go through the `track-order` edge function using `orders.tracking_code` or the 3-digit number alone (picks the latest active order) and return only status/items/total — orders stay private under RLS.
 - Theme: `next-themes` (class, default system) with `:root`/`.dark` tokens in `src/index.css`; toggle is `ThemeToggle`, shown in the side menu.
-- Customer-facing order numbers are `orders.order_number` (random 3-digit, assigned by DB trigger, not unique forever) — number-only lookups resolve to the latest active order; `tracking_code` stays the unique link key.
+- Customer-facing order numbers are `orders.order_number` (random 3-digit, assigned by DB trigger, not unique forever) — number-only lookups resolve to the latest active order; stale new/preparing orders are auto-marked done (store_settings.auto_done_minutes) lazily in track-order and OrdersBoard load instead of a cron; `tracking_code` stays the unique link key.
