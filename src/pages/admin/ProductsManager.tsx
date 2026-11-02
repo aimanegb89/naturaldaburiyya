@@ -1,19 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Bell, Plus, Pencil, LogOut } from 'lucide-react';
+import { Plus, Pencil } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { useCatalogReload } from '@/contexts/CatalogContext';
 import { dbToProduct, type DbProduct } from '@/lib/catalog';
-import { enableAdminPush } from '@/lib/push';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import QrDialog from '@/components/admin/QrDialog';
 
 const CATEGORIES = ['juices', 'smoothies', 'supplements', 'bubbles', 'yogurt', 'proteins'] as const;
 const CAT_AR: Record<string, string> = { juices: 'عصائر', smoothies: 'كوكتيلات', supplements: 'مكملات', bubbles: 'بابلز', yogurt: 'يوجورت', proteins: 'بروتينات' };
@@ -23,18 +19,8 @@ const empty: DbProduct = {
   category: 'juices', price_small: 0, price_large: 0, image_url: null, is_popular: false, is_available: true, sort_order: 999,
 };
 
-const pushMsg: Record<string, string> = {
-  registered: 'تم تفعيل الإشعارات على هذا الجهاز',
-  'not-configured': 'إعداد إشعارات الويب في Firebase غير مكتمل بعد',
-  unsupported: 'هذا المتصفح لا يدعم الإشعارات (على iPhone أضف التطبيق إلى الشاشة الرئيسية أولاً)',
-  'open-in-new-tab': 'افتح صفحة الإدارة في نافذة مستقلة ثم أعد المحاولة',
-  denied: 'الإشعارات محظورة — فعّلها من إعدادات الموقع في المتصفح',
-};
-
-export default function Admin() {
-  const { user, loading, signOut } = useAuth();
+export default function ProductsManager() {
   const { reload } = useCatalogReload();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [rows, setRows] = useState<DbProduct[]>([]);
   const [editing, setEditing] = useState<DbProduct | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -46,26 +32,7 @@ export default function Admin() {
     setRows((data ?? []) as DbProduct[]);
   };
 
-  useEffect(() => {
-    if (!user) { setIsAdmin(null); return; }
-    supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' }).then(({ data }) => {
-      setIsAdmin(!!data);
-      if (data) load();
-    });
-  }, [user]);
-
-  if (loading) return null;
-  if (!user) return (
-    <div dir="rtl" className="min-h-screen flex flex-col items-center justify-center gap-[16px] bg-background p-[24px]">
-      <h1 className="font-display text-[26px]">لوحة إدارة المتجر</h1>
-      <Button asChild><Link to="/auth?next=/admin">تسجيل الدخول</Link></Button>
-    </div>
-  );
-  if (isAdmin === false) return (
-    <div dir="rtl" className="min-h-screen flex items-center justify-center bg-background p-[24px] text-center text-[16px]">
-      هذا الحساب ليس لديه صلاحية الإدارة.
-    </div>
-  );
+  useEffect(() => { load(); }, []);
 
   const toggle = async (r: DbProduct, v: boolean) => {
     setRows((xs) => xs.map((x) => (x.id === r.id ? { ...x, is_available: v } : x)));
@@ -103,21 +70,8 @@ export default function Admin() {
   const set = (k: keyof DbProduct, v: unknown) => setEditing((e) => (e ? { ...e, [k]: v } : e));
 
   return (
-    <div dir="rtl" className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 bg-card border-b border-outline-variant px-[16px] py-[12px] flex items-center gap-[8px]">
-        <h1 className="font-display text-[20px] flex-1">إدارة المنتجات</h1>
-        <QrDialog />
-        <Button size="sm" variant="outline" onClick={async () => toast(pushMsg[await enableAdminPush(user.id)])}>
-          <Bell className="w-[16px] h-[16px]" /> الإشعارات
-        </Button>
-        <Button size="sm" variant="outline" onClick={async () => {
-          const { data, error } = await supabase.functions.invoke('availability-reminder', { body: { test: true } });
-          toast(error ? 'فشل الإرسال' : data?.sent ? 'تم إرسال إشعار تجريبي' : 'لا توجد أجهزة مفعّلة');
-        }}>تجربة</Button>
-        <Button size="icon" variant="ghost" onClick={signOut} aria-label="خروج"><LogOut className="w-[18px] h-[18px]" /></Button>
-      </header>
-
-      <main className="max-w-[900px] mx-auto p-[16px] space-y-[10px]">
+    <div>
+      <main className="space-y-[10px]">
         <Button className="w-full" onClick={() => { setEditing({ ...empty }); setIsNew(true); setFile(null); }}>
           <Plus className="w-[18px] h-[18px]" /> منتج جديد
         </Button>
