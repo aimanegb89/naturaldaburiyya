@@ -9,13 +9,13 @@ import ShimmerImage from '@/components/ShimmerImage';
 import { useTx, type Tri } from '@/lib/i18n';
 import { products } from '@/data/products';
 
-const SectionTitle = ({ eyebrow, title, link }: { eyebrow: string; title: string; link?: { to: string; label: string } }) => {
+const SectionTitle = ({ eyebrow, title, link }: { eyebrow?: string; title: string; link?: { to: string; label: string } }) => {
   const { dir } = useLanguage();
   const Arrow = dir === 'rtl' ? ArrowLeft : ArrowRight;
   return (
-    <div className="flex items-end justify-between gap-[12px] mb-[20px]">
+    <div className="flex items-end justify-between gap-[12px] mb-[14px]">
       <div>
-        <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-secondary mb-[6px]">{eyebrow}</p>
+        {eyebrow && <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-secondary mb-[6px]">{eyebrow}</p>}
         <h2 className="font-display text-[26px] md:text-[34px] text-foreground leading-tight">{title}</h2>
       </div>
       {link && (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Leaf, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Leaf } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ShimmerImage from '@/components/ShimmerImage';
 import { useTx } from '@/lib/i18n';
@@ -42,10 +42,6 @@ const Hero: React.FC = () => {
               {tx({ ar: 'تسوق الآن', he: 'לקנייה', en: 'Shop Now' })}
               <Arrow className="w-[18px] h-[18px] transition-transform group-hover:translate-x-[3px] rtl:group-hover:-translate-x-[3px]" />
             </Link>
-            <div className="flex items-center gap-[6px] text-[13px] text-primary-foreground/90">
-              <Star className="w-[16px] h-[16px] fill-gold text-gold" />
-              {tx({ ar: 'مفضّل أهل المنطقة منذ سنوات', he: 'האהוב על תושבי האזור', en: 'A local favourite for years' })}
-            </div>
           </div>
         </div>
       </div>
