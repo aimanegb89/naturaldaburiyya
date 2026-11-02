@@ -4,10 +4,10 @@
 - New page `/orders` with two parts:
   - **Track an order**: enter order number + phone (same lookup as the current tracking page; tracking links keep working).
   - **Order history**: signed-in customers see their past orders with status and a "Track" link; guests see a sign-in prompt.
-- Bottom bar becomes: Home, Shop, My Orders, Wishlist, Cart. Profile is removed from it.
+- Bottom bar becomes: Home, Shop, My Orders, Cart. Profile and Wishlist are removed from it.
 
 ## 2. Side menu
-- Add **Profile** (or Sign in when signed out), **My Orders** and **Settings** links.
+- Add **Profile** (or Sign in when signed out), **Wishlist**, **My Orders** and **Settings** links.
 - Language and theme switches move out of the menu into Settings.
 
 ## 3. Settings page
