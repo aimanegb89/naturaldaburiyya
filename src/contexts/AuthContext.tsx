@@ -59,13 +59,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const signInWithOtp = async (phone: string) => {
-    const { error } = await supabase.auth.signInWithOtp({ phone });
-    return { error };
+    const { error } = await supabase.functions.invoke('whatsapp-otp', { body: { action: 'send', phone } });
+    if (error) {
+      let code = '';
+      try { code = (await (error as { context?: Response }).context?.json())?.error ?? ''; } catch { /* ignore */ }
+      return { error: new Error(code || error.message) };
+    }
+    return { error: null };
   };
 
   const verifyOtp = async (phone: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
-    return { error };
+    const { data, error } = await supabase.functions.invoke('whatsapp-otp', { body: { action: 'verify', phone, code: token } });
+    if (error || !data?.token_hash) return { error: new Error('invalid') };
+    const res = await supabase.auth.verifyOtp({ token_hash: data.token_hash, type: 'email' });
+    return { error: res.error };
   };
 
   const resetPassword = async (email: string) => {

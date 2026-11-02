@@ -30,7 +30,7 @@ const Auth = () => {
   };
 
   const [isLogin, setIsLogin] = useState(true);
-  const [authMode, setAuthMode] = useState<AuthMode>('email');
+  const [authMode, setAuthMode] = useState<AuthMode>('phone');
   const [phoneStep, setPhoneStep] = useState<PhoneStep>('input');
 
   const [email, setEmail] = useState('');
@@ -96,10 +96,10 @@ const Auth = () => {
 
     setIsSubmitting(true);
     try {
-      const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
-      const { error } = await signInWithOtp(formattedPhone);
+      const { error } = await signInWithOtp(phoneNumber);
       if (error) {
-        toast.error(error.message);
+        const m: Record<string, string> = { wait: 'انتظر دقيقة قبل طلب رمز جديد', whatsapp_not_connected: 'تسجيل الدخول عبر واتساب غير مفعّل بعد', send_failed: 'تعذر إرسال الرمز عبر واتساب' };
+        toast.error(m[error.message] ?? error.message);
       } else {
         toast.success(t('otpSent'));
         setPhoneStep('otp');
@@ -118,8 +118,7 @@ const Auth = () => {
 
     setIsSubmitting(true);
     try {
-      const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
-      const { error } = await verifyOtp(formattedPhone, otpCode);
+      const { error } = await verifyOtp(phoneNumber, otpCode);
       if (error) {
         toast.error(t('invalidOtp'));
       } else {
