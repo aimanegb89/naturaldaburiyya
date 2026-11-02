@@ -30,3 +30,12 @@
 - Update `BottomNav.tsx`, `Header.tsx` sheet; new `src/pages/Orders.tsx`, `src/pages/Settings.tsx`, routes in `App.tsx`.
 - Shop: default sort `none` → grouped render by `SHOP_CATEGORIES`; `?from=home` param set by home category tiles shows back button.
 - Restore earlier `:root` tokens in `src/index.css`; rewrite `.dark` tokens in green tones; update memory/AGENTS.md theme line.
+
+## 7. Tracking items in the right language
+- Item names on the tracking page and order history show in the app's current language (looked up from the product list), falling back to the saved name.
+
+## 8. Short 3-digit order numbers
+- Every order gets a random, non-sequential 3-digit number (100-999), unique among active (not done) orders; existing orders get one too.
+- Shown to customers (confirmation, tracking, history) and on the manager's order cards; customers can track by this number + phone.
+- Old tracking links keep working.
+- Technical: new `order_number` column with a trigger picking a free random number; `track-order` accepts it; `place-order` returns it.
