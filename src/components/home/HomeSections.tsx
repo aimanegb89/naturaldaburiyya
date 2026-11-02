@@ -9,13 +9,13 @@ import ShimmerImage from '@/components/ShimmerImage';
 import { useTx, type Tri } from '@/lib/i18n';
 import { products } from '@/data/products';
 
-const SectionTitle = ({ eyebrow, title, link }: { eyebrow: string; title: string; link?: { to: string; label: string } }) => {
+const SectionTitle = ({ eyebrow, title, link }: { eyebrow?: string; title: string; link?: { to: string; label: string } }) => {
   const { dir } = useLanguage();
   const Arrow = dir === 'rtl' ? ArrowLeft : ArrowRight;
   return (
-    <div className="flex items-end justify-between gap-[12px] mb-[20px]">
+    <div className="flex items-end justify-between gap-[12px] mb-[14px]">
       <div>
-        <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-secondary mb-[6px]">{eyebrow}</p>
+        {eyebrow && <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-secondary mb-[6px]">{eyebrow}</p>}
         <h2 className="font-display text-[26px] md:text-[34px] text-foreground leading-tight">{title}</h2>
       </div>
       {link && (
@@ -42,7 +42,7 @@ export const CategoryGrid = () => {
   const tx = useTx();
   return (
     <section className={`${wrap} pt-[48px]`}>
-      <SectionTitle eyebrow={tx({ ar: 'الأقسام', he: 'קטגוריות', en: 'Categories' })} title={tx({ ar: 'اختر ما يناسبك', he: 'בחרו מה מתאים לכם', en: 'Shop by category' })} />
+      <SectionTitle title={tx({ ar: 'اختر ما يناسبك', he: 'בחרו מה מתאים לכם', en: 'Shop by category' })} />
       <div className="grid grid-cols-3 md:grid-cols-6 gap-[12px]">
         {CATS.map((c) => {
           const img = products.find((p) => p.category === c.key && p.image)?.image;
