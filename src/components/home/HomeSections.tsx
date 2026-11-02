@@ -47,7 +47,7 @@ export const CategoryGrid = () => {
         {CATS.map((c) => {
           const img = products.find((p) => p.category === c.key && p.image)?.image;
           return (
-            <Link key={c.key} to={`/shop?category=${c.key}`} className="group flex flex-col items-center gap-[8px]">
+            <Link key={c.key} to={`/shop?category=${c.key}&from=home`} className="group flex flex-col items-center gap-[8px]">
               <div className="relative w-full aspect-square rounded-[22px] overflow-hidden bg-surface-container shadow-soft">
                 {img && <ShimmerImage src={img} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" wrapperClassName="w-full h-full" />}
                 <span className="absolute bottom-[6px] end-[6px] w-[30px] h-[30px] rounded-full bg-surface-container-lowest/90 flex items-center justify-center text-[15px] shadow-soft">{c.icon}</span>

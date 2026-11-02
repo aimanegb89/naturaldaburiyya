@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, SearchX, X } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { SlidersHorizontal, SearchX, X, ArrowLeft, ArrowRight } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import ProductCard from '@/components/ProductCard';
 import ProductDetailModal from '@/components/ProductDetailModal';
@@ -20,10 +20,11 @@ export const SHOP_CATEGORIES: { key: string; label: Tri }[] = [
   { key: 'proteins', label: { ar: 'بروتينات', he: 'חלבונים', en: 'Proteins' } },
 ];
 
-type Sort = 'best' | 'new' | 'price-asc' | 'price-desc';
+type Sort = 'default' | 'best' | 'new' | 'price-asc' | 'price-desc';
 
 export function filterAndSort(list: CatalogProduct[], cats: string[], goals: string[], sort: Sort) {
   let out = list.filter((p) => (cats.length ? cats.includes(p.category) : true) && (goals.length ? p.meta.goals.some((g) => goals.includes(g)) : true));
+  if (sort === 'default') return out;
   out = [...out].sort((a, b) => {
     if (sort === 'price-asc') return a.priceSmall - b.priceSmall;
     if (sort === 'price-desc') return b.priceSmall - a.priceSmall;
@@ -54,7 +55,11 @@ const Shop: React.FC = () => {
 
   const cats = params.getAll('category');
   const goals = params.getAll('goal');
-  const sort = (params.get('sort') as Sort) || 'best';
+  const sort = (params.get('sort') as Sort) || 'default';
+  const fromHome = params.get('from') === 'home';
+  const navigate = useNavigate();
+  const { dir } = useLanguage();
+  const Back = dir === 'rtl' ? ArrowRight : ArrowLeft;
   const q = params.get('q') || '';
 
   const toggle = (key: 'category' | 'goal', val: string) => {
@@ -65,7 +70,7 @@ const Shop: React.FC = () => {
     setParams(next, { replace: true });
   };
   const setSort = (s: Sort) => { const n = new URLSearchParams(params); n.set('sort', s); setParams(n, { replace: true }); };
-  const clear = () => setParams(new URLSearchParams(sort !== 'best' ? { sort } : {}), { replace: true });
+  const clear = () => setParams(new URLSearchParams(sort !== 'default' ? { sort } : {}), { replace: true });
 
   const list = useMemo(() => filterAndSort(q ? searchCatalog(q, language) : catalog, cats, goals, sort), [q, language, cats.join(), goals.join(), sort]);
   const activeCount = cats.length + goals.length + (q ? 1 : 0);
@@ -91,6 +96,7 @@ const Shop: React.FC = () => {
   );
 
   const sortOptions: { k: Sort; l: Tri }[] = [
+    { k: 'default', l: { ar: 'حسب القسم', he: 'לפי קטגוריה', en: 'By category' } },
     { k: 'best', l: { ar: 'الأكثر مبيعًا', he: 'הנמכרים ביותר', en: 'Best selling' } },
     { k: 'new', l: { ar: 'الأحدث', he: 'החדשים', en: 'Newest' } },
     { k: 'price-asc', l: { ar: 'السعر: من الأقل', he: 'מחיר: מהנמוך', en: 'Price: low to high' } },
@@ -101,6 +107,11 @@ const Shop: React.FC = () => {
     <AppShell>
       <div className="max-w-[1200px] mx-auto px-[16px] md:px-[24px] py-[24px] md:py-[40px]">
         <div className="mb-[20px]">
+          {fromHome && (
+            <button onClick={() => navigate('/')} className="mb-[10px] h-[36px] px-[12px] -ms-[8px] rounded-full flex items-center gap-[6px] text-[14px] font-semibold text-primary hover:bg-surface-container">
+              <Back className="w-[16px] h-[16px]" /> {tx({ ar: 'الرئيسية', he: 'דף הבית', en: 'Home' })}
+            </button>
+          )}
           <h1 className="font-display text-[30px] md:text-[40px] leading-tight">{tx({ ar: 'المتجر', he: 'החנות', en: 'Shop' })}</h1>
           <p className="text-[14px] text-muted-foreground">{list.length} {tx({ ar: 'منتج', he: 'מוצרים', en: 'products' })}</p>
         </div>
@@ -129,7 +140,22 @@ const Shop: React.FC = () => {
             <div className="sticky top-[88px] bg-surface-container-low rounded-[20px] border border-outline-variant/50 p-[20px]">{Filters}</div>
           </aside>
           <div className="flex-1 min-w-0">
-            {list.length ? (
+            {list.length && sort === 'default' ? (
+              <div className="space-y-[28px]">
+                {SHOP_CATEGORIES.map((c) => {
+                  const group = list.filter((p) => p.category === c.key);
+                  if (!group.length) return null;
+                  return (
+                    <section key={c.key}>
+                      <h2 className="font-display text-[20px] md:text-[24px] font-bold mb-[12px] text-start">{pick(c.label, language)}</h2>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-[12px] md:gap-[20px]">
+                        {group.map((p) => <ProductCard key={p.id} product={p} onQuickView={setQuick} />)}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            ) : list.length ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-[12px] md:gap-[20px]">
                 {list.map((p) => <ProductCard key={p.id} product={p} onQuickView={setQuick} />)}
               </div>
