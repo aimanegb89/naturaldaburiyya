@@ -32,7 +32,7 @@ const BottomNav: React.FC = () => {
                 <div className={`absolute inset-0 rounded-full transition-all duration-300 ${item.active ? 'bg-primary/15 scale-100' : 'scale-75 opacity-0'}`} />
                 <Icon className={`w-[21px] h-[21px] relative z-10 ${item.active ? 'text-primary' : 'text-foreground/60'}`} />
                 {!!item.badge && (
-                  <span className="absolute top-0 end-[8px] min-w-[16px] h-[16px] bg-secondary text-secondary-foreground rounded-full text-[9px] flex items-center justify-center font-bold px-[3px] z-20">
+                  <span key={item.badge} className="absolute top-0 end-[4px] min-w-[18px] h-[18px] bg-secondary text-secondary-foreground rounded-full text-[12px] flex items-center justify-center font-bold px-[4px] z-20 animate-scale-in">
                     {item.badge > 9 ? '9+' : item.badge}
                   </span>
                 )}

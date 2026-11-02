@@ -4,7 +4,6 @@ import { useCartDrawer } from '@/contexts/CartDrawerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getProductName } from '@/lib/product-utils';
 import { hasSizes, isAvailable, unitPrice, type CatalogProduct } from '@/lib/catalog';
-import { bumpCartBadge } from '@/lib/cartBadge';
 import { useTx } from '@/lib/i18n';
 
 export function useAddToCart() {
@@ -23,7 +22,6 @@ export function useAddToCart() {
     const existing = items.find((i) => i.id === p.id && i.size === s)?.quantity ?? 0;
     addItem({ id: p.id, nameAr: p.nameAr, nameHe: p.nameHe, nameEn: p.nameEn, size: s, price, image: p.img });
     if (qty > 1) updateQuantity(p.id, s, existing + qty);
-    bumpCartBadge();
     toast.success(tx({ ar: 'تمت الإضافة إلى السلة', he: 'נוסף לעגלה', en: 'Added to cart' }), {
       description: getProductName(p, language),
       action: { label: tx({ ar: 'عرض السلة', he: 'לעגלה', en: 'View cart' }), onClick: () => setOpen(true) },
