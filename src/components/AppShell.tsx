@@ -1,0 +1,32 @@
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import Header from './Header';
+import Footer from './Footer';
+import BottomNav from './BottomNav';
+import ScrollToTop from './ScrollToTop';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { dir } = useLanguage();
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' }), 80);
+    } else {
+      window.scrollTo({ top: 0 });
+    }
+  }, [pathname, hash]);
+
+  return (
+    <div className="min-h-screen bg-background pb-[72px] md:pb-0" dir={dir}>
+      <Header />
+      <main key={pathname} className="page-enter">{children}</main>
+      <Footer />
+      <ScrollToTop />
+      <BottomNav />
+    </div>
+  );
+};
+
+export default AppShell;
