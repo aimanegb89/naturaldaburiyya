@@ -25,7 +25,9 @@ const ReviewsSection: React.FC<{ productId: string }> = ({ productId }) => {
     if (!user) return;
     if (rating < 1) { setError(tx({ ar: 'اختر عدد النجوم', he: 'בחרו דירוג', en: 'Please choose a rating' })); return; }
     setError(''); setSaving(true);
-    const name = (user.user_metadata?.full_name as string | undefined) || user.email?.split('@')[0] || null;
+    // Never derive a public name from email/phone.
+    const { data: prof } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle();
+    const name = prof?.full_name?.trim() || tx({ ar: 'زبون', he: 'לקוח', en: 'Customer' });
     const { error: err } = await supabase.from('product_reviews').upsert(
       { product_id: productId, user_id: user.id, rating, comment: comment.trim().slice(0, 1000) || null, reviewer_name: name },
       { onConflict: 'product_id,user_id' }

@@ -18,17 +18,9 @@ export function useRatingSummary() {
     queryKey: ['rating-summary'],
     staleTime: 60_000,
     queryFn: async (): Promise<RatingSummary> => {
-      const { data, error } = await supabase.from('product_reviews').select('product_id, rating');
+      const { data, error } = await supabase.from('product_rating_summary').select('product_id, avg, count');
       if (error) throw error;
-      const acc: Record<string, { sum: number; count: number }> = {};
-      for (const r of data ?? []) {
-        acc[r.product_id] ??= { sum: 0, count: 0 };
-        acc[r.product_id].sum += r.rating;
-        acc[r.product_id].count += 1;
-      }
-      return Object.fromEntries(
-        Object.entries(acc).map(([k, v]) => [k, { avg: v.sum / v.count, count: v.count }])
-      );
+      return Object.fromEntries((data ?? []).map((r) => [r.product_id as string, { avg: Number(r.avg), count: Number(r.count) }]));
     },
   });
 }
