@@ -21,9 +21,11 @@ Deno.serve(async (req) => {
     const sel = 'tracking_code, order_number, status, total_amount, created_at, updated_at, customer_phone, order_items(product_id, product_name, size, quantity, price)';
     let o: any = null;
     if (/^\d{3}$/.test(code)) {
-      if (!parsed.data.phone) return json({ error: 'not_found' }, 404);
       const { data: list } = await admin.from('orders').select(sel).eq('order_number', Number(code)).order('created_at', { ascending: false }).limit(20);
-      o = (list ?? []).find((x: any) => x.customer_phone && digits(x.customer_phone) === digits(parsed.data.phone!)) ?? null;
+      const rows = list ?? [];
+      o = parsed.data.phone
+        ? rows.find((x: any) => x.customer_phone && digits(x.customer_phone) === digits(parsed.data.phone!)) ?? null
+        : rows.find((x: any) => x.status !== 'done' && x.status !== 'completed') ?? rows[0] ?? null;
     } else {
       const { data } = await admin.from('orders').select(sel).eq('tracking_code', code).maybeSingle();
       o = data;
