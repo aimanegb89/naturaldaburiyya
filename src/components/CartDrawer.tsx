@@ -124,7 +124,7 @@ const CartDrawer: React.FC = () => {
                   {items.map((item) => (
                     <div
                       key={`${item.id}-${item.size}`}
-                      className="flex gap-3 py-3 border-b border-outline-variant/30 last:border-0"
+                      className="flex gap-[12px] py-[14px] border-b border-outline-variant/50 last:border-0"
                     >
                       {item.image && (
                         <img
@@ -135,10 +135,10 @@ const CartDrawer: React.FC = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <h4 className="text-[14px] font-bold text-foreground truncate">{getName(item)}</h4>
-                        <p className="text-[12px] text-muted-foreground">{sizeLabel(item.size)}</p>
-                        <p className="text-[14px] font-bold text-foreground mt-[4px]">{t('currency')}{item.price * item.quantity}</p>
+                        <span className="inline-block mt-[4px] rounded-full bg-surface-container-high px-[8px] py-[2px] text-[11px] font-semibold text-muted-foreground">{sizeLabel(item.size)}</span>
+                        <p className="text-[15px] font-bold text-primary mt-[6px]">{t("currency")}{item.price * item.quantity}</p>
                       </div>
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <div className="flex flex-col items-end justify-between gap-[6px] flex-shrink-0">
                         <button
                           onClick={() => setDeleteItemDialog({ id: item.id, size: item.size })}
                           className="w-[24px] h-[24px] flex items-center justify-center rounded-full text-destructive hover:bg-destructive/10 transition-colors"
@@ -165,7 +165,7 @@ const CartDrawer: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="flex-shrink-0 space-y-3 pt-3 border-t border-outline-variant mt-2">
+                <div className="flex-shrink-0 space-y-[10px] pt-[14px] border-t border-outline-variant mt-[8px]">
                   <div className="flex justify-between items-center text-[13px] text-muted-foreground">
                     <span>{tx({ ar: 'التوصيل', he: 'משלוח', en: 'Delivery' })}</span>
                     <span>{remaining > 0 ? tx({ ar: 'يُحدَّد عند التأكيد', he: 'ייקבע באישור', en: 'Confirmed on WhatsApp' }) : tx({ ar: 'مجاني', he: 'חינם', en: 'Free' })}</span>
@@ -175,7 +175,7 @@ const CartDrawer: React.FC = () => {
                     <span>{t('currency')}{totalPrice}</span>
                   </div>
                   <Button
-                    className="w-full h-[52px] rounded-full text-[16px] font-bold bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                    className="w-full h-[52px] rounded-full text-[16px] font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-elevation-2"
                     onClick={() => {
                       onClose();
                       navigate('/checkout');
