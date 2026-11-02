@@ -260,7 +260,7 @@ const Checkout: React.FC = () => {
           </div>
         </section>
 
-        <div className="md:col-start-1 md:row-start-1 space-y-[20px]">
+        <div className="md:col-start-1 md:row-start-1 flex flex-col gap-[20px]">
         {/* Delivery address */}
         <section className="rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px]">
           <h2 className="text-[16px] font-bold text-foreground mb-[12px] flex items-center gap-[8px]">
@@ -306,7 +306,7 @@ const Checkout: React.FC = () => {
           {!selectedAddress && (
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('street')}</label>
+                <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('street')}</label>
                 <Input
                   value={form.street}
                   onChange={e => setForm(p => ({ ...p, street: e.target.value }))}
@@ -317,7 +317,7 @@ const Checkout: React.FC = () => {
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('city')}</label>
+                  <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('city')}</label>
                   <Input
                     value={form.city}
                     onChange={e => setForm(p => ({ ...p, city: e.target.value }))}
@@ -327,7 +327,7 @@ const Checkout: React.FC = () => {
                   {errors.city && <p className="text-[12px] text-destructive mt-[4px]">{errors.city}</p>}
                 </div>
                 <div className="w-[110px]">
-                  <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('postalCode')}</label>
+                  <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('postalCode')}</label>
                   <Input
                     value={form.postalCode}
                     onChange={e => setForm(p => ({ ...p, postalCode: e.target.value }))}
@@ -343,7 +343,7 @@ const Checkout: React.FC = () => {
         <section className="space-y-3 rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px] -order-1">
           <h2 className="text-[16px] font-bold text-foreground flex items-center gap-[8px]"><span className="w-[26px] h-[26px] rounded-full bg-primary text-primary-foreground text-[13px] flex items-center justify-center">1</span>{t('contactDetails')}</h2>
           <div>
-            <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('name')}</label>
+            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('name')}</label>
             <Input
               value={form.name}
               onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
@@ -353,7 +353,7 @@ const Checkout: React.FC = () => {
             {errors.name && <p className="text-[12px] text-destructive mt-[4px]">{errors.name}</p>}
           </div>
           <div>
-            <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('phoneNumber')}</label>
+            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('phoneNumber')}</label>
             <Input
               type="tel"
               dir="ltr"
@@ -365,7 +365,7 @@ const Checkout: React.FC = () => {
             {errors.phone && <p className="text-[12px] text-destructive mt-[4px]">{errors.phone}</p>}
           </div>
           <div>
-            <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('notes')}</label>
+            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('notes')}</label>
             <Textarea
               value={form.notes}
               onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
