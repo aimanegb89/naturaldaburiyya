@@ -8,6 +8,7 @@ import { useCartDrawer } from '@/contexts/CartDrawerContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import LanguageSwitcher from './LanguageSwitcher';
+import ThemeToggle from './ThemeToggle';
 import SearchCommand from './SearchCommand';
 import { useTx } from '@/lib/i18n';
 import logo from '@/assets/logo.png';
@@ -53,7 +54,7 @@ const Header: React.FC = () => {
 
         <nav className="hidden md:flex items-center gap-[4px] ms-[16px]">
           {links.map((l) => (
-            <NavLink key={l.to} to={l.to} className="px-[12px] h-[36px] flex items-center rounded-full text-[14px] font-semibold text-foreground/80 hover:text-primary hover:bg-surface-container transition-colors">
+            <NavLink key={l.to} to={l.to} className="px-[12px] h-[36px] flex items-center whitespace-nowrap rounded-full text-[14px] font-semibold text-foreground/80 hover:text-primary hover:bg-surface-container transition-colors">
               {l.label}
             </NavLink>
           ))}
@@ -65,6 +66,7 @@ const Header: React.FC = () => {
           <button className={`${iconBtn} lg:hidden`} onClick={() => setSearchOpen((v) => !v)} aria-label="search">
             {searchOpen ? <X className="w-[20px] h-[20px]" /> : <Search className="w-[20px] h-[20px]" />}
           </button>
+          <div className="hidden md:block me-[4px]"><ThemeToggle /></div>
           <div className="hidden sm:block me-[4px]"><LanguageSwitcher /></div>
           <button className={iconBtn} onClick={() => navigate('/wishlist')} aria-label="wishlist">
             <Heart className="w-[20px] h-[20px]" />
@@ -100,6 +102,7 @@ const Header: React.FC = () => {
             ))}
           </nav>
           <div className="mt-[24px]"><LanguageSwitcher /></div>
+          <div className="mt-[12px]"><ThemeToggle withLabels /></div>
         </SheetContent>
       </Sheet>
     </header>

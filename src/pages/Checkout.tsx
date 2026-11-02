@@ -121,14 +121,14 @@ const Checkout: React.FC = () => {
         },
       });
       if (placeErr || !placed?.id) throw new Error(placed?.error ?? placeErr?.message ?? 'failed');
-      orderId = placed.id;
+      orderId = placed.tracking_code ?? placed.id;
 
       if (channel === 'whatsapp') {
       const orderLines = items
         .map(i => `• ${getName(i)} (${sizeLabel(i.size)}) x${i.quantity} - ₪${i.price * i.quantity}`)
         .join('\n');
 
-      const message = `🌿 *Natural - ${t('orderDetails')}*\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${t('deliveryAddress')}:* ${street}, ${city}${postal ? ` (${postal})` : ''}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}\n*${tx({ ar: 'الدفع', he: 'תשלום', en: 'Payment' })}:* ${payment === 'cash' ? tx({ ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }) : tx({ ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' })}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}`;
+      const message = `🌿 *Natural - ${t('orderDetails')}* #${orderId}\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${t('deliveryAddress')}:* ${street}, ${city}${postal ? ` (${postal})` : ''}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}\n*${tx({ ar: 'الدفع', he: 'תשלום', en: 'Payment' })}:* ${payment === 'cash' ? tx({ ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }) : tx({ ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' })}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}\n\n${tx({ ar: 'تتبّع الطلب', he: 'מעקב הזמנה', en: 'Track order' })}: ${window.location.origin}/track/${orderId}`;
 
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
       }
@@ -153,12 +153,17 @@ const Checkout: React.FC = () => {
         <p className="text-xs text-muted-foreground max-w-[280px] mb-3">{t('orderConfirmedDesc')}</p>
         {confirmedId && (
           <p className="text-[10px] text-muted-foreground mb-1">
-            {t('orderNumber')}: <span className="font-mono">{confirmedId.slice(0, 8)}</span>
+            {t('orderNumber')}: <span className="font-mono" dir="ltr">#{confirmedId.slice(0, 8)}</span>
           </p>
         )}
         <p className="text-sm font-semibold text-primary mb-6">
           {t('total')}: {t('currency')}{confirmedTotal}
         </p>
+        {confirmedId && (
+          <Button variant="outline" className="w-full max-w-[280px] mb-[10px]" onClick={() => navigate(`/track/${confirmedId}`)}>
+            {tx({ ar: 'تتبّع الطلب', he: 'מעקב הזמנה', en: 'Track order' })}
+          </Button>
+        )}
         <Button className="w-full max-w-[280px]" onClick={() => navigate('/')}>
           {t('continueShopping')}
         </Button>

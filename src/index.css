@@ -6,56 +6,41 @@
 
 @layer base {
   :root {
-    /* Material Design 3 Color System */
-    /* Primary - Teal/Green */
-    --md-primary: 150 24% 30%;
-    --md-on-primary: 0 0% 100%;
-    --md-primary-container: 95 22% 88%;
-    --md-on-primary-container: 150 30% 14%;
-    
-    /* Secondary - Warm Earth */
-    --md-secondary: 18 52% 46%;
-    --md-on-secondary: 0 0% 100%;
-    --md-secondary-container: 30 60% 91%;
-    --md-on-secondary-container: 30 55% 15%;
-    
-    /* Tertiary - Soft Purple */
-    --md-tertiary: 38 62% 48%;
-    --md-on-tertiary: 0 0% 100%;
-    --md-tertiary-container: 42 70% 90%;
-    --md-on-tertiary-container: 35 60% 16%;
-    
-    /* Surface colors */
-    --md-surface: 42 38% 96%;
-    --md-surface-dim: 40 22% 90%;
-    --md-surface-bright: 45 50% 99%;
-    --md-surface-container-lowest: 45 50% 99%;
-    --md-surface-container-low: 42 40% 98%;
-    --md-surface-container: 40 30% 93%;
-    --md-surface-container-high: 40 22% 89%;
-    --md-surface-container-highest: 40 18% 85%;
-    --md-on-surface: 30 8% 15%;
-    --md-on-surface-variant: 30 6% 38%;
-    
-    /* Outline */
-    --md-outline: 35 10% 58%;
-    --md-outline-variant: 38 20% 84%;
-    
-    /* Error */
-    --md-error: 0 75% 45%;
+    --md-primary: 38 48% 40%;
+    --md-on-primary: 40 40% 98%;
+    --md-primary-container: 40 55% 90%;
+    --md-on-primary-container: 35 50% 18%;
+    --md-secondary: 225 12% 18%;
+    --md-on-secondary: 40 30% 96%;
+    --md-secondary-container: 225 10% 92%;
+    --md-on-secondary-container: 225 13% 14%;
+    --md-tertiary: 42 55% 55%;
+    --md-on-tertiary: 225 13% 8%;
+    --md-tertiary-container: 42 60% 90%;
+    --md-on-tertiary-container: 35 55% 18%;
+    --md-surface: 40 33% 97%;
+    --md-surface-dim: 40 18% 90%;
+    --md-surface-bright: 0 0% 100%;
+    --md-surface-container-lowest: 0 0% 100%;
+    --md-surface-container-low: 0 0% 100%;
+    --md-surface-container: 40 22% 94%;
+    --md-surface-container-high: 40 16% 90%;
+    --md-surface-container-highest: 40 12% 86%;
+    --md-on-surface: 225 12% 12%;
+    --md-on-surface-variant: 225 6% 40%;
+    --md-outline: 225 6% 60%;
+    --md-outline-variant: 40 15% 85%;
+    --md-error: 0 70% 45%;
     --md-on-error: 0 0% 100%;
     --md-error-container: 0 80% 92%;
     --md-on-error-container: 0 85% 20%;
-    
-    /* Inverse */
-    --md-inverse-surface: 150 20% 18%;
-    --md-inverse-on-surface: 150 15% 95%;
-    --md-inverse-primary: 162 50% 70%;
-    
-    /* Shadows */
-    --md-shadow: 30 20% 20%;
+    --md-inverse-surface: 225 13% 10%;
+    --md-inverse-on-surface: 40 30% 94%;
+    --md-inverse-primary: 40 50% 66%;
+    --md-shadow: 225 20% 10%;
 
     /* Map to existing tokens for compatibility */
+    --on-hero: 40 30% 97%;
     --background: var(--md-surface);
     --foreground: var(--md-on-surface);
     --card: var(--md-surface-container-low);
@@ -99,9 +84,9 @@
     --gold: 38 62% 48%;
     --terracotta: 18 52% 46%;
     --sage: 95 18% 62%;
-    --gradient-hero: linear-gradient(135deg, hsl(150 24% 22% / 0.85), hsl(150 24% 30% / 0.35));
+    --gradient-hero: linear-gradient(135deg, hsl(225 13% 8% / 0.82), hsl(38 40% 30% / 0.3));
     --shadow-soft: 0 10px 30px -12px hsl(30 20% 20% / 0.18);
-    --shadow-lift: 0 18px 40px -16px hsl(150 24% 20% / 0.28);
+    --shadow-lift: 0 18px 40px -16px hsl(38 40% 25% / 0.28);
 
     --sidebar-background: var(--md-surface-container-low);
     --sidebar-foreground: var(--md-on-surface);
@@ -114,46 +99,41 @@
   }
 
   .dark {
-    /* Material Design 3 Dark Theme */
-    --md-primary: 162 50% 70%;
-    --md-on-primary: 162 70% 15%;
-    --md-primary-container: 162 60% 25%;
-    --md-on-primary-container: 162 50% 90%;
-    
-    --md-secondary: 35 50% 70%;
-    --md-on-secondary: 30 50% 15%;
-    --md-secondary-container: 30 40% 25%;
-    --md-on-secondary-container: 35 55% 90%;
-    
-    --md-tertiary: 280 45% 75%;
-    --md-on-tertiary: 280 50% 15%;
-    --md-tertiary-container: 280 40% 25%;
-    --md-on-tertiary-container: 280 45% 90%;
-    
-    --md-surface: 150 15% 10%;
-    --md-surface-dim: 150 12% 8%;
-    --md-surface-bright: 150 10% 20%;
-    --md-surface-container-lowest: 150 15% 6%;
-    --md-surface-container-low: 150 12% 12%;
-    --md-surface-container: 150 10% 14%;
-    --md-surface-container-high: 150 8% 18%;
-    --md-surface-container-highest: 150 6% 22%;
-    --md-on-surface: 150 10% 92%;
-    --md-on-surface-variant: 150 8% 70%;
-    
-    --md-outline: 150 8% 50%;
-    --md-outline-variant: 150 10% 30%;
-    
+    --md-primary: 40 50% 66%;
+    --md-on-primary: 225 13% 7%;
+    --md-primary-container: 38 30% 22%;
+    --md-on-primary-container: 40 55% 85%;
+    --md-secondary: 40 30% 88%;
+    --md-on-secondary: 225 13% 8%;
+    --md-secondary-container: 225 12% 18%;
+    --md-on-secondary-container: 40 30% 90%;
+    --md-tertiary: 42 60% 58%;
+    --md-on-tertiary: 225 13% 7%;
+    --md-tertiary-container: 38 35% 20%;
+    --md-on-tertiary-container: 42 60% 85%;
+    --md-surface: 225 13% 6%;
+    --md-surface-dim: 225 13% 5%;
+    --md-surface-bright: 225 12% 16%;
+    --md-surface-container-lowest: 225 13% 4%;
+    --md-surface-container-low: 225 13% 12%;
+    --md-surface-container: 225 12% 14%;
+    --md-surface-container-high: 225 12% 17%;
+    --md-surface-container-highest: 225 11% 21%;
+    --md-on-surface: 40 30% 92%;
+    --md-on-surface-variant: 225 6% 60%;
+    --md-outline: 225 7% 42%;
+    --md-outline-variant: 225 13% 19%;
     --md-error: 0 70% 65%;
-    --md-on-error: 0 80% 15%;
-    --md-error-container: 0 60% 25%;
+    --md-on-error: 0 80% 12%;
+    --md-error-container: 0 50% 22%;
     --md-on-error-container: 0 75% 90%;
-    
-    --md-inverse-surface: 150 15% 92%;
-    --md-inverse-on-surface: 150 12% 15%;
-    --md-inverse-primary: 162 63% 35%;
-    
+    --md-inverse-surface: 40 30% 92%;
+    --md-inverse-on-surface: 225 13% 10%;
+    --md-inverse-primary: 38 48% 40%;
     --md-shadow: 0 0% 0%;
+    --gradient-hero: linear-gradient(135deg, hsl(225 13% 4% / 0.88), hsl(225 13% 6% / 0.4));
+    --shadow-soft: 0 10px 30px -12px hsl(0 0% 0% / 0.6);
+    --shadow-lift: 0 18px 40px -16px hsl(40 50% 30% / 0.35);
   }
 }
 

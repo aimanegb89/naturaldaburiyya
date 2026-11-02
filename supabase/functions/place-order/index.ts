@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
         const { data: a } = await admin.from('addresses').select('id').eq('id', b.address_id).eq('user_id', userId).maybeSingle();
         addressId = a?.id ?? null;
       } else if (b.save_address) {
-        const { data: a } = await admin.from('addresses').insert({ user_id: userId, label: 'Delivery', street: b.street, city: b.city, postal_code: b.postal || null, phone: b.phone }).select('id').single();
+        const { data: a } = await admin.from('addresses').insert({ user_id: userId, label: 'Delivery', street: b.street, city: b.city, postal_code: b.postal || null, phone: b.phone }).select('id, tracking_code').single();
         addressId = a?.id ?? null;
       }
     }
@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       pushed = await pushToAdmins(admin, `طلب جديد #${order.id.slice(0, 6)} – ₪${total}`, `${b.name} · ${lines.map((l) => `${l.name_ar}×${l.quantity}`).join('، ')}`);
     } catch (e) { console.error('push failed', e); }
 
-    return json({ id: order.id, total, pushed });
+    return json({ id: order.id, tracking_code: order.tracking_code, total, pushed });
   } catch (e) {
     console.error(e);
     return json({ error: String(e) }, 500);

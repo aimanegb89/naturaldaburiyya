@@ -19,7 +19,7 @@ const Hero: React.FC = () => {
         <div className="absolute inset-0 bg-hero-overlay" />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent md:hidden" />
 
-        <div className="relative z-10 w-full p-[20px] md:p-[48px] max-w-[620px] text-primary-foreground">
+        <div className="relative z-10 w-full p-[20px] md:p-[48px] max-w-[620px] text-[hsl(var(--on-hero))]">
           <img src={logo} alt="Natural" className="hidden md:block md:w-[72px] md:h-[72px] rounded-full mb-[16px] shadow-lift animate-fade-in" />
           <span className="inline-flex items-center gap-[6px] px-[12px] h-[30px] rounded-full bg-primary-foreground/15 backdrop-blur text-[12px] font-semibold mb-[16px] animate-fade-in">
             <Leaf className="w-[14px] h-[14px]" /> {tx({ ar: '100% طبيعي • بدون مواد حافظة', he: '100% טבעי • ללא חומרים משמרים', en: '100% natural • No preservatives' })}
@@ -27,7 +27,7 @@ const Hero: React.FC = () => {
           <h1 className="font-display text-[28px] md:text-[48px] leading-[1.15] mb-[10px] animate-fade-in" style={{ animationDelay: '0.1s' }}>
             {tx({ ar: 'صحتك تبدأ من الطبيعة', he: 'הבריאות שלך מתחילה בטבע', en: 'Wellness, pressed fresh from nature' })}
           </h1>
-          <p className="text-[15px] md:text-[17px] leading-relaxed text-primary-foreground/85 mb-[18px] max-w-[480px] line-clamp-2 md:line-clamp-none animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <p className="text-[15px] md:text-[17px] leading-relaxed text-[hsl(var(--on-hero))]/85 mb-[18px] max-w-[480px] line-clamp-2 md:line-clamp-none animate-fade-in" style={{ animationDelay: '0.2s' }}>
             {tx({
               ar: 'عصائر معصورة يوميًا، سموذي ومكملات طبيعية — تُحضَّر بحب في دبورية وتصلك طازجة.',
               he: 'מיצים סחוטים יומית, שייקים ותוספים טבעיים — מוכנים באהבה בדבוריה ומגיעים טריים.',

@@ -22,10 +22,13 @@ import Profile from "./pages/Profile";
 import Checkout from "./pages/Checkout";
 import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
+import TrackOrder from "./pages/TrackOrder";
+import { ThemeProvider } from "next-themes";
 
 const queryClient = new QueryClient();
 
 const App = () => (
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="natural-theme">
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <CatalogProvider>
@@ -47,6 +50,8 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/track" element={<TrackOrder />} />
+                    <Route path="/track/:code" element={<TrackOrder />} />
                     <Route path="/admin" element={<Admin />}>
                       <Route index element={<OrdersBoard />} />
                       <Route path="settings" element={<SettingsPage />} />
@@ -63,6 +68,7 @@ const App = () => (
       </CatalogProvider>
     </TooltipProvider>
   </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
