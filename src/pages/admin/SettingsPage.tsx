@@ -7,6 +7,7 @@ import { enableAdminPush } from '@/lib/push';
 import { Button } from '@/components/ui/button';
 import QrDialog from '@/components/admin/QrDialog';
 import ProductsManager from './ProductsManager';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const pushMsg: Record<string, string> = {
   registered: 'تم تفعيل الإشعارات على هذا الجهاز',
