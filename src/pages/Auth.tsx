@@ -8,6 +8,25 @@ import { Label } from '@/components/ui/label';
 import { Leaf, Mail, Lock, User, ArrowLeft, Phone, Hash } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { useTx } from '@/lib/i18n';
+
+/** Same rule as the server: 0-prefix → 972, 00 dropped, 11–15 digits. */
+export function normalizePhone(p: string) {
+  let d = p.replace(/\D/g, '');
+  if (d.startsWith('00')) d = d.slice(2);
+  if (d.startsWith('0')) d = '972' + d.slice(1);
+  return d;
+}
+
+/** Only same-origin paths are allowed as post-login destinations. */
+export function safeNext(raw: string | null, origin: string) {
+  if (!raw) return '/';
+  try {
+    const u = new URL(raw, origin);
+    if (u.origin !== origin) return '/';
+    return u.pathname + u.search + u.hash;
+  } catch { return '/'; }
+}
 
 const emailSchema = z.string().email();
 const passwordSchema = z.string().min(6);
@@ -22,8 +41,18 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
 
   // Preserve the intended post-login destination (e.g. the OAuth consent URL).
-  const rawNext = searchParams.get('next') ?? '/';
-  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/';
+  const next = safeNext(searchParams.get('next'), window.location.origin);
+  const tx = useTx();
+  const otpMsg = (code: string) => ({
+    invalid_phone: tx({ ar: 'رقم الهاتف غير صالح', he: 'מספר טלפון לא תקין', en: 'Invalid phone number' }),
+    invalid_input: tx({ ar: 'تحقق من البيانات', he: 'בדקו את הפרטים', en: 'Please check your input' }),
+    wait: tx({ ar: 'انتظر دقيقة قبل طلب رمز جديد', he: 'המתינו דקה לפני בקשת קוד חדש', en: 'Wait a minute before requesting a new code' }),
+    expired: tx({ ar: 'انتهت صلاحية الرمز، اطلب رمزًا جديدًا', he: 'הקוד פג תוקף, בקשו קוד חדש', en: 'The code expired, request a new one' }),
+    too_many: tx({ ar: 'محاولات كثيرة، حاول لاحقًا', he: 'יותר מדי ניסיונות, נסו מאוחר יותר', en: 'Too many attempts, try again later' }),
+    wrong_code: tx({ ar: 'الرمز غير صحيح', he: 'הקוד שגוי', en: 'Wrong code' }),
+    send_failed: tx({ ar: 'تعذر إرسال الرمز عبر واتساب', he: 'שליחת הקוד בוואטסאפ נכשלה', en: 'Could not send the code on WhatsApp' }),
+    whatsapp_not_connected: tx({ ar: 'تسجيل الدخول عبر واتساب غير مفعّل بعد', he: 'כניסה בוואטסאפ עדיין לא פעילה', en: 'WhatsApp sign-in is not set up yet' }),
+  } as Record<string, string>)[code] ?? tx({ ar: 'حدث خطأ، حاول مجددًا', he: 'אירעה שגיאה, נסו שוב', en: 'Something went wrong, try again' });
   const goNext = () => {
     // Use a hard navigation so absolute paths like /.lovable/oauth/consent hit the router fresh.
     window.location.href = next;
@@ -70,7 +99,6 @@ const Auth = () => {
           toast.error(error.message.includes('Invalid login credentials') ? t('invalidCredentials') : error.message);
         } else {
           toast.success(t('loginSuccess'));
-          navigate('/');
         }
       } else {
         const { error } = await signUp(email, password, fullName);
@@ -78,7 +106,6 @@ const Auth = () => {
           toast.error(error.message.includes('already registered') ? t('emailAlreadyUsed') : error.message);
         } else {
           toast.success(t('signupSuccess'));
-          navigate('/');
         }
       }
     } finally {
@@ -88,8 +115,8 @@ const Auth = () => {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const digits = phoneNumber.replace(/\D/g, '');
-    if (digits.length < 9 || digits.length > 15) {
+    const digits = normalizePhone(phoneNumber);
+    if (digits.length < 11 || digits.length > 15) {
       toast.error(t('invalidPhone'));
       return;
     }
@@ -98,8 +125,7 @@ const Auth = () => {
     try {
       const { error } = await signInWithOtp(phoneNumber);
       if (error) {
-        const m: Record<string, string> = { wait: 'انتظر دقيقة قبل طلب رمز جديد', whatsapp_not_connected: 'تسجيل الدخول عبر واتساب غير مفعّل بعد', send_failed: 'تعذر إرسال الرمز عبر واتساب' };
-        toast.error(m[error.message] ?? error.message);
+        toast.error(otpMsg(error.message));
       } else {
         toast.success(t('otpSent'));
         setPhoneStep('otp');
@@ -118,12 +144,11 @@ const Auth = () => {
 
     setIsSubmitting(true);
     try {
-      const { error } = await verifyOtp(phoneNumber, otpCode);
+      const { error } = await verifyOtp(phoneNumber, otpCode, fullName);
       if (error) {
-        toast.error(t('invalidOtp'));
+        toast.error(error.message === 'invalid' ? t('invalidOtp') : otpMsg(error.message));
       } else {
         toast.success(t('loginSuccess'));
-        navigate('/');
       }
     } finally {
       setIsSubmitting(false);
@@ -244,7 +269,7 @@ const Auth = () => {
                           if (error) toast.error(error.message);
                           else toast.success(t('resetPassword') + ' — ' + email);
                         }}
-                        className="text-[10px] text-primary hover:underline"
+                        className="text-[12px] text-primary hover:underline"
                       >
                         {t('resetPassword')}?
                       </button>
@@ -292,7 +317,11 @@ const Auth = () => {
                       required
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground">+972XXXXXXXXX</p>
+                  <p className="text-[12px] text-muted-foreground" dir="ltr">05XXXXXXXX</p>
+                </div>
+                <div className="space-y-[6px]">
+                  <Label htmlFor="otpName" className="text-[13px] font-medium">{tx({ ar: 'الاسم (اختياري، لأول مرة)', he: 'שם (אופציונלי, בפעם הראשונה)', en: 'Name (optional, first time)' })}</Label>
+                  <Input id="otpName" value={fullName} maxLength={100} autoComplete="name" onChange={(e) => setFullName(e.target.value)} className="h-[44px] text-[14px]" />
                 </div>
 
                 <Button type="submit" className="w-full" size="default" disabled={isSubmitting}>
@@ -325,7 +354,7 @@ const Auth = () => {
                       required
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground" dir="ltr">{phoneNumber}</p>
+                  <p className="text-[12px] text-muted-foreground" dir="ltr">{phoneNumber}</p>
                 </div>
 
                 <Button type="submit" className="w-full" size="default" disabled={isSubmitting}>
@@ -341,7 +370,7 @@ const Auth = () => {
                   onClick={() => { setPhoneStep('input'); setOtpCode(''); }}
                   className="w-full text-xs font-medium text-primary hover:underline transition-all"
                 >
-                  {t('changePassword')}
+                  {tx({ ar: 'تغيير رقم الهاتف', he: 'שינוי מספר טלפון', en: 'Change phone number' })}
                 </button>
               </form>
             )}

@@ -9,7 +9,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithOtp: (phone: string) => Promise<{ error: Error | null }>;
-  verifyOtp: (phone: string, token: string) => Promise<{ error: Error | null }>;
+  verifyOtp: (phone: string, token: string, name?: string) => Promise<{ error: Error | null }>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -68,9 +68,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { error: null };
   };
 
-  const verifyOtp = async (phone: string, token: string) => {
-    const { data, error } = await supabase.functions.invoke('whatsapp-otp', { body: { action: 'verify', phone, code: token } });
-    if (error || !data?.token_hash) return { error: new Error('invalid') };
+  const verifyOtp = async (phone: string, token: string, name?: string) => {
+    const { data, error } = await supabase.functions.invoke('whatsapp-otp', { body: { action: 'verify', phone, code: token, name: name?.trim() || undefined } });
+    if (error || !data?.token_hash) {
+      let code = '';
+      try { code = (await (error as { context?: Response })?.context?.json())?.error ?? ''; } catch { /* ignore */ }
+      return { error: new Error(code || 'invalid') };
+    }
     const res = await supabase.auth.verifyOtp({ token_hash: data.token_hash, type: 'email' });
     return { error: res.error };
   };
@@ -88,6 +92,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const signOut = async () => {
+    try { const { unregisterPush } = await import('@/lib/push'); await unregisterPush(); } catch { /* not an admin device */ }
     await supabase.auth.signOut();
   };
 
