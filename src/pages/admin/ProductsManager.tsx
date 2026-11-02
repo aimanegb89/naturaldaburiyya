@@ -47,21 +47,32 @@ export default function ProductsManager() {
     if (!editing.name_ar.trim() || (isNew && !/^[a-z0-9-]+$/.test(editing.id))) {
       toast.error('أدخل الاسم بالعربية ومعرّفًا بالإنجليزية (أحرف صغيرة وأرقام و -)'); return;
     }
+    const ps = Number(editing.price_small), pl = Number(editing.price_large);
+    const sized = ['juices', 'smoothies', 'bubbles', 'yogurt'].includes(editing.category);
+    if (!Number.isFinite(ps) || ps <= 0) { toast.error('السعر الصغير يجب أن يكون أكبر من 0'); return; }
+    if (!Number.isFinite(pl) || pl < 0) { toast.error('السعر الكبير غير صالح'); return; }
+    if (sized && pl <= 0) { toast.error('هذه الفئة لها حجمان — أدخل السعر الكبير'); return; }
     setSaving(true);
     let image_url = editing.image_url;
+    const oldPath = editing.image_url?.match(/\/product-images\/([^?]+)/)?.[1];
     if (file) {
-      const path = `${editing.id}-${Date.now()}.${file.name.split('.').pop()}`;
+      const rawExt = (file.name.split('.').pop() || '').toLowerCase();
+      const ext = /^(jpg|jpeg|png|webp|gif|avif)$/.test(rawExt) ? rawExt : 'jpg';
+      const path = `${editing.id.replace(/[^a-z0-9-]/g, '')}-${Date.now()}.${ext}`;
       const up = await supabase.storage.from('product-images').upload(path, file, { upsert: true });
       if (up.error) { toast.error('فشل رفع الصورة'); setSaving(false); return; }
       const { data } = await supabase.storage.from('product-images').createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
       image_url = data?.signedUrl ?? null;
     }
-    const payload = { ...editing, image_url, price_small: Number(editing.price_small), price_large: Number(editing.price_large) };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { created_at, updated_at, unavailable_since, ...rest } = editing as DbProduct & { created_at?: string; updated_at?: string; unavailable_since?: string };
+    const payload = { ...rest, image_url, price_small: ps, price_large: pl };
     const { error } = isNew
       ? await supabase.from('products').insert(payload)
       : await supabase.from('products').update(payload).eq('id', editing.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
+    if (file && oldPath) await supabase.storage.from('product-images').remove([decodeURIComponent(oldPath)]);
     toast.success('تم الحفظ');
     setEditing(null); setFile(null);
     load(); reload();
@@ -86,7 +97,7 @@ export default function ProductsManager() {
               </div>
               <div className="flex flex-col items-center gap-[4px] w-[64px] shrink-0">
                 <Switch checked={r.is_available} onCheckedChange={(v) => toggle(r, v)} />
-                <span className={`text-[11px] ${r.is_available ? 'text-primary' : 'text-destructive'}`}>{r.is_available ? 'متوفر' : 'غير متوفر'}</span>
+                <span className={`text-[12px] ${r.is_available ? 'text-primary' : 'text-destructive'}`}>{r.is_available ? 'متوفر' : 'غير متوفر'}</span>
               </div>
               <Button size="icon" variant="ghost" onClick={() => { setEditing({ ...r }); setIsNew(false); setFile(null); }} aria-label="تعديل">
                 <Pencil className="w-[16px] h-[16px]" />

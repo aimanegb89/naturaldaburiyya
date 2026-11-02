@@ -10,11 +10,19 @@ import { useAdminManifest } from '@/lib/installPrompt';
 export default function Admin() {
   const { user, loading, signOut } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [roleError, setRoleError] = useState(false);
   useAdminManifest();
 
   useEffect(() => {
-    if (!user) { setIsAdmin(null); return; }
-    supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' }).then(({ data }) => setIsAdmin(!!data));
+    setIsAdmin(null); setRoleError(false);
+    if (!user) return;
+    let cancelled = false;
+    supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' }).then(({ data, error }) => {
+      if (cancelled) return;
+      if (error) { setRoleError(true); return; }
+      setIsAdmin(!!data);
+    });
+    return () => { cancelled = true; };
   }, [user]);
 
   if (loading) return null;
@@ -22,6 +30,12 @@ export default function Admin() {
     <div dir="rtl" className="min-h-screen flex flex-col items-center justify-center gap-[16px] bg-background p-[24px]">
       <h1 className="font-display text-[26px]">لوحة إدارة المتجر</h1>
       <Button asChild><Link to="/auth?next=/admin">تسجيل الدخول</Link></Button>
+    </div>
+  );
+  if (roleError) return (
+    <div dir="rtl" className="min-h-screen flex flex-col items-center justify-center gap-[12px] bg-background p-[24px] text-center text-[16px]">
+      تعذر التحقق من الصلاحيات. تحقق من الاتصال وأعد المحاولة.
+      <Button onClick={() => window.location.reload()}>إعادة المحاولة</Button>
     </div>
   );
   if (isAdmin === null) return null;
