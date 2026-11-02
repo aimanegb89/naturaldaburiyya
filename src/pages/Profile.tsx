@@ -265,7 +265,7 @@ const Profile = () => {
       <div className="bg-surface-container shadow-elevation-2 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate('/')} className="gap-[8px]">
-            <ArrowLeft className="w-[18px] h-[18px]" />
+            <ArrowLeft className="w-[18px] h-[18px] rtl:rotate-180" />
             {t('backToHome')}
           </Button>
           <Button variant="ghost" onClick={handleLogout} className="gap-[8px] text-destructive">
@@ -279,7 +279,7 @@ const Profile = () => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <h1 className="md-display-small text-foreground mb-8">{t('myProfile')}</h1>
 
-        <Tabs defaultValue="profile" className="w-full">
+        <Tabs defaultValue="profile" className="w-full" dir={dir}>
           <TabsList className="grid w-full grid-cols-5 mb-8 bg-surface-container-high rounded-full p-[3px] h-auto">
             <TabsTrigger 
               value="profile" 
@@ -322,14 +322,36 @@ const Profile = () => {
           <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle>{t('personalInfo')}</CardTitle>
-                <CardDescription>{t('manageYourInfo')}</CardDescription>
+                <div className="flex items-start justify-between gap-[8px]">
+                  <div className="min-w-0 text-start">
+                    <CardTitle>{t('personalInfo')}</CardTitle>
+                    <CardDescription className="mt-[4px]">{t('manageYourInfo')}</CardDescription>
+                  </div>
+                  <div className="flex gap-[6px] shrink-0">
+                    {isEditing ? (
+                      <>
+                        <Button size="sm" onClick={updateProfile} className="h-[32px] px-[10px] gap-[4px] text-[12px]">
+                          <Check className="w-[14px] h-[14px]" />{t('save')}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} className="h-[32px] px-[10px] gap-[4px] text-[12px]">
+                          <X className="w-[14px] h-[14px]" />{t('cancel')}
+                        </Button>
+                      </>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => setIsEditing(true)} className="h-[32px] px-[10px] gap-[4px] text-[12px]">
+                        <Edit2 className="w-[14px] h-[14px]" />{t('edit')}
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-5">
+              <CardContent className="space-y-5 text-start">
+                {user?.email && !user.email.endsWith('@phone.natural.local') && (
                 <div className="space-y-2">
                   <Label className="md-label-large">{t('email')}</Label>
                   <Input value={user?.email || ''} disabled className="bg-surface-container-high" />
                 </div>
+                )}
                 <div className="space-y-2">
                   <Label className="md-label-large">{t('fullName')}</Label>
                   <Input 
@@ -347,25 +369,6 @@ const Profile = () => {
                     disabled={!isEditing}
                     className={!isEditing ? 'bg-surface-container-high' : ''}
                   />
-                </div>
-                <div className="flex gap-3 pt-2">
-                  {isEditing ? (
-                    <>
-                      <Button onClick={updateProfile} className="gap-2">
-                        <Check className="w-4 h-4" />
-                        {t('save')}
-                      </Button>
-                      <Button variant="outline" onClick={() => setIsEditing(false)} className="gap-2">
-                        <X className="w-4 h-4" />
-                        {t('cancel')}
-                      </Button>
-                    </>
-                  ) : (
-                    <Button variant="outline" onClick={() => setIsEditing(true)} className="gap-2">
-                      <Edit2 className="w-4 h-4" />
-                      {t('edit')}
-                    </Button>
-                  )}
                 </div>
               </CardContent>
             </Card>
