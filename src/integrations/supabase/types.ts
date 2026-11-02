@@ -157,6 +157,7 @@ export type Database = {
           notes: string | null
           status: string
           total_amount: number
+          tracking_code: string | null
           updated_at: string
           user_id: string | null
         }
@@ -170,6 +171,7 @@ export type Database = {
           notes?: string | null
           status?: string
           total_amount: number
+          tracking_code?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -183,6 +185,7 @@ export type Database = {
           notes?: string | null
           status?: string
           total_amount?: number
+          tracking_code?: string | null
           updated_at?: string
           user_id?: string | null
         }
