@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Leaf, FlaskConicalOff, Truck, ShieldCheck, ArrowLeft, ArrowRight, Clock, MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCatalog, type CatalogProduct } from '@/lib/catalog';
-import ProductCard from '@/components/ProductCard';
+import ProductCard, { ProductCardSkeleton } from '@/components/ProductCard';
 import ProductDetailModal from '@/components/ProductDetailModal';
 import ShimmerImage from '@/components/ShimmerImage';
 import { useTx, type Tri } from '@/lib/i18n';
@@ -64,7 +64,7 @@ export const CategoryGrid = () => {
 export const BestSellers = () => {
   const tx = useTx();
   const [quick, setQuick] = useState<CatalogProduct | null>(null);
-  const { catalog } = useCatalog();
+  const { catalog, loaded } = useCatalog();
   const list = [...catalog].sort((a, b) => b.meta.popularity - a.meta.popularity).slice(0, 8);
   return (
     <section className={`${wrap} pt-[56px]`}>
@@ -74,7 +74,7 @@ export const BestSellers = () => {
         link={{ to: '/shop?sort=best', label: tx({ ar: 'عرض الكل', he: 'הכל', en: 'View all' }) }}
       />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[12px] md:gap-[20px]">
-        {list.map((p) => <ProductCard key={p.id} product={p} onQuickView={setQuick} />)}
+        {loaded ? list.map((p) => <ProductCard key={p.id} product={p} onQuickView={setQuick} />) : Array.from({ length: 4 }, (_, i) => <ProductCardSkeleton key={i} />)}
       </div>
       <ProductDetailModal product={quick} isOpen={!!quick} onClose={() => setQuick(null)} />
     </section>

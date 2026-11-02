@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, SearchX, X, ArrowLeft, ArrowRight } from 'lucide-react';
 import AppShell from '@/components/AppShell';
-import ProductCard from '@/components/ProductCard';
+import ProductCard, { ProductCardSkeleton } from '@/components/ProductCard';
 import ProductDetailModal from '@/components/ProductDetailModal';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -141,7 +141,9 @@ const Shop: React.FC = () => {
             <div className="sticky top-[88px] bg-surface-container-low rounded-[20px] border border-outline-variant/50 p-[20px]">{Filters}</div>
           </aside>
           <div className="flex-1 min-w-0">
-            {list.length && sort === 'default' ? (
+            {!loaded ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-[12px] md:gap-[20px]">{Array.from({ length: 6 }, (_, i) => <ProductCardSkeleton key={i} />)}</div>
+            ) : list.length && sort === 'default' ? (
               <div className="space-y-[28px]">
                 {SHOP_CATEGORIES.map((c) => {
                   const group = list.filter((p) => p.category === c.key);
