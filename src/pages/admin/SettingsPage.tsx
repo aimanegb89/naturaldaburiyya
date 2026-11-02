@@ -71,6 +71,9 @@ export default function SettingsPage() {
         </div>
       </Section>
 
+      <Section title="المظهر">
+        <ThemeToggle withLabels />
+      </Section>
       <Section title="إدارة القائمة">
         <ProductsManager />
       </Section>
