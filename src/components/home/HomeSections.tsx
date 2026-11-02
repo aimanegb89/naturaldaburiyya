@@ -42,7 +42,7 @@ export const CategoryGrid = () => {
   const tx = useTx();
   return (
     <section className={`${wrap} pt-[48px]`}>
-      <SectionTitle eyebrow={tx({ ar: 'الأقسام', he: 'קטגוריות', en: 'Categories' })} title={tx({ ar: 'اختر ما يناسبك', he: 'בחרו מה מתאים לכם', en: 'Shop by category' })} />
+      <SectionTitle title={tx({ ar: 'اختر ما يناسبك', he: 'בחרו מה מתאים לכם', en: 'Shop by category' })} />
       <div className="grid grid-cols-3 md:grid-cols-6 gap-[12px]">
         {CATS.map((c) => {
           const img = products.find((p) => p.category === c.key && p.image)?.image;
