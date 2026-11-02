@@ -11,6 +11,8 @@ import { CartDrawerProvider } from "@/contexts/CartDrawerContext";
 import CartDrawer from "@/components/CartDrawer";
 import { CatalogProvider } from "@/contexts/CatalogContext";
 import Admin from "./pages/admin/Admin";
+import OrdersBoard from "./pages/admin/OrdersBoard";
+import SettingsPage from "./pages/admin/SettingsPage";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import ProductPage from "./pages/ProductPage";
@@ -45,7 +47,10 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/admin" element={<Admin />}>
+                      <Route index element={<OrdersBoard />} />
+                      <Route path="settings" element={<SettingsPage />} />
+                    </Route>
                     <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
