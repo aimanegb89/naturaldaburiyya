@@ -9,6 +9,8 @@ import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { CartDrawerProvider } from "@/contexts/CartDrawerContext";
 import CartDrawer from "@/components/CartDrawer";
+import { CatalogProvider } from "@/contexts/CatalogContext";
+import Admin from "./pages/admin/Admin";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import ProductPage from "./pages/ProductPage";
@@ -24,6 +26,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <CatalogProvider>
       <LanguageProvider>
         <AuthProvider>
           <CartProvider>
@@ -42,6 +45,7 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/admin" element={<Admin />} />
                     <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
@@ -51,6 +55,7 @@ const App = () => (
           </CartProvider>
         </AuthProvider>
       </LanguageProvider>
+      </CatalogProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
