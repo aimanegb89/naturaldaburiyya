@@ -191,7 +191,7 @@ const Auth = () => {
                   }`}
                 >
                   <Phone className="w-[14px] h-[14px]" />
-                  {t('phone')}
+                  {t('whatsapp')}
                 </button>
               </div>
             )}
