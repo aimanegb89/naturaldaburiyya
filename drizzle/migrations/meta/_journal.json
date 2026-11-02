@@ -36,6 +36,13 @@
       "when": 1793647324174,
       "tag": "0004_order_tracking_code",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793648965535,
+      "tag": "0005_order_short_number",
+      "breakpoints": true
     }
   ]
 }
