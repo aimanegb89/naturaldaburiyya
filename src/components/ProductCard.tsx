@@ -1,135 +1,127 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Heart, Plus, Eye } from 'lucide-react';
+import { toast } from 'sonner';
 import ShimmerImage from '@/components/ShimmerImage';
+import StarRating from '@/components/StarRating';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useCart } from '@/contexts/CartContext';
-import { Product } from '@/data/products';
-import { Button } from '@/components/ui/button';
-import { Plus, Check } from 'lucide-react';
-import { NO_SIZE_CATEGORIES } from '@/lib/constants';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { useAddToCart } from '@/hooks/useAddToCart';
+import { useRatingSummary } from '@/hooks/useReviews';
 import { getProductName, getProductDescription } from '@/lib/product-utils';
-import smoothieOrange from '@/assets/smoothie-orange.jpg';
-import smoothieGreen from '@/assets/smoothie-green.jpg';
-import smoothieBerry from '@/assets/smoothie-berry.jpg';
+import { hasSizes, type CatalogProduct } from '@/lib/catalog';
+import { useTx } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
-  product: Product;
+  product: CatalogProduct;
+  onQuickView?: (p: CatalogProduct) => void;
+  className?: string;
 }
 
-const categoryImages: Record<string, string> = {
-  juices: smoothieOrange,
-  smoothies: smoothieGreen,
-  supplements: smoothieBerry,
-  bubbles: smoothieOrange,
-  yogurt: smoothieBerry,
-  proteins: smoothieBerry,
-};
-
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, className }) => {
   const { language, t } = useLanguage();
-  const { addItem, items } = useCart();
-  const cartCount = items
-    .filter(i => i.id === product.id)
-    .reduce((sum, i) => sum + i.quantity, 0);
-  const [selectedSize, setSelectedSize] = useState<'small' | 'large'>('small');
-  const [isAdded, setIsAdded] = useState(false);
-
-  const hasNoSizeOption = NO_SIZE_CATEGORIES.includes(product.category as typeof NO_SIZE_CATEGORIES[number]);
+  const tx = useTx();
+  const { has, toggle } = useWishlist();
+  const add = useAddToCart();
+  const { data: ratings } = useRatingSummary();
+  const rating = ratings?.[product.id];
   const name = getProductName(product, language);
-  const description = getProductDescription(product, language);
-  const currentPrice = hasNoSizeOption
-    ? product.priceSmall
-    : selectedSize === 'small'
-    ? product.priceSmall
-    : product.priceLarge;
-  const image = product.image || categoryImages[product.category] || smoothieOrange;
+  const liked = has(product.id);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    addItem({
-      id: product.id,
-      nameAr: product.nameAr,
-      nameHe: product.nameHe,
-      nameEn: product.nameEn,
-      size: hasNoSizeOption ? 'small' : selectedSize,
-      price: currentPrice,
-      image,
-    });
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 1500);
-  };
-
-  const handleSizeClick = (e: React.MouseEvent, size: 'small' | 'large') => {
-    e.stopPropagation();
-    setSelectedSize(size);
+  const onHeart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const now = await toggle(product.id);
+    toast(now ? t('addedToFavorites') : t('removedFromFavorites'));
   };
 
   return (
-    <div className="w-[145px] flex-shrink-0 bg-surface-container-low rounded-xl overflow-hidden shadow-elevation-1">
-      {/* Image */}
-      <div className="relative h-[95px] overflow-hidden">
+    <div
+      className={cn(
+        'group relative flex flex-col bg-surface-container-low rounded-[18px] overflow-hidden border border-outline-variant/50 shadow-soft transition-all duration-300 hover:-translate-y-[3px] hover:shadow-lift',
+        className
+      )}
+    >
+      <Link to={`/product/${product.id}`} className="relative block aspect-square overflow-hidden bg-surface-container">
         <ShimmerImage
-          src={image}
+          src={product.img}
           alt={name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
           wrapperClassName="w-full h-full"
         />
-        {product.isPopular && (
-          <span className="absolute top-1.5 start-1.5 px-1.5 py-[2px] bg-secondary text-secondary-foreground text-[9px] font-medium rounded-full shadow-elevation-1 flex items-center gap-[2px]">
-            ⭐ {t('popular')}
+        <div className="absolute top-[8px] start-[8px] flex flex-col gap-[4px]">
+          {product.meta.isNew && (
+            <span className="px-[8px] py-[2px] rounded-full bg-gold text-primary-foreground text-[10px] font-bold">
+              {tx({ ar: 'جديد', he: 'חדש', en: 'New' })}
+            </span>
+          )}
+          {product.isPopular && (
+            <span className="px-[8px] py-[2px] rounded-full bg-secondary text-secondary-foreground text-[10px] font-bold">
+              {tx({ ar: 'الأكثر طلبًا', he: 'הכי נמכר', en: 'Best seller' })}
+            </span>
+          )}
+          <span className="px-[8px] py-[2px] rounded-full bg-surface-container-lowest/90 text-primary text-[10px] font-semibold w-fit">
+            🌿 {tx({ ar: 'طبيعي', he: 'טבעי', en: 'Natural' })}
           </span>
-        )}
-        {cartCount > 0 && (
-          <span className="absolute top-1.5 end-1.5 min-w-[18px] h-[18px] bg-primary text-primary-foreground rounded-full text-[10px] font-bold flex items-center justify-center px-[3px] shadow-elevation-1">
-            {cartCount}
-          </span>
-        )}
-      </div>
+        </div>
+      </Link>
 
-      {/* Content */}
-      <div className="p-2">
-        <h3 className="text-[11px] font-semibold text-foreground line-clamp-1 leading-tight">{name}</h3>
-        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-[2px]">{description}</p>
+      <button
+        onClick={onHeart}
+        aria-label="wishlist"
+        className="absolute top-[8px] end-[8px] w-[34px] h-[34px] rounded-full bg-surface-container-lowest/90 backdrop-blur flex items-center justify-center shadow-soft transition-transform active:scale-90"
+      >
+        <Heart className={cn('w-[16px] h-[16px]', liked ? 'fill-secondary text-secondary' : 'text-foreground/70')} />
+      </button>
 
-        {/* Size selector */}
-        {!hasNoSizeOption && (
-          <div className="flex gap-[2px] mt-1.5 p-[2px] bg-surface-container-high rounded-full">
+      {onQuickView && (
+        <button
+          onClick={() => onQuickView(product)}
+          className="absolute top-[calc(100%-0px)] hidden"
+          aria-hidden
+        />
+      )}
+
+      <div className="flex flex-col flex-1 p-[12px] gap-[4px]">
+        <Link to={`/product/${product.id}`}>
+          <h3 className="text-[14px] font-bold text-foreground leading-snug line-clamp-1">{name}</h3>
+        </Link>
+        <p className="text-[12px] text-muted-foreground line-clamp-1">{getProductDescription(product, language)}</p>
+        <div className="flex items-center justify-between mt-[2px]">
+          {rating ? (
+            <StarRating value={rating.avg} count={rating.count} size={11} />
+          ) : (
+            <span className="text-[11px] text-muted-foreground">{tx({ ar: 'لا تقييمات بعد', he: 'אין דירוגים', en: 'No reviews yet' })}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-[6px] text-[11px] text-primary font-medium">
+          <span className="w-[6px] h-[6px] rounded-full bg-primary" />
+          {tx({ ar: 'متوفر الآن', he: 'במלאי', en: 'In stock' })}
+        </div>
+        <div className="mt-auto pt-[8px] flex items-center justify-between gap-[6px]">
+          <div className="leading-none">
+            {hasSizes(product) && <span className="text-[10px] text-muted-foreground block mb-[2px]">{tx({ ar: 'من', he: 'החל מ', en: 'From' })}</span>}
+            <span className="text-[17px] font-extrabold text-foreground">{t('currency')}{product.priceSmall}</span>
+          </div>
+          <div className="flex gap-[6px]">
+            {onQuickView && (
+              <button
+                onClick={() => onQuickView(product)}
+                aria-label={tx({ ar: 'عرض سريع', he: 'צפייה מהירה', en: 'Quick view' })}
+                className="w-[36px] h-[36px] rounded-full border border-outline-variant flex items-center justify-center text-foreground/80 hover:bg-surface-container transition-colors"
+              >
+                <Eye className="w-[16px] h-[16px]" />
+              </button>
+            )}
             <button
-              onClick={(e) => handleSizeClick(e, 'small')}
-              className={`flex-1 py-[3px] rounded-full text-[9px] font-medium transition-all duration-200 ${
-                selectedSize === 'small'
-                  ? 'bg-primary text-primary-foreground shadow-elevation-1'
-                  : 'text-foreground'
-              }`}
+              onClick={() => add(product)}
+              aria-label={t('addToCart')}
+              className="w-[36px] h-[36px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-soft transition-all hover:bg-primary/90 active:scale-90"
             >
-              {t('small')}
-            </button>
-            <button
-              onClick={(e) => handleSizeClick(e, 'large')}
-              className={`flex-1 py-[3px] rounded-full text-[9px] font-medium transition-all duration-200 ${
-                selectedSize === 'large'
-                  ? 'bg-primary text-primary-foreground shadow-elevation-1'
-                  : 'text-foreground'
-              }`}
-            >
-              {t('large')}
+              <Plus className="w-[18px] h-[18px]" />
             </button>
           </div>
-        )}
-
-        {/* Price */}
-        <span className="text-xs font-bold text-primary mt-1.5 block">
-          {t('currency')}{currentPrice}
-        </span>
-
-        {/* Add button */}
-        <Button
-          variant={isAdded ? 'secondary' : 'default'}
-          onClick={handleAddToCart}
-          className="w-full h-[28px] text-[10px] gap-1 mt-1.5"
-        >
-          {isAdded ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-          {isAdded ? t('added') : t('addToCart')}
-        </Button>
+        </div>
       </div>
     </div>
   );
