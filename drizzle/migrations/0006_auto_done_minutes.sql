@@ -1,0 +1,1 @@
+ALTER TABLE public.store_settings ADD COLUMN auto_done_minutes integer NOT NULL DEFAULT 60 CHECK (auto_done_minutes BETWEEN 10 AND 1440);

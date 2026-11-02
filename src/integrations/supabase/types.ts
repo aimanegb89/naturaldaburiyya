@@ -358,16 +358,19 @@ export type Database = {
       }
       store_settings: {
         Row: {
+          auto_done_minutes: number
           id: number
           order_channel: string
           updated_at: string
         }
         Insert: {
+          auto_done_minutes?: number
           id?: number
           order_channel?: string
           updated_at?: string
         }
         Update: {
+          auto_done_minutes?: number
           id?: number
           order_channel?: string
           updated_at?: string
