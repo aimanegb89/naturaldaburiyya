@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Bell, Send } from 'lucide-react';
+import { Bell, Send, Download, Share, Check } from 'lucide-react';
+import { useInstallPrompt } from '@/lib/installPrompt';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { enableAdminPush } from '@/lib/push';
@@ -28,6 +29,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const inst = useInstallPrompt();
   const [channel, setChannel] = useState<'push' | 'whatsapp' | null>(null);
 
   useEffect(() => {
@@ -60,6 +62,22 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-[14px]">
+      <Section title="تثبيت تطبيق الإدارة">
+        {inst.standalone ? (
+          <p className="text-[13px] text-primary font-bold flex items-center gap-[6px]"><Check className="w-[16px] h-[16px]" /> التطبيق مثبّت على هذا الجهاز</p>
+        ) : inst.canPrompt ? (
+          <Button onClick={inst.install} className="w-full h-[42px]"><Download className="w-[16px] h-[16px]" /> تثبيت التطبيق</Button>
+        ) : inst.isIOS ? (
+          <p className="text-[13px] text-muted-foreground leading-relaxed">
+            في Safari اضغط <Share className="inline w-[14px] h-[14px]" /> ثم «إضافة إلى الشاشة الرئيسية». سيظهر التطبيق باسم Natural Admin ويفتح على صفحة الطلبات.
+          </p>
+        ) : (
+          <p className="text-[13px] text-muted-foreground leading-relaxed">
+            افتح هذه الصفحة في Chrome أو Edge على الرابط المنشور ثم اضغط زر التثبيت، أو من قائمة المتصفح اختر «تثبيت التطبيق».
+          </p>
+        )}
+      </Section>
+
       <Section title="استلام الطلبات">
         <div className="flex gap-[8px]">
           {opt('push', 'إشعار للتطبيق', 'الطلب يصل إلى صفحة الطلبات مع إشعار')}

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from './Header';
-import Footer from './Footer';
 import BottomNav from './BottomNav';
 import ScrollToTop from './ScrollToTop';
 import InstallBanner from './InstallBanner';
@@ -23,7 +22,6 @@ const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="min-h-screen bg-background pb-[72px] md:pb-0" dir={dir}>
       <Header />
       <main key={pathname} className="page-enter">{children}</main>
-      <Footer />
       <ScrollToTop />
       <BottomNav />
       <InstallBanner />

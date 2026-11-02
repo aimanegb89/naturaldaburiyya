@@ -27,6 +27,12 @@
     <link rel="apple-touch-icon" href="/icon-180.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Natural" />
+    <script>
+      if (location.pathname.indexOf('/admin') === 0) {
+        document.querySelector('link[rel="manifest"]').setAttribute('href', '/manifest-admin.webmanifest');
+        document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute('content', 'Natural Admin');
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
