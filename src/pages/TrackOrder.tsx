@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check, Copy, Package, ChefHat, CircleCheck, Search } from 'lucide-react';
+import { Check, Copy, Package, ChefHat, CircleCheck, RotateCcw, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import AppShell from '@/components/AppShell';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTx } from '@/lib/i18n';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { orderItemName } from '@/lib/catalog';
+import { getCatalogProduct, hasSizes, isAvailable, orderItemName, unitPrice } from '@/lib/catalog';
+import { useCart } from '@/contexts/CartContext';
+import { useCartDrawer } from '@/contexts/CartDrawerContext';
 
 type Tracked = {
   tracking_code: string;
@@ -29,7 +30,6 @@ export default function TrackOrder() {
   const navigate = useNavigate();
   const tx = useTx();
   const { language } = useLanguage();
-  const [code, setCode] = useState(urlCode ?? '');
   const [order, setOrder] = useState<Tracked | null>(null);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -37,16 +37,40 @@ export default function TrackOrder() {
   const [history, setHistory] = useState<any[]>([]);
   useEffect(() => {
     if (!user || urlCode) return;
-    supabase.from('orders').select('id, tracking_code, order_number, status, total_amount, created_at, order_items(product_id, product_name, quantity)')
+    supabase.from('orders').select('id, tracking_code, order_number, status, total_amount, created_at, order_items(product_id, product_name, size, quantity)')
       .eq('user_id', user.id).order('created_at', { ascending: false }).limit(30)
       .then(({ data }) => setHistory(data ?? []));
   }, [user, urlCode]);
   const sizeLabel = (s: string) => s === 'large' ? tx({ ar: 'كبير', he: 'גדול', en: 'Large' }) : s === 'small' ? tx({ ar: 'صغير', he: 'קטן', en: 'Small' }) : s;
   const statusLabel = (s: string) => [tx({ ar: 'جديد', he: 'חדשה', en: 'New' }), tx({ ar: 'قيد التحضير', he: 'בהכנה', en: 'Preparing' }), tx({ ar: 'جاهز', he: 'מוכן', en: 'Done' })][stepOf(s)];
 
-  const lookup = useCallback(async (c: string, p?: string, silent = false) => {
+  const { addItem, updateQuantity } = useCart();
+  const { setOpen: openCart } = useCartDrawer();
+  const reorder = (its: { product_id?: string; size?: string; quantity: number }[]) => {
+    let added = 0;
+    for (const it of its) {
+      const p = it.product_id ? getCatalogProduct(it.product_id) : undefined;
+      if (!p || !isAvailable(p)) continue;
+      const size = hasSizes(p) && it.size === 'large' ? 'large' : 'small';
+      addItem({ id: p.id, nameAr: p.nameAr, nameHe: p.nameHe, nameEn: p.nameEn, size, price: unitPrice(p, size), image: p.img });
+      if (it.quantity > 1) updateQuantity(p.id, size, it.quantity);
+      added++;
+    }
+    if (added) openCart(true);
+    else toast.error(tx({ ar: 'منتجات هذا الطلب غير متوفرة الآن', he: 'המוצרים בהזמנה זו אזלו', en: 'Items from this order are unavailable now' }));
+  };
+  // Poll only while the tab is visible.
+  const useVisiblePoll = (fn: () => void, enabled: boolean) => useEffect(() => {
+    if (!enabled) return;
+    const tick = () => { if (document.visibilityState === 'visible') fn(); };
+    const id = setInterval(tick, 30000);
+    document.addEventListener('visibilitychange', tick);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', tick); };
+  }, [fn, enabled]);
+
+  const lookup = useCallback(async (c: string, silent = false) => {
     if (!silent) { setLoading(true); setNotFound(false); }
-    const { data, error } = await supabase.functions.invoke('track-order', { body: { code: c, phone: p || undefined } });
+    const { data, error } = await supabase.functions.invoke('track-order', { body: { code: c } });
     if (!silent) setLoading(false);
     if (error || !data?.tracking_code) { if (!silent) { setOrder(null); setNotFound(true); } return; }
     setOrder(data as Tracked);
@@ -74,24 +98,18 @@ export default function TrackOrder() {
     const keep = new Set(fresh.map((o) => o.tracking_code));
     localStorage.setItem('natural-my-orders', JSON.stringify(saved.filter((c) => keep.has(c) || !all.some((o) => o.tracking_code === c))));
   }, [user]);
-  useEffect(() => {
-    if (urlCode) return;
-    loadActive();
-    const id = setInterval(loadActive, 20000);
-    return () => clearInterval(id);
-  }, [urlCode, loadActive]);
+  const [activeLoaded, setActiveLoaded] = useState(false);
+  useEffect(() => { if (!urlCode) loadActive().finally(() => setActiveLoaded(true)); }, [urlCode, loadActive]);
+  useVisiblePoll(loadActive, !urlCode && active.some((o) => stepOf(o.status) < 2));
+  const refreshOrder = useCallback(() => { if (order) lookup(order.tracking_code, true); }, [order, lookup]);
+  useVisiblePoll(refreshOrder, !!order && stepOf(order.status) < 2);
 
-  useEffect(() => {
-    if (!order || stepOf(order.status) === 2) return;
-    const id = setInterval(() => lookup(order.tracking_code, undefined, true), 20000);
-    return () => clearInterval(id);
-  }, [order, lookup]);
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const c = code.trim().replace(/^#/, '').toUpperCase();
-    if (!c) return;
-    lookup(c);
+  const minsAgo = (iso: string) => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  const statusLine = (o: Tracked) => {
+    const st = stepOf(o.status);
+    if (st === 2) return tx({ ar: 'طلبك جاهز. بالهناء والعافية!', he: 'ההזמנה מוכנה. בתיאבון!', en: 'Your order is ready. Enjoy!' });
+    if (st === 1) return tx({ ar: 'نحضّر طلبك الآن — عادةً خلال 10–15 دقيقة', he: 'מכינים את ההזמנה — בדרך כלל 10–15 דקות', en: 'We are preparing your order — usually 10–15 min' });
+    return tx({ ar: 'استلمنا طلبك وسنبدأ بتحضيره قريبًا', he: 'קיבלנו את ההזמנה ונתחיל להכין בקרוב', en: 'We got your order and will start soon' });
   };
 
   const steps = [
@@ -106,7 +124,7 @@ export default function TrackOrder() {
       <div className="max-w-[560px] mx-auto px-[16px] py-[24px] text-start">
         <h1 className="font-display text-[26px] font-bold mb-[6px]">{urlCode ? tx({ ar: 'تتبّع طلبك', he: 'מעקב הזמנה', en: 'Track your order' }) : tx({ ar: 'طلباتي', he: 'ההזמנות שלי', en: 'My orders' })}</h1>
         <p className="text-[14px] text-muted-foreground mb-[18px]">
-          {tx({ ar: 'أدخل رقم الطلب لمعرفة حالته.', he: 'הזינו את מספר ההזמנה.', en: 'Enter your order number to see its status.' })}
+          {tx({ ar: 'طلباتك الحالية تظهر هنا تلقائيًا.', he: 'ההזמנות הפעילות שלכם מופיעות כאן אוטומטית.', en: 'Your live orders show up here automatically.' })}
         </p>
 
         <Tabs defaultValue="track" dir={language === 'en' ? 'ltr' : 'rtl'}>
@@ -126,8 +144,9 @@ export default function TrackOrder() {
                   <button onClick={() => navigate(`/track/${o.tracking_code}`)} className="w-full text-start bg-card rounded-[16px] p-[14px] shadow-soft space-y-[10px]">
                     <div className="flex items-center justify-between gap-[8px]">
                       <span className="font-mono font-bold text-[16px]" dir="ltr">#{o.order_number ?? o.tracking_code}</span>
-                      <span className="font-bold">₪{o.total_amount}</span>
+                      <span className="font-bold"><bdi dir="ltr">₪{o.total_amount}</bdi></span>
                     </div>
+                    <p className="text-[14px] font-semibold">{statusLine(o)} <span className="text-muted-foreground font-normal">· {tx({ ar: `قبل ${minsAgo(o.created_at)} د`, he: `לפני ${minsAgo(o.created_at)} דק׳`, en: `${minsAgo(o.created_at)} min ago` })}</span></p>
                     <div className="h-[8px] rounded-full bg-surface-container-high overflow-hidden">
                       <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${[15, 55, 100][st]}%` }} />
                     </div>
@@ -145,20 +164,20 @@ export default function TrackOrder() {
             })}
           </ul>
         )}
-        {!urlCode && (
-          <form onSubmit={submit} className="bg-card rounded-[16px] p-[16px] shadow-soft space-y-[10px] mb-[18px]">
-            <Input value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" placeholder={tx({ ar: 'رقم الطلب (مثال: 482)', he: 'מספר הזמנה (לדוגמה 482)', en: 'Order number (e.g. 482)' })} className="font-mono uppercase" dir="ltr" />
-            <Button type="submit" className="w-full gap-[8px]" disabled={loading}>
-              <Search className="w-[16px] h-[16px]" />{tx({ ar: 'تتبّع', he: 'מעקב', en: 'Track' })}
-            </Button>
-          </form>
+        {!urlCode && activeLoaded && active.length === 0 && (
+          <div className="bg-card rounded-[16px] p-[24px] shadow-soft text-center mb-[18px]">
+            <ShoppingBag className="w-[32px] h-[32px] mx-auto text-muted-foreground mb-[8px]" />
+            <p className="text-[15px] font-semibold mb-[4px]">{tx({ ar: 'لا توجد طلبات جارية', he: 'אין הזמנות פעילות', en: 'No live orders' })}</p>
+            <p className="text-[14px] text-muted-foreground mb-[12px]">{tx({ ar: 'عند طلبك التالي ستتابع حالته هنا.', he: 'בהזמנה הבאה תוכלו לעקוב כאן.', en: 'Your next order will show up here.' })}</p>
+            <Button onClick={() => navigate('/shop')}>{tx({ ar: 'تسوّق الآن', he: 'לחנות', en: 'Shop now' })}</Button>
+          </div>
         )}
 
         {loading && <div className="h-[160px] rounded-[16px] bg-surface-container animate-pulse" />}
         {notFound && !loading && (
           <div className="bg-card rounded-[16px] p-[16px] text-center text-[14px] text-muted-foreground">
             {tx({ ar: 'لم نجد طلبًا بهذه البيانات.', he: 'לא נמצאה הזמנה.', en: 'No order found with these details.' })}
-            {urlCode && <Button variant="link" onClick={() => navigate('/track')}>{tx({ ar: 'بحث يدوي', he: 'חיפוש ידני', en: 'Search manually' })}</Button>}
+            {urlCode && <Button variant="link" onClick={() => navigate('/orders')}>{tx({ ar: 'طلباتي', he: 'ההזמנות שלי', en: 'My orders' })}</Button>}
           </div>
         )}
 
@@ -174,6 +193,7 @@ export default function TrackOrder() {
               </Button>
             </div>
 
+            <p className="text-[15px] font-semibold">{statusLine(order)}</p>
             <div>
               <div className="h-[10px] rounded-full bg-surface-container-high overflow-hidden">
                 <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${[15, 55, 100][stepOf(order.status)]}%` }} />
@@ -226,15 +246,18 @@ export default function TrackOrder() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-[8px]">
                           <span className="font-mono font-bold" dir="ltr">#{h.order_number ?? h.tracking_code}</span>
-                          <span className={`text-[11px] font-bold px-[8px] h-[22px] rounded-full inline-flex items-center ${stepOf(h.status) === 2 ? 'bg-surface-container-high text-muted-foreground' : 'bg-primary/15 text-primary'}`}>{statusLabel(h.status)}</span>
+                          <span className={`text-[12px] font-bold px-[8px] h-[22px] rounded-full inline-flex items-center ${stepOf(h.status) === 2 ? 'bg-surface-container-high text-muted-foreground' : 'bg-primary/15 text-primary'}`}>{statusLabel(h.status)}</span>
                         </div>
                         <p className="text-[13px] text-muted-foreground truncate mt-[2px]">
                           {(h.order_items ?? []).map((it: any) => `${orderItemName(it.product_id, it.product_name, language)}×${it.quantity}`).join('، ')}
                         </p>
                         <p className="text-[12px] text-muted-foreground mt-[2px]">{new Date(h.created_at).toLocaleDateString(language)}</p>
                       </div>
-                      <span className="font-bold">₪{h.total_amount}</span>
+                      <span className="font-bold"><bdi dir="ltr">₪{h.total_amount}</bdi></span>
                     </button>
+                    <Button variant="outline" size="sm" className="mt-[6px] w-full gap-[6px] h-[44px]" onClick={() => reorder(h.order_items ?? [])}>
+                      <RotateCcw className="w-[16px] h-[16px]" />{tx({ ar: 'اطلب مرة أخرى', he: 'הזמנה חוזרת', en: 'Reorder' })}
+                    </Button>
                   </li>
                 ))}
               </ul>

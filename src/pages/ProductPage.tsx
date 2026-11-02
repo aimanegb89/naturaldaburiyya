@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Check, Heart, Minus, Plus, ShoppingBag, ZoomIn, Leaf, Truck } from 'lucide-react';
 import { toast } from 'sonner';
@@ -13,7 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAddToCart } from '@/hooks/useAddToCart';
 import { useRatingSummary } from '@/hooks/useReviews';
-import { catalog, getCatalogProduct, hasSizes } from '@/lib/catalog';
+import { getCatalogProduct, hasSizes, isAvailable, unitPrice, useCatalog } from '@/lib/catalog';
 import { getProductName, getProductDescription } from '@/lib/product-utils';
 import { HEALTH_GOALS } from '@/data/product-meta';
 import { useTx, pick } from '@/lib/i18n';
@@ -22,6 +22,7 @@ import NotFound from './NotFound';
 
 const ProductPage: React.FC = () => {
   const { id = '' } = useParams();
+  const { catalog } = useCatalog();
   const p = getCatalogProduct(id);
   const { language, t } = useLanguage();
   const tx = useTx();
@@ -33,10 +34,12 @@ const ProductPage: React.FC = () => {
   const [size, setSize] = useState<'small' | 'large'>('small');
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  useEffect(() => { setSize('small'); setQty(1); setImg(0); setAdded(false); }, [id]);
 
   if (!p) return <NotFound />;
   const name = getProductName(p, language);
-  const price = hasSizes(p) && size === 'large' ? p.priceLarge : p.priceSmall;
+  const price = unitPrice(p, hasSizes(p) ? size : 'small');
+  const available = isAvailable(p);
   const rating = ratings?.[p.id];
   const related = catalog.filter((x) => x.id !== p.id && (x.category === p.category || x.meta.goals.some((g) => p.meta.goals.includes(g)))).slice(0, 8);
 
@@ -48,7 +51,7 @@ const ProductPage: React.FC = () => {
 
   return (
     <AppShell>
-      <div key={p.id} className="max-w-[1200px] mx-auto px-[16px] md:px-[24px] py-[16px] md:py-[40px]">
+      <div key={p.id} className="max-w-[1200px] mx-auto px-[16px] md:px-[24px] pt-[16px] pb-[120px] md:py-[40px]">
         <nav className="text-[13px] text-muted-foreground mb-[16px] flex gap-[6px]">
           <Link to="/" className="hover:text-primary">{t('home')}</Link>/
           <Link to="/shop" className="hover:text-primary">{tx({ ar: 'المتجر', he: 'חנות', en: 'Shop' })}</Link>/
@@ -58,7 +61,7 @@ const ProductPage: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-[24px] md:gap-[48px]">
           {/* Gallery */}
           <div className="flex flex-col gap-[12px]">
-            <button onClick={() => setZoom(true)} className="relative aspect-square rounded-[24px] overflow-hidden bg-surface-container shadow-soft group">
+            <button onClick={() => setZoom(true)} aria-label={tx({ ar: 'تكبير الصورة', he: 'הגדלת תמונה', en: 'Zoom image' })} className={cn('relative aspect-square rounded-[24px] overflow-hidden bg-surface-container shadow-soft group', !available && 'grayscale opacity-70')}>
               <ShimmerImage src={p.gallery[img]} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" wrapperClassName="w-full h-full" />
               <span className="absolute bottom-[12px] end-[12px] w-[40px] h-[40px] rounded-full bg-surface-container-lowest/90 flex items-center justify-center shadow-soft"><ZoomIn className="w-[18px] h-[18px]" /></span>
             </button>
@@ -93,7 +96,7 @@ const ProductPage: React.FC = () => {
               })}
             </div>
 
-            <p className="text-[32px] font-extrabold mb-[20px]">{t('currency')}{price}</p>
+            <p className="text-[32px] font-extrabold mb-[20px]"><bdi dir="ltr">{t('currency')}{price}</bdi></p>
 
             {hasSizes(p) && (
               <div className="mb-[18px]">
@@ -101,7 +104,7 @@ const ProductPage: React.FC = () => {
                 <div className="flex gap-[8px]">
                   {(['small', 'large'] as const).map((s) => (
                     <button key={s} onClick={() => setSize(s)} className={cn('h-[48px] px-[20px] rounded-[14px] border-2 text-[14px] font-bold transition-all', size === s ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant hover:border-primary/50')}>
-                      {t(s)} · {t('currency')}{s === 'small' ? p.priceSmall : p.priceLarge}
+                      {t(s)}
                     </button>
                   ))}
                 </div>
@@ -110,21 +113,22 @@ const ProductPage: React.FC = () => {
 
             <div className="flex items-center gap-[10px] mb-[16px]">
               <div className="flex items-center h-[52px] rounded-full border border-outline-variant bg-surface-container-lowest">
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="w-[48px] h-full flex items-center justify-center" aria-label="-"><Minus className="w-[16px] h-[16px]" /></button>
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="w-[48px] h-full flex items-center justify-center" aria-label={tx({ ar: 'إنقاص الكمية', he: 'הפחתת כמות', en: 'Decrease quantity' })}><Minus className="w-[16px] h-[16px]" /></button>
                 <span className="w-[28px] text-center text-[16px] font-bold">{qty}</span>
-                <button onClick={() => setQty((q) => Math.min(20, q + 1))} className="w-[48px] h-full flex items-center justify-center" aria-label="+"><Plus className="w-[16px] h-[16px]" /></button>
+                <button onClick={() => setQty((q) => Math.min(50, q + 1))} className="w-[48px] h-full flex items-center justify-center" aria-label={tx({ ar: 'زيادة الكمية', he: 'הגדלת כמות', en: 'Increase quantity' })}><Plus className="w-[16px] h-[16px]" /></button>
               </div>
               <button
                 onClick={onAdd}
-                className={cn('flex-1 h-[52px] rounded-full flex items-center justify-center gap-[8px] text-[16px] font-bold shadow-lift transition-all active:scale-[0.97]', added ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:brightness-110')}
+                disabled={!available}
+                className={cn('flex-1 h-[52px] disabled:opacity-50 disabled:pointer-events-none rounded-full flex items-center justify-center gap-[8px] text-[16px] font-bold shadow-lift transition-all active:scale-[0.97]', added ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:brightness-110')}
               >
                 {added ? <Check className="w-[20px] h-[20px] animate-scale-in" /> : <ShoppingBag className="w-[20px] h-[20px]" />}
-                {added ? tx({ ar: 'تمت الإضافة', he: 'נוסף!', en: 'Added!' }) : t('addToCart')}
+                {!available ? tx({ ar: 'غير متوفر', he: 'אזל מהמלאי', en: 'Out of stock' }) : added ? tx({ ar: 'تمت الإضافة', he: 'נוסף!', en: 'Added!' }) : t('addToCart')}
               </button>
               <button
                 onClick={async () => { const now = await toggle(p.id); toast(now ? t('addedToFavorites') : t('removedFromFavorites')); }}
                 className="w-[52px] h-[52px] rounded-full border border-outline-variant flex items-center justify-center"
-                aria-label="wishlist"
+                aria-label={has(p.id) ? tx({ ar: 'إزالة من المفضلة', he: 'הסרה מהמועדפים', en: 'Remove from wishlist' }) : tx({ ar: 'إضافة إلى المفضلة', he: 'הוספה למועדפים', en: 'Add to wishlist' })}
               >
                 <Heart className={cn('w-[20px] h-[20px]', has(p.id) ? 'fill-secondary text-secondary' : '')} />
               </button>
@@ -161,6 +165,17 @@ const ProductPage: React.FC = () => {
             </div>
           </section>
         )}
+      </div>
+
+      {/* Sticky mobile add-to-cart */}
+      <div className="md:hidden fixed inset-x-0 bottom-[72px] z-30 px-[12px] pb-[8px]">
+        <div className="flex items-center gap-[10px] rounded-[18px] bg-card/95 backdrop-blur border border-border shadow-lift p-[8px]">
+          <span className="ps-[8px] text-[18px] font-extrabold"><bdi dir="ltr">{t('currency')}{price * qty}</bdi></span>
+          <button onClick={onAdd} disabled={!available} className="flex-1 h-[48px] rounded-full bg-primary text-primary-foreground font-bold text-[15px] flex items-center justify-center gap-[8px] disabled:opacity-50">
+            {added ? <Check className="w-[18px] h-[18px]" /> : <ShoppingBag className="w-[18px] h-[18px]" />}
+            {!available ? tx({ ar: 'غير متوفر', he: 'אזל מהמלאי', en: 'Out of stock' }) : added ? tx({ ar: 'تمت الإضافة', he: 'נוסף!', en: 'Added!' }) : t('addToCart')}
+          </button>
+        </div>
       </div>
 
       <Dialog open={zoom} onOpenChange={setZoom}>

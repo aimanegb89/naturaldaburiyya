@@ -93,84 +93,71 @@ function supabaseForUser3(ctx) {
 var create_order_default = defineTool3({
   name: "create_order",
   title: "Create order",
-  description: "Place an order for the signed-in user. Saves the order and its items to their account so it appears in their order history (list_my_orders) even after sign-out. The shop confirms and fulfills orders via WhatsApp. Provide either a saved address_id or a new delivery address (street + city).",
+  description: "Place an order for the signed-in user. Prices are calculated by the shop, not the caller. The order appears in list_my_orders and the shop managers are notified. Provide a saved address_id or a new delivery address (street + city). name and phone default to the user's profile.",
   inputSchema: {
     items: z2.array(
       z2.object({
-        product_id: z2.string().min(1).describe("Product ID."),
-        product_name: z2.string().min(1).describe("Product display name (English)."),
+        product_id: z2.string().min(1).max(80).describe("Product ID."),
         size: z2.enum(["small", "large"]).describe("small = 350ml, large = 500ml."),
-        quantity: z2.number().int().min(1),
-        price: z2.number().min(0).describe("Unit price in ILS.")
+        quantity: z2.number().int().min(1).max(50)
       })
-    ).min(1).describe("Line items to order."),
-    address_id: z2.string().uuid().optional().describe("ID of a saved address belonging to the user. If omitted, street and city are required."),
-    street: z2.string().optional().describe("Street for a new delivery address."),
-    city: z2.string().optional().describe("City for a new delivery address."),
-    postal_code: z2.string().optional().describe("Postal code for a new delivery address."),
-    phone: z2.string().optional().describe("Contact phone number."),
-    notes: z2.string().optional().describe("Order notes for the shop.")
+    ).min(1).max(50).describe("Line items to order."),
+    address_id: z2.string().uuid().optional().describe("ID of a saved address belonging to the user."),
+    street: z2.string().max(200).optional().describe("Street for a new delivery address."),
+    city: z2.string().max(100).optional().describe("City for a new delivery address."),
+    postal_code: z2.string().max(20).optional().describe("Postal code."),
+    name: z2.string().max(100).optional().describe("Customer name (defaults to profile)."),
+    phone: z2.string().max(20).optional().describe("Contact phone (defaults to profile)."),
+    notes: z2.string().max(500).optional().describe("Order notes for the shop.")
   },
   annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
-  handler: async ({ items, address_id, street, city, postal_code, phone, notes }, ctx) => {
+  handler: async ({ items, address_id, street, city, postal_code, name, phone, notes }, ctx) => {
     if (!ctx.isAuthenticated()) {
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
     const supabase = supabaseForUser3(ctx);
     const userId = ctx.getUserId();
-    let finalAddressId = address_id ?? null;
-    if (!finalAddressId) {
-      if (!street || !city) {
-        return {
-          content: [{ type: "text", text: "Provide address_id, or street and city for a new address." }],
-          isError: true
-        };
-      }
-      const { data: addr, error: addrError } = await supabase.from("addresses").insert({
-        user_id: userId,
-        label: "Delivery address",
-        street,
-        city,
-        postal_code: postal_code ?? null,
-        phone: phone ?? null
-      }).select("id").single();
-      if (addrError) {
-        return { content: [{ type: "text", text: addrError.message }], isError: true };
-      }
-      finalAddressId = addr.id;
+    const { data: profile } = await supabase.from("profiles").select("full_name, phone").eq("id", userId).maybeSingle();
+    let s = street, c = city, pc = postal_code, ph = phone;
+    if (address_id) {
+      const { data: a } = await supabase.from("addresses").select("street, city, postal_code, phone").eq("id", address_id).maybeSingle();
+      if (!a) return { content: [{ type: "text", text: "Address not found." }], isError: true };
+      s = a.street;
+      c = a.city;
+      pc = a.postal_code ?? void 0;
+      ph = ph ?? a.phone ?? void 0;
     }
-    const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const { data: order, error: orderError } = await supabase.from("orders").insert({
-      user_id: userId,
-      address_id: finalAddressId,
-      total_amount: total,
-      status: "pending",
-      notes: notes ?? null
-    }).select("id, status, total_amount, created_at").single();
-    if (orderError) {
-      return { content: [{ type: "text", text: orderError.message }], isError: true };
-    }
-    const { error: itemsError } = await supabase.from("order_items").insert(
-      items.map((i) => ({
-        order_id: order.id,
-        product_id: i.product_id,
-        product_name: i.product_name,
-        size: i.size,
-        quantity: i.quantity,
-        price: i.price
-      }))
-    );
-    if (itemsError) {
-      return { content: [{ type: "text", text: itemsError.message }], isError: true };
+    const finalName = name ?? profile?.full_name ?? void 0;
+    const finalPhone = ph ?? profile?.phone ?? void 0;
+    if (!s || !c) return { content: [{ type: "text", text: "Provide address_id, or street and city." }], isError: true };
+    if (!finalName || !finalPhone) return { content: [{ type: "text", text: "name and phone are required (not found on profile)." }], isError: true };
+    const res = await fetch(`${process.env.SUPABASE_URL}/functions/v1/place-order`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.SUPABASE_PUBLISHABLE_KEY,
+        Authorization: `Bearer ${ctx.getToken()}`
+      },
+      body: JSON.stringify({
+        name: finalName,
+        phone: finalPhone,
+        street: s,
+        city: c,
+        postal: pc ?? "",
+        notes: notes ?? "",
+        address_id: address_id ?? null,
+        save_address: !address_id,
+        idempotency_key: crypto.randomUUID(),
+        items: items.map((i) => ({ id: i.product_id, size: i.size, quantity: i.quantity }))
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) {
+      return { content: [{ type: "text", text: `Order failed: ${data.error ?? res.status}${data.product_id ? ` (${data.product_id})` : ""}` }], isError: true };
     }
     return {
-      content: [
-        {
-          type: "text",
-          text: `Order ${order.id} created (total \u20AA${total}). The shop will confirm via WhatsApp.`
-        }
-      ],
-      structuredContent: { order: { ...order, items } }
+      content: [{ type: "text", text: `Order #${data.order_number} placed (total \u20AA${data.total}). Tracking code ${data.tracking_code}.` }],
+      structuredContent: { order: data }
     };
   }
 });

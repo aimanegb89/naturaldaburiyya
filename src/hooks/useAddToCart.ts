@@ -3,7 +3,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useCartDrawer } from '@/contexts/CartDrawerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getProductName } from '@/lib/product-utils';
-import { hasSizes, isAvailable, type CatalogProduct } from '@/lib/catalog';
+import { hasSizes, isAvailable, unitPrice, type CatalogProduct } from '@/lib/catalog';
 import { useTx } from '@/lib/i18n';
 
 export function useAddToCart() {
@@ -18,7 +18,7 @@ export function useAddToCart() {
       return;
     }
     const s = hasSizes(p) ? size : 'small';
-    const price = s === 'large' && hasSizes(p) ? p.priceLarge : p.priceSmall;
+    const price = unitPrice(p, s);
     const existing = items.find((i) => i.id === p.id && i.size === s)?.quantity ?? 0;
     addItem({ id: p.id, nameAr: p.nameAr, nameHe: p.nameHe, nameEn: p.nameEn, size: s, price, image: p.img });
     if (qty > 1) updateQuantity(p.id, s, existing + qty);

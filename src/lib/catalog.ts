@@ -4,6 +4,7 @@ import smoothieOrange from '@/assets/smoothie-orange.jpg';
 import smoothieGreen from '@/assets/smoothie-green.jpg';
 import smoothieBerry from '@/assets/smoothie-berry.jpg';
 import { NO_SIZE_CATEGORIES } from '@/lib/constants';
+import { useSyncExternalStore } from 'react';
 import type { Language } from '@/contexts/LanguageContext';
 
 export type CatalogProduct = Product & { meta: ProductMeta; img: string; gallery: string[] };
@@ -41,9 +42,35 @@ export function dbToProduct(r: DbProduct): Product {
   };
 }
 
+// Small external store so consumers re-render on catalog changes without remounting the tree.
+let version = 0;
+let loaded = false;
+const listeners = new Set<() => void>();
+const subscribe = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
+
 export function replaceCatalog(rows: DbProduct[]) {
   const next = rows.map((r, i) => toCatalog(dbToProduct(r), i));
   catalog.splice(0, catalog.length, ...next);
+  loaded = true;
+  version++;
+  listeners.forEach((l) => l());
+}
+
+export function markCatalogLoaded() {
+  if (loaded) return;
+  loaded = true; version++;
+  listeners.forEach((l) => l());
+}
+
+/** Subscribe to the live catalog. Returns the version (use as memo dep) and loaded flag. */
+export function useCatalog() {
+  const v = useSyncExternalStore(subscribe, () => version);
+  return { catalog, version: v, loaded };
+}
+
+/** Unit price for a size: large uses priceLarge only when it is set (> 0). */
+export function unitPrice(p: Pick<Product, 'priceSmall' | 'priceLarge'>, size: 'small' | 'large') {
+  return size === 'large' && Number(p.priceLarge) > 0 ? Number(p.priceLarge) : Number(p.priceSmall);
 }
 
 export const isAvailable = (p: Product) => p.isAvailable !== false;
@@ -51,7 +78,7 @@ export const isAvailable = (p: Product) => p.isAvailable !== false;
 export const getCatalogProduct = (id: string) => catalog.find((p) => p.id === id);
 
 export const hasSizes = (p: Product) =>
-  !NO_SIZE_CATEGORIES.includes(p.category as (typeof NO_SIZE_CATEGORIES)[number]);
+  !NO_SIZE_CATEGORIES.includes(p.category as (typeof NO_SIZE_CATEGORIES)[number]) && Number(p.priceLarge) > 0;
 
 export function searchCatalog(query: string, lang: Language) {
   const q = query.trim().toLowerCase();

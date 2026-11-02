@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
@@ -36,6 +37,15 @@ const Checkout: React.FC = () => {
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
   const [confirmedNumber, setConfirmedNumber] = useState<number | null>(null);
   const [confirmedTotal, setConfirmedTotal] = useState(0);
+  const [channel, setChannel] = useState<'push' | 'whatsapp'>('push');
+  const [waLink, setWaLink] = useState<string | null>(null);
+  const [unavailable, setUnavailable] = useState<{ id: string; name: string } | null>(null);
+  const idemKey = useRef<string>(crypto.randomUUID());
+  const { removeItem } = useCart();
+  useEffect(() => {
+    supabase.from('store_settings').select('order_channel').eq('id', 1).maybeSingle()
+      .then(({ data }) => setChannel(data?.order_channel === 'whatsapp' ? 'whatsapp' : 'push'));
+  }, []);
 
   const tx = useTx();
   const [payment, setPayment] = useState<'cash' | 'card'>('cash');
@@ -106,22 +116,39 @@ const Checkout: React.FC = () => {
     const street = usingSaved ? selectedAddress!.street : form.street;
     const city = usingSaved ? selectedAddress!.city : form.city;
     const postal = usingSaved ? selectedAddress!.postal_code || '' : form.postalCode;
-    const orderTotal = totalPrice;
     let orderId: string | null = null;
 
     try {
-      const { data: settings } = await supabase.from('store_settings').select('order_channel').eq('id', 1).maybeSingle();
-      const channel = settings?.order_channel ?? 'push';
       const { data: placed, error: placeErr } = await supabase.functions.invoke('place-order', {
         body: {
           name: form.name, phone: form.phone, street, city, postal,
           notes: [payment === 'cash' ? 'Cash' : 'Card', form.notes].filter(Boolean).join(' · '),
           address_id: usingSaved ? selectedAddress!.id : null,
           save_address: !!user && !usingSaved,
+          idempotency_key: idemKey.current,
           items: items.map(i => ({ id: i.id, size: i.size, quantity: i.quantity })),
         },
       });
-      if (placeErr || !placed?.id) throw new Error(placed?.error ?? placeErr?.message ?? 'failed');
+      if (placeErr || !placed?.id) {
+        let body: any = placed;
+        if (placeErr instanceof FunctionsHttpError) { try { body = await placeErr.context.json(); } catch { body = null; } }
+        const code = body?.error;
+        if (code === 'product_unavailable' && body?.product_id) {
+          const nm = body.name?.[language] || body.name?.ar || body.product_id;
+          setUnavailable({ id: body.product_id, name: nm });
+          toast({ title: tx({ ar: `«${nm}» غير متوفر الآن`, he: `«${nm}» אזל כרגע`, en: `“${nm}” is out of stock` }) });
+        } else if (code === 'rate_limited') {
+          toast({ title: tx({ ar: 'طلبات كثيرة، حاول بعد قليل', he: 'יותר מדי הזמנות, נסו שוב בעוד מעט', en: 'Too many orders, please try again shortly' }) });
+        } else if (code === 'validation') {
+          toast({ title: tx({ ar: 'تحقق من البيانات المدخلة', he: 'בדקו את הפרטים', en: 'Please check your details' }) });
+        } else if (code === 'unknown_product') {
+          toast({ title: tx({ ar: 'منتج في السلة لم يعد موجودًا', he: 'מוצר בעגלה כבר לא קיים', en: 'An item in your cart no longer exists' }) });
+        } else {
+          toast({ title: t('addFailed') });
+        }
+        return;
+      }
+      const orderTotal = Number(placed.total ?? totalPrice);
       orderId = placed.tracking_code ?? placed.id;
       setConfirmedNumber(placed.order_number ?? null);
       if (placed.tracking_code) {
@@ -138,14 +165,15 @@ const Checkout: React.FC = () => {
 
       const message = `🌿 *Natural - ${t('orderDetails')}* #${placed.order_number ?? orderId}\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${t('deliveryAddress')}:* ${street}, ${city}${postal ? ` (${postal})` : ''}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}\n*${tx({ ar: 'الدفع', he: 'תשלום', en: 'Payment' })}:* ${payment === 'cash' ? tx({ ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }) : tx({ ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' })}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}\n\n${tx({ ar: 'تتبّع الطلب', he: 'מעקב הזמנה', en: 'Track order' })}: ${window.location.origin}/track/${orderId}`;
 
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+      setWaLink(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`);
       }
 
       setConfirmedTotal(orderTotal);
       setConfirmedId(orderId);
       clearCart();
-    } catch (err) {
-      toast({ title: t('addFailed'), description: err instanceof Error ? err.message : '' });
+      idemKey.current = crypto.randomUUID();
+    } catch {
+      toast({ title: t('addFailed') });
     } finally {
       setSubmitting(false);
     }
@@ -158,15 +186,20 @@ const Checkout: React.FC = () => {
           <CheckCircle2 className="w-[36px] h-[36px] text-primary" />
         </div>
         <h1 className="text-lg font-semibold text-foreground mb-2">{t('orderConfirmed')}</h1>
-        <p className="text-xs text-muted-foreground max-w-[280px] mb-3">{t('orderConfirmedDesc')}</p>
+        <p className="text-[14px] text-muted-foreground max-w-[300px] mb-3">{channel === 'whatsapp' ? t('orderConfirmedDesc') : tx({ ar: 'وصل طلبك إلى المحل وسنبدأ بتحضيره قريبًا.', he: 'ההזמנה התקבלה בחנות ונתחיל להכין אותה בקרוב.', en: 'Your order reached the shop and will be prepared shortly.' })}</p>
         {confirmedId && (
-          <p className="text-[10px] text-muted-foreground mb-1">
+          <p className="text-[14px] text-muted-foreground mb-1">
             {t('orderNumber')}: <span className="font-mono" dir="ltr">#{confirmedNumber ?? confirmedId.slice(0, 8)}</span>
           </p>
         )}
         <p className="text-sm font-semibold text-primary mb-6">
-          {t('total')}: {t('currency')}{confirmedTotal}
+          {t('total')}: <bdi dir="ltr">{t('currency')}{confirmedTotal}</bdi>
         </p>
+        {waLink && (
+          <Button asChild className="w-full max-w-[280px] mb-[10px]">
+            <a href={waLink} target="_blank" rel="noopener noreferrer">{tx({ ar: 'أرسل الطلب عبر واتساب', he: 'שליחת ההזמנה בוואטסאפ', en: 'Send order on WhatsApp' })}</a>
+          </Button>
+        )}
         {confirmedId && (
           <Button variant="outline" className="w-full max-w-[280px] mb-[10px]" onClick={() => navigate(`/track/${confirmedId}`)}>
             {tx({ ar: 'تتبّع الطلب', he: 'מעקב הזמנה', en: 'Track order' })}
@@ -207,6 +240,14 @@ const Checkout: React.FC = () => {
       </header>
 
       <form onSubmit={handleConfirm} noValidate className="px-[16px] py-[20px] max-w-[1100px] mx-auto grid md:grid-cols-[1fr_380px] gap-[24px] items-start">
+        {unavailable && (
+          <div role="alert" className="md:col-span-2 rounded-[16px] border border-destructive/40 bg-destructive/10 p-[14px] flex items-center justify-between gap-[10px]">
+            <span className="text-[14px] font-semibold">{tx({ ar: `«${unavailable.name}» غير متوفر الآن`, he: `«${unavailable.name}» אזל כרגע`, en: `“${unavailable.name}” is out of stock` })}</span>
+            <Button type="button" size="sm" variant="outline" onClick={() => { items.filter((i) => i.id === unavailable.id).forEach((i) => removeItem(i.id, i.size)); setUnavailable(null); }}>
+              {tx({ ar: 'إزالته من السلة', he: 'הסרה מהעגלה', en: 'Remove from cart' })}
+            </Button>
+          </div>
+        )}
         {/* Order summary */}
         <section className="md:col-start-2 md:row-start-1 md:sticky md:top-[88px]">
           <h2 className="text-xs font-semibold text-foreground mb-2">{t('orderSummary')}</h2>
@@ -225,7 +266,7 @@ const Checkout: React.FC = () => {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-foreground truncate">{getName(item)}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[12px] text-muted-foreground">
                     {sizeLabel(item.size)} · x{item.quantity}
                   </p>
                 </div>
@@ -242,6 +283,47 @@ const Checkout: React.FC = () => {
         </section>
 
         <div className="md:col-start-1 md:row-start-1 flex flex-col gap-[20px]">
+        {/* Contact */}
+        <section className="space-y-3 rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px]">
+          <h2 className="text-[16px] font-bold text-foreground flex items-center gap-[8px]"><span className="w-[26px] h-[26px] rounded-full bg-primary text-primary-foreground text-[13px] flex items-center justify-center">1</span>{t('contactDetails')}</h2>
+          <div>
+            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('name')}</label>
+            <Input
+              value={form.name}
+              maxLength={100}
+              autoComplete="name"
+              onChange={e => { setForm(p => ({ ...p, name: e.target.value })); if (errors.name) setErrors(x => ({ ...x, name: '' })); }}
+              aria-invalid={!!errors.name}
+              className={errors.name ? 'border-destructive' : ''}
+            />
+            {errors.name && <p className="text-[12px] text-destructive mt-[4px]">{errors.name}</p>}
+          </div>
+          <div>
+            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('phoneNumber')}</label>
+            <Input
+              type="tel"
+              dir="ltr"
+              value={form.phone}
+              maxLength={20}
+              autoComplete="tel"
+              onChange={e => { setForm(p => ({ ...p, phone: e.target.value })); if (errors.phone) setErrors(x => ({ ...x, phone: '' })); }}
+              aria-invalid={!!errors.phone}
+              className={errors.phone ? 'border-destructive' : ''}
+            />
+            {errors.phone && <p className="text-[12px] text-destructive mt-[4px]">{errors.phone}</p>}
+          </div>
+          <div>
+            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('notes')}</label>
+            <Textarea
+              value={form.notes}
+              maxLength={500 - 7}
+              onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+              className="min-h-[72px] rounded-lg border-outline-variant"
+              rows={3}
+            />
+          </div>
+        </section>
+
         {/* Delivery address */}
         <section className="rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px]">
           <h2 className="text-[16px] font-bold text-foreground mb-[12px] flex items-center gap-[8px]">
@@ -252,7 +334,7 @@ const Checkout: React.FC = () => {
 
           {addresses.length > 0 && (
             <div className="space-y-2 mb-3">
-              <p className="text-[10px] text-muted-foreground">{t('selectAddress')}</p>
+              <p className="text-[12px] text-muted-foreground">{t('selectAddress')}</p>
               {addresses.map(addr => (
                 <button
                   key={addr.id}
@@ -265,7 +347,7 @@ const Checkout: React.FC = () => {
                   }`}
                 >
                   <p className="text-xs font-semibold text-foreground">{addr.label}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[12px] text-muted-foreground">
                     {addr.street}, {addr.city}
                   </p>
                 </button>
@@ -290,7 +372,8 @@ const Checkout: React.FC = () => {
                 <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('street')}</label>
                 <Input
                   value={form.street}
-                  onChange={e => setForm(p => ({ ...p, street: e.target.value }))}
+                  maxLength={200}
+                  onChange={e => { setForm(p => ({ ...p, street: e.target.value })); if (errors.street) setErrors(x => ({ ...x, street: '' })); }}
                   aria-invalid={!!errors.street}
                   className={errors.street ? 'border-destructive' : ''}
                 />
@@ -301,7 +384,8 @@ const Checkout: React.FC = () => {
                   <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('city')}</label>
                   <Input
                     value={form.city}
-                    onChange={e => setForm(p => ({ ...p, city: e.target.value }))}
+                    maxLength={100}
+                    onChange={e => { setForm(p => ({ ...p, city: e.target.value })); if (errors.city) setErrors(x => ({ ...x, city: '' })); }}
                     aria-invalid={!!errors.city}
                     className={errors.city ? 'border-destructive' : ''}
                   />
@@ -311,6 +395,7 @@ const Checkout: React.FC = () => {
                   <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('postalCode')}</label>
                   <Input
                     value={form.postalCode}
+                    maxLength={20}
                     onChange={e => setForm(p => ({ ...p, postalCode: e.target.value }))}
                     dir="ltr"
                   />
@@ -318,42 +403,6 @@ const Checkout: React.FC = () => {
               </div>
             </div>
           )}
-        </section>
-
-        {/* Contact */}
-        <section className="space-y-3 rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px] -order-1">
-          <h2 className="text-[16px] font-bold text-foreground flex items-center gap-[8px]"><span className="w-[26px] h-[26px] rounded-full bg-primary text-primary-foreground text-[13px] flex items-center justify-center">1</span>{t('contactDetails')}</h2>
-          <div>
-            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('name')}</label>
-            <Input
-              value={form.name}
-              onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-              aria-invalid={!!errors.name}
-              className={errors.name ? 'border-destructive' : ''}
-            />
-            {errors.name && <p className="text-[12px] text-destructive mt-[4px]">{errors.name}</p>}
-          </div>
-          <div>
-            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('phoneNumber')}</label>
-            <Input
-              type="tel"
-              dir="ltr"
-              value={form.phone}
-              onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
-              aria-invalid={!!errors.phone}
-              className={errors.phone ? 'border-destructive' : ''}
-            />
-            {errors.phone && <p className="text-[12px] text-destructive mt-[4px]">{errors.phone}</p>}
-          </div>
-          <div>
-            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('notes')}</label>
-            <Textarea
-              value={form.notes}
-              onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
-              className="min-h-[72px] rounded-lg border-outline-variant"
-              rows={3}
-            />
-          </div>
         </section>
 
         {/* Payment */}
@@ -370,16 +419,16 @@ const Checkout: React.FC = () => {
         </section>
         </div>
 
-        <div className="md:col-start-2 space-y-[8px]">
+        <div className="md:col-start-2 space-y-[8px] sticky bottom-0 md:static -mx-[16px] md:mx-0 px-[16px] md:px-0 py-[10px] md:py-0 bg-background/95 md:bg-transparent backdrop-blur border-t border-border md:border-0">
         <Button type="submit" className="w-full gap-2 h-[52px] rounded-full text-[16px] font-bold bg-secondary text-secondary-foreground hover:bg-secondary/90" disabled={submitting}>
           {submitting ? (
             <Loader2 className="w-[16px] h-[16px] animate-spin" />
           ) : (
             <CheckCircle2 className="w-[16px] h-[16px]" />
           )}
-          {t('confirmOrder')}
+          {t('confirmOrder')} · <bdi dir="ltr">{t('currency')}{totalPrice}</bdi>
         </Button>
-        <p className="text-[12px] text-center text-muted-foreground">{t('sendViaWhatsApp')}</p>
+        {channel === 'whatsapp' && <p className="text-[12px] text-center text-muted-foreground">{t('sendViaWhatsApp')}</p>}
         </div>
       </form>
     </div>

@@ -50,6 +50,13 @@
       "when": 1793649868832,
       "tag": "0006_auto_done_minutes",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793660300843,
+      "tag": "0007_security_and_correctness_hardening",
+      "breakpoints": true
     }
   ]
 }

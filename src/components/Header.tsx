@@ -15,7 +15,7 @@ import logo from '@/assets/logo.png';
 
 const Badge = ({ n }: { n: number }) =>
   n > 0 ? (
-    <span className="absolute -top-[2px] -end-[2px] min-w-[18px] h-[18px] px-[4px] rounded-full bg-secondary text-secondary-foreground text-[10px] font-bold flex items-center justify-center animate-scale-in">
+    <span className="absolute -top-[2px] -end-[2px] min-w-[18px] h-[18px] px-[4px] rounded-full bg-secondary text-secondary-foreground text-[12px] font-bold flex items-center justify-center animate-scale-in">
       {n > 9 ? '9+' : n}
     </span>
   ) : null;
@@ -82,7 +82,7 @@ const Header: React.FC = () => {
           </button>
           <button className={iconBtn} onClick={() => setOpen(true)} aria-label="cart">
             <ShoppingBag className="w-[20px] h-[20px]" />
-            <Badge n={totalItems} />
+            <Badge key={totalItems} n={totalItems} />
           </button>
         </div>
       </div>

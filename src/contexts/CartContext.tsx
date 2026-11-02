@@ -1,4 +1,20 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getCatalogProduct, isAvailable, unitPrice, useCatalog, hasSizes } from '@/lib/catalog';
+
+export const MAX_QTY = 50;
+const clampQty = (q: number) => Math.max(1, Math.min(MAX_QTY, Math.floor(q)));
+
+/** Drops malformed saved cart lines (bad shape, non-finite price, qty outside 1..50). */
+export function sanitizeCart(raw: unknown): CartItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((i): i is CartItem =>
+    !!i && typeof i === 'object' && typeof i.id === 'string' && (i.size === 'small' || i.size === 'large') &&
+    typeof i.price === 'number' && Number.isFinite(i.price) && i.price >= 0 &&
+    Number.isInteger(i.quantity) && i.quantity >= 1 && i.quantity <= MAX_QTY &&
+    typeof i.nameAr === 'string');
+}
 
 export interface CartItem {
   id: string;
@@ -29,15 +45,35 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
       const stored = localStorage.getItem(CART_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      return stored ? sanitizeCart(JSON.parse(stored)) : [];
     } catch {
       return [];
     }
   });
 
   useEffect(() => {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items)); } catch { /* storage full or blocked */ }
   }, [items]);
+
+  // Reconcile with the live catalog: refresh prices/names, drop deleted or unavailable products.
+  const { version, loaded } = useCatalog();
+  const { language } = useLanguage();
+  useEffect(() => {
+    if (!loaded) return;
+    setItems((prev) => {
+      const removed: string[] = [];
+      const next = prev.flatMap((i) => {
+        const p = getCatalogProduct(i.id);
+        if (!p || !isAvailable(p)) { removed.push((language === 'he' ? i.nameHe : language === 'en' ? i.nameEn : i.nameAr) || i.nameAr); return []; }
+        const size = hasSizes(p) ? i.size : 'small';
+        return [{ ...i, size, price: unitPrice(p, size), nameAr: p.nameAr, nameHe: p.nameHe, nameEn: p.nameEn }];
+      });
+      if (removed.length) setTimeout(() => toast.warning({ ar: 'أُزيلت من السلة لأنها غير متوفرة:', he: 'הוסרו מהעגלה כי אזלו:', en: 'Removed from cart (unavailable):' }[language] + ' ' + removed.join(', ')), 0);
+      const same = next.length === prev.length && next.every((n, k) => n.price === prev[k].price && n.size === prev[k].size && n.nameAr === prev[k].nameAr);
+      return same ? prev : next;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [version, loaded]);
 
   const addItem = (item: Omit<CartItem, 'quantity'>) => {
     setItems(prev => {
@@ -45,7 +81,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (existingItem) {
         return prev.map(i =>
           i.id === item.id && i.size === item.size
-            ? { ...i, quantity: i.quantity + 1 }
+            ? { ...i, quantity: clampQty(i.quantity + 1) }
             : i
         );
       }
@@ -64,7 +100,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     setItems(prev =>
       prev.map(i =>
-        i.id === id && i.size === size ? { ...i, quantity } : i
+        i.id === id && i.size === size ? { ...i, quantity: clampQty(quantity) } : i
       )
     );
   };
