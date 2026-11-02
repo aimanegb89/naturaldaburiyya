@@ -22,10 +22,12 @@ Deno.serve(async (req) => {
 
     if (test) {
       // Test sends must come from a signed-in admin.
-      const auth = req.headers.get('Authorization')?.replace('Bearer ', '');
-      const { data: u } = await admin.auth.getUser(auth ?? '');
-      if (!u?.user) return json({ error: 'unauthorized' }, 401);
-      const { data: isAdmin } = await admin.rpc('has_role', { _user_id: u.user.id, _role: 'admin' });
+      const auth = req.headers.get('Authorization')?.replace('Bearer ', '') ?? '';
+      const anon = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!);
+      const { data: c } = await anon.auth.getClaims(auth);
+      const uid = c?.claims?.sub;
+      if (!uid || c?.claims?.role !== 'authenticated') return json({ error: 'unauthorized' }, 401);
+      const { data: isAdmin } = await admin.rpc('has_role', { _user_id: uid, _role: 'admin' });
       if (!isAdmin) return json({ error: 'forbidden' }, 403);
     } else {
       // Scheduled run fires at 13:50 and 14:50 UTC; only act at 16:xx Jerusalem (DST-safe).

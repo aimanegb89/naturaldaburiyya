@@ -101,8 +101,10 @@ export default function SettingsPage() {
             <Bell className="w-[16px] h-[16px]" /> تفعيل الإشعارات
           </Button>
           <Button size="sm" variant="outline" onClick={async () => {
-            const { data, error } = await supabase.functions.invoke('availability-reminder', { body: { test: true } });
-            toast(error ? 'فشل الإرسال' : data?.sent ? 'تم إرسال إشعار تجريبي' : 'لا توجد أجهزة مفعّلة');
+            try {
+              const { data, error } = await supabase.functions.invoke('availability-reminder', { body: { test: true } });
+              toast(error ? 'فشل الإرسال — سجّل الدخول كمدير' : data?.sent ? 'تم إرسال إشعار تجريبي' : 'لا توجد أجهزة مفعّلة');
+            } catch { toast('فشل الإرسال'); }
           }}><Send className="w-[16px] h-[16px]" /> إرسال تجربة</Button>
           <QrDialog />
         </div>
