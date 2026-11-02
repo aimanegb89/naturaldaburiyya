@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { ShoppingCart, Minus, Plus, Trash2, Truck } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, Store, Minus, Plus, Trash2, Truck } from 'lucide-react';
 import { useCartDrawer } from '@/contexts/CartDrawerContext';
 import { FREE_DELIVERY_THRESHOLD } from '@/lib/catalog';
 import { useTx } from '@/lib/i18n';
@@ -61,19 +61,25 @@ const CartDrawer: React.FC = () => {
           className="w-full sm:max-w-[420px] bg-background border-outline-variant flex flex-col p-[20px]"
           dir={dir}
         >
-          {/* Header with clear cart button */}
-          <SheetHeader className="pe-[40px] flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <SheetTitle className="flex items-center gap-[8px] text-[20px] font-display text-foreground">
-                <ShoppingCart className="w-[18px] h-[18px] text-primary" />
+          <SheetHeader className="pe-[40px] flex-shrink-0 text-start">
+            <div className="flex items-center justify-between gap-[8px]">
+              <SheetTitle className="flex items-center gap-[10px] text-[20px] font-bold text-foreground">
+                <span className="flex h-[36px] w-[36px] items-center justify-center rounded-full bg-primary/10">
+                  <ShoppingCart className="w-[18px] h-[18px] text-primary" />
+                </span>
                 {t('yourCart')}
+                {items.length > 0 && (
+                  <span className="rounded-full bg-primary px-[8px] py-[2px] text-[12px] font-bold text-primary-foreground">
+                    {items.reduce((s, i) => s + i.quantity, 0)}
+                  </span>
+                )}
               </SheetTitle>
               {items.length > 0 && (
                 <button
                   onClick={() => setShowEmptyCartDialog(true)}
-                  className="flex items-center gap-[4px] text-[12px] text-destructive hover:underline transition-all"
+                  className="flex items-center gap-[4px] rounded-full px-[10px] py-[6px] text-[12px] font-semibold text-destructive hover:bg-destructive/10 transition-colors"
                 >
-                  <Trash2 className="w-[11px] h-[11px]" />
+                  <Trash2 className="w-[13px] h-[13px]" />
                   {t('emptyCartButton')}
                 </button>
               )}
@@ -93,13 +99,23 @@ const CartDrawer: React.FC = () => {
             </div>
           )}
 
-          <div className="flex flex-col flex-1 min-h-0 mt-4">
+          <div className="flex flex-col flex-1 min-h-0 mt-[12px]">
             {items.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
-                <div className="w-[56px] h-[56px] bg-surface-container-high rounded-full flex items-center justify-center mb-3">
-                  <ShoppingCart className="w-[26px] h-[26px] opacity-40" />
+              <div className="flex-1 flex flex-col items-center justify-center text-center px-[16px]">
+                <div className="w-[88px] h-[88px] bg-primary/10 rounded-full flex items-center justify-center mb-[18px]">
+                  <ShoppingBag className="w-[38px] h-[38px] text-primary" />
                 </div>
-                <p className="text-sm">{t('emptyCart')}</p>
+                <p className="text-[18px] font-bold text-foreground">{t('emptyCart')}</p>
+                <p className="text-[14px] text-muted-foreground mt-[6px] max-w-[260px]">
+                  {tx({ ar: 'اكتشف عصائرنا الطبيعية ومكمّلاتنا الصحية', he: 'גלו את המיצים הטבעיים והתוספים שלנו', en: 'Discover our natural juices and supplements' })}
+                </p>
+                <Button
+                  className="mt-[22px] h-[48px] rounded-full px-[28px] text-[15px] font-bold gap-[8px]"
+                  onClick={() => { onClose(); navigate('/shop'); }}
+                >
+                  <Store className="w-[18px] h-[18px]" />
+                  {tx({ ar: 'تسوّق الآن', he: 'לחנות', en: 'Go to shop' })}
+                </Button>
               </div>
             ) : (
               /* Cart Items — flat list, no individual cards */
@@ -108,7 +124,7 @@ const CartDrawer: React.FC = () => {
                   {items.map((item) => (
                     <div
                       key={`${item.id}-${item.size}`}
-                      className="flex gap-3 py-3 border-b border-outline-variant/30 last:border-0"
+                      className="flex gap-[12px] py-[14px] border-b border-outline-variant/50 last:border-0"
                     >
                       {item.image && (
                         <img
@@ -119,10 +135,10 @@ const CartDrawer: React.FC = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <h4 className="text-[14px] font-bold text-foreground truncate">{getName(item)}</h4>
-                        <p className="text-[12px] text-muted-foreground">{sizeLabel(item.size)}</p>
-                        <p className="text-[14px] font-bold text-foreground mt-[4px]">{t('currency')}{item.price * item.quantity}</p>
+                        <span className="inline-block mt-[4px] rounded-full bg-surface-container-high px-[8px] py-[2px] text-[11px] font-semibold text-muted-foreground">{sizeLabel(item.size)}</span>
+                        <p className="text-[15px] font-bold text-primary mt-[6px]">{t("currency")}{item.price * item.quantity}</p>
                       </div>
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <div className="flex flex-col items-end justify-between gap-[6px] flex-shrink-0">
                         <button
                           onClick={() => setDeleteItemDialog({ id: item.id, size: item.size })}
                           className="w-[24px] h-[24px] flex items-center justify-center rounded-full text-destructive hover:bg-destructive/10 transition-colors"
@@ -149,7 +165,7 @@ const CartDrawer: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="flex-shrink-0 space-y-3 pt-3 border-t border-outline-variant mt-2">
+                <div className="flex-shrink-0 space-y-[10px] pt-[14px] border-t border-outline-variant mt-[8px]">
                   <div className="flex justify-between items-center text-[13px] text-muted-foreground">
                     <span>{tx({ ar: 'التوصيل', he: 'משלוח', en: 'Delivery' })}</span>
                     <span>{remaining > 0 ? tx({ ar: 'يُحدَّد عند التأكيد', he: 'ייקבע באישור', en: 'Confirmed on WhatsApp' }) : tx({ ar: 'مجاني', he: 'חינם', en: 'Free' })}</span>
@@ -159,7 +175,7 @@ const CartDrawer: React.FC = () => {
                     <span>{t('currency')}{totalPrice}</span>
                   </div>
                   <Button
-                    className="w-full h-[52px] rounded-full text-[16px] font-bold bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                    className="w-full h-[52px] rounded-full text-[16px] font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-elevation-2"
                     onClick={() => {
                       onClose();
                       navigate('/checkout');
@@ -174,51 +190,33 @@ const CartDrawer: React.FC = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Delete Item Confirmation */}
-      <AlertDialog open={!!deleteItemDialog} onOpenChange={() => setDeleteItemDialog(null)}>
-        <AlertDialogContent dir={dir} className="bg-surface-container rounded-2xl shadow-elevation-3 max-w-[320px]">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm font-semibold">{t('confirmDelete')}</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              {t('confirmDeleteMessage')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-row gap-2 justify-end sm:space-x-0">
-            <AlertDialogCancel className="rounded-full h-8 text-xs px-4 mt-0">
-              {t('cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full h-8 text-xs px-4"
-            >
-              {t('confirm')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Empty Cart Confirmation */}
-      <AlertDialog open={showEmptyCartDialog} onOpenChange={setShowEmptyCartDialog}>
-        <AlertDialogContent dir={dir} className="bg-surface-container rounded-2xl shadow-elevation-3 max-w-[320px]">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm font-semibold">{t('emptyCartButton')}</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              {t('confirmEmptyCart')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-row gap-2 justify-end sm:space-x-0">
-            <AlertDialogCancel className="rounded-full h-8 text-xs px-4 mt-0">
-              {t('cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmEmptyCart}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full h-8 text-xs px-4"
-            >
-              {t('confirm')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {[
+        { open: !!deleteItemDialog, onChange: () => setDeleteItemDialog(null), title: t('confirmDelete'), msg: t('confirmDeleteMessage'), action: handleConfirmDelete, cta: tx({ ar: 'حذف', he: 'מחק', en: 'Remove' }) },
+        { open: showEmptyCartDialog, onChange: setShowEmptyCartDialog, title: t('emptyCartButton'), msg: t('confirmEmptyCart'), action: handleConfirmEmptyCart, cta: tx({ ar: 'إفراغ', he: 'רוקן', en: 'Empty' }) },
+      ].map((d, i) => (
+        <AlertDialog key={i} open={d.open} onOpenChange={d.onChange as (o: boolean) => void}>
+          <AlertDialogContent dir={dir} className="w-[calc(100%-40px)] max-w-[340px] rounded-[24px] border-outline-variant bg-background p-[24px] gap-[0px] shadow-elevation-3">
+            <div className="mx-auto mb-[14px] flex h-[52px] w-[52px] items-center justify-center rounded-full bg-destructive/10">
+              <Trash2 className="h-[22px] w-[22px] text-destructive" />
+            </div>
+            <AlertDialogHeader className="space-y-[6px] text-center sm:text-center">
+              <AlertDialogTitle className="text-[17px] font-bold text-foreground">{d.title}</AlertDialogTitle>
+              <AlertDialogDescription className="text-[14px] leading-[1.5]">{d.msg}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="mt-[20px] flex flex-row gap-[10px] sm:gap-[10px]">
+              <AlertDialogCancel className="mt-0 h-[44px] flex-1 rounded-full px-[16px] text-[14px] font-semibold">
+                {t('cancel')}
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={d.action}
+                className="h-[44px] flex-1 rounded-full bg-destructive px-[16px] text-[14px] font-semibold text-destructive-foreground hover:bg-destructive/90"
+              >
+                {d.cta}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      ))}
     </>
   );
 };
