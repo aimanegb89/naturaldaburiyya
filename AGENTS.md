@@ -9,4 +9,5 @@
 - Phone sign-in uses the `whatsapp-otp` edge function (WhatsApp template `login_code`), mapping each phone to a synthetic `<digits>@phone.natural.local` account and signing in via a magic-link token hash — Lovable Cloud has no native WhatsApp OTP.
 - Manager app: `/admin` (Admin shell with OrdersBoard) and `/admin/settings` (channel toggle, push, ProductsManager).
 - Order tracking: public lookups go through the `track-order` edge function using `orders.tracking_code` (+ phone for manual search) and return only status/items/total — orders stay private under RLS.
-- Theme: `next-themes` (class, default system) with `:root`/`.dark` tokens in `src/index.css`; toggle is `ThemeToggle`.
+- Theme: `next-themes` (class, default system) with `:root`/`.dark` tokens in `src/index.css`; toggle is `ThemeToggle`, shown in the side menu.
+- Customer-facing order numbers are `orders.order_number` (random 3-digit, assigned by DB trigger, not unique forever) — lookups by number always require the phone; `tracking_code` stays the unique link key.
