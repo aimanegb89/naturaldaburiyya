@@ -74,13 +74,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, classNa
         <Heart className={cn('w-[16px] h-[16px]', liked ? 'fill-secondary text-secondary' : 'text-foreground/70')} />
       </button>
 
-      {onQuickView && (
-        <button
-          onClick={() => onQuickView(product)}
-          className="absolute top-[calc(100%-0px)] hidden"
-          aria-hidden
-        />
-      )}
 
       <div className="flex flex-col flex-1 p-[12px] gap-[4px]">
         <Link to={`/product/${product.id}`}>
