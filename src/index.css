@@ -40,6 +40,7 @@
     --md-shadow: 225 20% 10%;
 
     /* Map to existing tokens for compatibility */
+    --on-hero: 40 30% 97%;
     --background: var(--md-surface);
     --foreground: var(--md-on-surface);
     --card: var(--md-surface-container-low);
