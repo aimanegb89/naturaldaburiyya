@@ -16,6 +16,7 @@ const pushMsg: Record<string, string> = {
   unsupported: 'هذا المتصفح لا يدعم الإشعارات (على iPhone أضف التطبيق إلى الشاشة الرئيسية أولاً)',
   'open-in-new-tab': 'افتح صفحة الإدارة في نافذة مستقلة ثم أعد المحاولة',
   denied: 'الإشعارات محظورة — فعّلها من إعدادات الموقع في المتصفح',
+  failed: 'هذا الجهاز مسجّل لحساب مدير آخر — سجّل خروجه أولاً ثم أعد المحاولة',
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
