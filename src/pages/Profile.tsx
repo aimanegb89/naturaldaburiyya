@@ -297,7 +297,7 @@ const Profile = () => {
         <h1 className="md-display-small text-foreground mb-8">{t('myProfile')}</h1>
 
         <Tabs defaultValue="profile" className="w-full" dir={dir}>
-          <TabsList className="grid w-full ${isPhoneAccount ? 'grid-cols-4' : 'grid-cols-5'} mb-8 bg-surface-container-high rounded-full p-[3px] h-auto">
+          <TabsList className={`grid w-full ${isPhoneAccount ? 'grid-cols-4' : 'grid-cols-5'} mb-8 bg-surface-container-high rounded-full p-[3px] h-auto`}>
             <TabsTrigger 
               value="profile" 
               className="gap-[6px] rounded-full py-[8px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-elevation-1"
