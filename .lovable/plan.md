@@ -15,3 +15,12 @@
 - New `src/pages/Contact.tsx` wrapped in `AppShell`; route added in `App.tsx`; Header links changed from `/#contact` to `/contact`.
 - `Footer` removed from `AppShell`; its contact content and copyright move to the Contact page.
 - Extract the install logic from `InstallBanner.tsx` into a small `useInstallPrompt` hook, reused by the banner and a new `InstallAppCard` in `SettingsPage.tsx`.
+
+## 3. Separate manager app (fixes install opening the shop)
+Right now there is only one app definition, and it always starts at the shop home page, so installing from `/admin` still opens the customer app.
+- Add a second app definition for managers: name "Natural Admin", starts at `/admin`, its own identity so it installs alongside the shop app.
+- On manager pages, the site switches to this manager definition (and iPhone home-screen title "Natural Admin"), so installing from there opens the manager screen.
+- The new Install button in Settings uses this manager app.
+- If you already installed it, delete the old home-screen icon and install again after publishing (phones remember the old start page).
+
+Technical: `public/manifest-admin.webmanifest` (`id`/`start_url` `/admin`, `scope` `/admin`); the `Admin` shell swaps the `<link rel="manifest">` href and `apple-mobile-web-app-title` on mount and restores them on unmount.
