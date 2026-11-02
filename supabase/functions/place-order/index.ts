@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
         const { data: a } = await admin.from('addresses').select('id').eq('id', b.address_id).eq('user_id', userId).maybeSingle();
         addressId = a?.id ?? null;
       } else if (b.save_address) {
-        const { data: a } = await admin.from('addresses').insert({ user_id: userId, label: 'Delivery', street: b.street, city: b.city, postal_code: b.postal || null, phone: b.phone }).select('id, tracking_code').single();
+        const { data: a } = await admin.from('addresses').insert({ user_id: userId, label: 'Delivery', street: b.street, city: b.city, postal_code: b.postal || null, phone: b.phone }).select('id').single();
         addressId = a?.id ?? null;
       }
     }
@@ -65,17 +65,17 @@ Deno.serve(async (req) => {
     const { data: order, error: oErr } = await admin.from('orders').insert({
       user_id: userId, address_id: addressId, total_amount: total, status: 'new',
       notes: b.notes || null, customer_name: b.name, customer_phone: b.phone, delivery_address: addressText,
-    }).select('id').single();
+    }).select('id, tracking_code, order_number').single();
     if (oErr) throw oErr;
     const { error: iErr } = await admin.from('order_items').insert(lines.map(({ name_ar: _n, ...l }) => ({ ...l, order_id: order.id })));
     if (iErr) throw iErr;
 
     let pushed = 0;
     try {
-      pushed = await pushToAdmins(admin, `طلب جديد #${order.id.slice(0, 6)} – ₪${total}`, `${b.name} · ${lines.map((l) => `${l.name_ar}×${l.quantity}`).join('، ')}`);
+      pushed = await pushToAdmins(admin, `طلب جديد #${order.order_number ?? order.id.slice(0, 6)} – ₪${total}`, `${b.name} · ${lines.map((l) => `${l.name_ar}×${l.quantity}`).join('، ')}`);
     } catch (e) { console.error('push failed', e); }
 
-    return json({ id: order.id, tracking_code: order.tracking_code, total, pushed });
+    return json({ id: order.id, tracking_code: order.tracking_code, order_number: order.order_number, total, pushed });
   } catch (e) {
     console.error(e);
     return json({ error: String(e) }, 500);
