@@ -33,7 +33,16 @@ export default function SettingsPage() {
   useEffect(() => {
     supabase.from('store_settings').select('order_channel').eq('id', 1).maybeSingle()
       .then(({ data }) => setChannel((data?.order_channel as 'push' | 'whatsapp') ?? 'push'));
+    supabase.from('store_settings').select('auto_done_minutes').eq('id', 1).maybeSingle()
+      .then(({ data }) => setAutoMins(String(data?.auto_done_minutes ?? 60)));
   }, []);
+  const [autoMins, setAutoMins] = useState('60');
+  const saveAuto = async () => {
+    const n = Math.round(Number(autoMins));
+    if (!(n >= 10 && n <= 1440)) { toast.error('أدخل رقمًا بين 10 و 1440 دقيقة'); return; }
+    const { error } = await supabase.from('store_settings').update({ auto_done_minutes: n, updated_at: new Date().toISOString() }).eq('id', 1);
+    if (error) toast.error('فشل الحفظ'); else toast.success('تم الحفظ');
+  };
 
   const saveChannel = async (v: 'push' | 'whatsapp') => {
     const prev = channel; setChannel(v);
@@ -55,6 +64,16 @@ export default function SettingsPage() {
         <div className="flex gap-[8px]">
           {opt('push', 'إشعار للتطبيق', 'الطلب يصل إلى صفحة الطلبات مع إشعار')}
           {opt('whatsapp', 'رسالة واتساب', 'يُحفظ الطلب ويُفتح واتساب للزبون أيضًا')}
+        </div>
+      </Section>
+
+      <Section title="إنهاء الطلبات تلقائيًا">
+        <p className="text-[12px] text-muted-foreground mb-[8px]">الطلب الذي لم يُحدَّث يصبح «جاهز» تلقائيًا بعد هذه المدة من استلامه.</p>
+        <div className="flex items-center gap-[8px]">
+          <input type="number" min={10} max={1440} value={autoMins} onChange={(e) => setAutoMins(e.target.value)} dir="ltr"
+            className="w-[90px] h-[38px] rounded-[10px] border border-input bg-background px-[10px] text-[14px]" />
+          <span className="text-[13px]">دقيقة</span>
+          <button onClick={saveAuto} className="ms-auto h-[38px] px-[14px] rounded-[10px] bg-primary text-primary-foreground text-[13px] font-bold">حفظ</button>
         </div>
       </Section>
 

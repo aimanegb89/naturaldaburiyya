@@ -124,6 +124,12 @@ const Checkout: React.FC = () => {
       if (placeErr || !placed?.id) throw new Error(placed?.error ?? placeErr?.message ?? 'failed');
       orderId = placed.tracking_code ?? placed.id;
       setConfirmedNumber(placed.order_number ?? null);
+      if (placed.tracking_code) {
+        try {
+          const prev: string[] = JSON.parse(localStorage.getItem('natural-my-orders') || '[]');
+          localStorage.setItem('natural-my-orders', JSON.stringify([placed.tracking_code, ...prev.filter((c) => c !== placed.tracking_code)].slice(0, 10)));
+        } catch { /* ignore */ }
+      }
 
       if (channel === 'whatsapp') {
       const orderLines = items

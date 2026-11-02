@@ -54,6 +54,33 @@ export default function TrackOrder() {
 
   useEffect(() => { if (urlCode) lookup(urlCode); }, [urlCode, lookup]);
 
+  const [active, setActive] = useState<Tracked[]>([]);
+  const loadActive = useCallback(async () => {
+    let saved: string[] = [];
+    try { saved = JSON.parse(localStorage.getItem('natural-my-orders') || '[]'); } catch { /* ignore */ }
+    let mine: string[] = [];
+    if (user) {
+      const { data } = await supabase.from('orders').select('tracking_code').eq('user_id', user.id)
+        .gte('created_at', new Date(Date.now() - 2 * 86400000).toISOString());
+      mine = (data ?? []).map((r: any) => r.tracking_code).filter(Boolean);
+    }
+    const codes = Array.from(new Set([...saved, ...mine]));
+    if (!codes.length) { setActive([]); return; }
+    const { data } = await supabase.functions.invoke('track-order', { body: { codes } });
+    const all: Tracked[] = data?.orders ?? [];
+    const fresh = all.filter((o) => stepOf(o.status) < 2 || Date.now() - new Date(o.updated_at).getTime() < 30 * 60000)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    setActive(fresh);
+    const keep = new Set(fresh.map((o) => o.tracking_code));
+    localStorage.setItem('natural-my-orders', JSON.stringify(saved.filter((c) => keep.has(c) || !all.some((o) => o.tracking_code === c))));
+  }, [user]);
+  useEffect(() => {
+    if (urlCode) return;
+    loadActive();
+    const id = setInterval(loadActive, 20000);
+    return () => clearInterval(id);
+  }, [urlCode, loadActive]);
+
   useEffect(() => {
     if (!order || stepOf(order.status) === 2) return;
     const id = setInterval(() => lookup(order.tracking_code, undefined, true), 20000);
@@ -90,6 +117,34 @@ export default function TrackOrder() {
           </TabsList>
         )}
         <TabsContent value="track" className="mt-0">
+        {!urlCode && active.length > 0 && (
+          <ul className="space-y-[10px] mb-[18px]">
+            {active.map((o) => {
+              const st = stepOf(o.status);
+              return (
+                <li key={o.tracking_code}>
+                  <button onClick={() => navigate(`/track/${o.tracking_code}`)} className="w-full text-start bg-card rounded-[16px] p-[14px] shadow-soft space-y-[10px]">
+                    <div className="flex items-center justify-between gap-[8px]">
+                      <span className="font-mono font-bold text-[16px]" dir="ltr">#{o.order_number ?? o.tracking_code}</span>
+                      <span className="font-bold">₪{o.total_amount}</span>
+                    </div>
+                    <div className="h-[8px] rounded-full bg-surface-container-high overflow-hidden">
+                      <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${[15, 55, 100][st]}%` }} />
+                    </div>
+                    <div className="grid grid-cols-3 text-[12px] font-semibold">
+                      {steps.map(({ label }, i) => (
+                        <span key={i} className={`${i === 0 ? 'text-start' : i === 1 ? 'text-center' : 'text-end'} ${i <= st ? 'text-primary' : 'text-muted-foreground'}`}>{label}</span>
+                      ))}
+                    </div>
+                    <p className="text-[13px] text-muted-foreground truncate">
+                      {o.order_items.map((it) => `${orderItemName(it.product_id, it.product_name, language)}×${it.quantity}`).join('، ')}
+                    </p>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
         {!urlCode && (
           <form onSubmit={submit} className="bg-card rounded-[16px] p-[16px] shadow-soft space-y-[10px] mb-[18px]">
             <Input value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" placeholder={tx({ ar: 'رقم الطلب (مثال: 482)', he: 'מספר הזמנה (לדוגמה 482)', en: 'Order number (e.g. 482)' })} className="font-mono uppercase" dir="ltr" />

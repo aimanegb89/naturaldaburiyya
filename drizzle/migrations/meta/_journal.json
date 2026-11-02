@@ -43,6 +43,13 @@
       "when": 1793648965535,
       "tag": "0005_order_short_number",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793649868832,
+      "tag": "0006_auto_done_minutes",
+      "breakpoints": true
     }
   ]
 }
