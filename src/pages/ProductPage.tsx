@@ -51,7 +51,7 @@ const ProductPage: React.FC = () => {
 
   return (
     <AppShell>
-      <div key={p.id} className="max-w-[1200px] mx-auto px-[16px] md:px-[24px] py-[16px] md:py-[40px]">
+      <div key={p.id} className="max-w-[1200px] mx-auto px-[16px] md:px-[24px] pt-[16px] pb-[120px] md:py-[40px]">
         <nav className="text-[13px] text-muted-foreground mb-[16px] flex gap-[6px]">
           <Link to="/" className="hover:text-primary">{t('home')}</Link>/
           <Link to="/shop" className="hover:text-primary">{tx({ ar: 'المتجر', he: 'חנות', en: 'Shop' })}</Link>/
