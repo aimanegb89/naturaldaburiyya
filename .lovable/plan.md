@@ -6,12 +6,14 @@
   - **Order history**: signed-in customers see their past orders with status and a "Track" link; guests see a sign-in prompt.
 - Bottom bar becomes: Home, Shop, My Orders, Cart. Profile and Wishlist are removed from it.
 
-## 2. Side menu
-- Add **Profile** (or Sign in when signed out), **Wishlist**, **My Orders** and **Settings** links.
-- Language and theme switches move out of the menu into Settings.
+## 2. Side menu (redesigned)
+- Links: Shop, Profile (or Sign in when signed out), Wishlist, Contact. About and Benefits removed; My Orders not shown here.
+- Language (العربية / עברית / English) and Theme (Light / Dark / Auto) selectors stay in the menu, in a neat "Preferences" section at the bottom.
+- Cleaner look: brand strip at top, icon + label rows with clear active state, soft dividers, properly aligned close button.
 
-## 3. Settings page
-- New page `/settings` with: Language (العربية / עברית / English) and Theme (Light / Dark / Auto).
+## 3. Logo in the banner
+- Remove the logo from the top bar (keep a small "Natural" name).
+- Show the business logo prominently inside the home banner, on phones and computers.
 
 ## 4. Shop page
 - Opening Shop shows all products grouped by category (a heading per category), no sorting applied by default.
