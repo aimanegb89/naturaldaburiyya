@@ -351,6 +351,7 @@ const Profile = () => {
                   <Label className="md-label-large">{t('email')}</Label>
                   <Input value={user?.email || ''} disabled className="bg-surface-container-high" />
                 </div>
+                )}
                 <div className="space-y-2">
                   <Label className="md-label-large">{t('fullName')}</Label>
                   <Input 
