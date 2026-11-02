@@ -73,7 +73,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
             wrapperClassName="w-full h-full"
           />
           {product.isPopular && (
-            <span className="absolute top-2 start-2 bg-secondary text-secondary-foreground text-[10px] font-medium px-2 py-0.5 rounded-full shadow-elevation-1 flex items-center gap-1">
+            <span className="absolute top-2 start-2 bg-secondary text-secondary-foreground text-[12px] font-medium px-2 py-0.5 rounded-full shadow-elevation-1 flex items-center gap-1">
               ⭐ {t('popular') || 'Popular'}
             </span>
           )}
@@ -87,12 +87,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, isOpen
 
           {/* Nutrition — compact inline pills */}
           <div>
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+            <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
               {t('nutritionInfo')}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(nutrition).map(([key, value]) => (
-                <span key={key} className="inline-flex items-center gap-1 bg-surface-container-high rounded-full px-2.5 py-1 text-[10px]">
+                <span key={key} className="inline-flex items-center gap-1 bg-surface-container-high rounded-full px-2.5 py-1 text-[12px]">
                   <span className="text-muted-foreground capitalize">{t(key as TranslationKey) || key}</span>
                   <span className="font-semibold text-foreground">{value}</span>
                 </span>

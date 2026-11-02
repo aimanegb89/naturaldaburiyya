@@ -3,12 +3,13 @@ import { Heart } from 'lucide-react';
 import AppShell from '@/components/AppShell';
 import ProductCard from '@/components/ProductCard';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { catalog } from '@/lib/catalog';
+import { useCatalog } from '@/lib/catalog';
 import { useTx } from '@/lib/i18n';
 
 const Wishlist = () => {
   const { ids } = useWishlist();
   const tx = useTx();
+  const { catalog } = useCatalog();
   const list = catalog.filter((p) => ids.includes(p.id));
   return (
     <AppShell>

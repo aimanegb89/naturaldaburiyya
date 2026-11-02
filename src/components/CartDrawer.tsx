@@ -135,7 +135,7 @@ const CartDrawer: React.FC = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <h4 className="text-[14px] font-bold text-foreground truncate">{getName(item)}</h4>
-                        <span className="inline-block mt-[4px] rounded-full bg-surface-container-high px-[8px] py-[2px] text-[11px] font-semibold text-muted-foreground">{sizeLabel(item.size)}</span>
+                        <span className="inline-block mt-[4px] rounded-full bg-surface-container-high px-[8px] py-[2px] text-[12px] font-semibold text-muted-foreground">{sizeLabel(item.size)}</span>
                         <p className="text-[15px] font-bold text-primary mt-[6px]">{t("currency")}{item.price * item.quantity}</p>
                       </div>
                       <div className="flex flex-col items-end justify-between gap-[6px] flex-shrink-0">

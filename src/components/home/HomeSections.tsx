@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Leaf, FlaskConicalOff, Truck, ShieldCheck, ArrowLeft, ArrowRight, Clock, MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { catalog, type CatalogProduct } from '@/lib/catalog';
+import { useCatalog, type CatalogProduct } from '@/lib/catalog';
 import ProductCard from '@/components/ProductCard';
 import ProductDetailModal from '@/components/ProductDetailModal';
 import ShimmerImage from '@/components/ShimmerImage';
@@ -64,6 +64,7 @@ export const CategoryGrid = () => {
 export const BestSellers = () => {
   const tx = useTx();
   const [quick, setQuick] = useState<CatalogProduct | null>(null);
+  const { catalog } = useCatalog();
   const list = [...catalog].sort((a, b) => b.meta.popularity - a.meta.popularity).slice(0, 8);
   return (
     <section className={`${wrap} pt-[56px]`}>

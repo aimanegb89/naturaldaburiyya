@@ -206,7 +206,7 @@
     @apply text-xs font-medium leading-normal tracking-widest uppercase;
   }
   .md-label-small {
-    @apply text-[11px] font-medium leading-normal tracking-widest uppercase;
+    @apply text-[12px] font-medium leading-normal tracking-widest uppercase;
   }
 
   /* Material Elevation */

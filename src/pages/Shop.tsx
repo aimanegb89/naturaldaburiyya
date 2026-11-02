@@ -6,7 +6,7 @@ import ProductCard from '@/components/ProductCard';
 import ProductDetailModal from '@/components/ProductDetailModal';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { catalog, searchCatalog, type CatalogProduct } from '@/lib/catalog';
+import { searchCatalog, useCatalog, type CatalogProduct } from '@/lib/catalog';
 import { HEALTH_GOALS } from '@/data/product-meta';
 import { useTx, pick, type Tri } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -72,7 +72,8 @@ const Shop: React.FC = () => {
   const setSort = (s: Sort) => { const n = new URLSearchParams(params); n.set('sort', s); setParams(n, { replace: true }); };
   const clear = () => setParams(new URLSearchParams(sort !== 'default' ? { sort } : {}), { replace: true });
 
-  const list = useMemo(() => filterAndSort(q ? searchCatalog(q, language) : catalog, cats, goals, sort), [q, language, cats.join(), goals.join(), sort]);
+  const { catalog, version, loaded } = useCatalog();
+  const list = useMemo(() => filterAndSort(q ? searchCatalog(q, language) : catalog, cats, goals, sort), [q, language, cats.join(), goals.join(), sort, version]);
   const activeCount = cats.length + goals.length + (q ? 1 : 0);
 
   const Filters = (
@@ -119,7 +120,7 @@ const Shop: React.FC = () => {
         <div className="flex items-center gap-[8px] mb-[20px] flex-wrap">
           <button onClick={() => setSheet(true)} className="md:hidden h-[40px] px-[14px] rounded-full border border-outline-variant bg-surface-container-lowest flex items-center gap-[8px] text-[14px] font-semibold">
             <SlidersHorizontal className="w-[16px] h-[16px]" /> {tx({ ar: 'فلترة', he: 'סינון', en: 'Filter' })}
-            {activeCount > 0 && <span className="w-[20px] h-[20px] rounded-full bg-primary text-primary-foreground text-[11px] flex items-center justify-center">{activeCount}</span>}
+            {activeCount > 0 && <span className="w-[20px] h-[20px] rounded-full bg-primary text-primary-foreground text-[12px] flex items-center justify-center">{activeCount}</span>}
           </button>
           {q && (
             <span className="h-[36px] px-[12px] rounded-full bg-surface-container flex items-center gap-[6px] text-[13px]">

@@ -37,7 +37,7 @@ const BottomNav: React.FC = () => {
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] leading-none ${item.active ? 'text-primary font-bold' : 'text-foreground/60 font-medium'}`}>{item.label}</span>
+              <span className={`text-[12px] leading-none ${item.active ? 'text-primary font-bold' : 'text-foreground/60 font-medium'}`}>{item.label}</span>
             </button>
           );
         })}
