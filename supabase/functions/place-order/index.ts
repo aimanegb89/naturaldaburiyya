@@ -1,7 +1,7 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { z } from 'npm:zod@3';
-import { pushToAdmins } from '../_shared/fcm.ts';
+import { allow, clientIp, pushToAdmins } from '../_shared/fcm.ts';
 
 const Body = z.object({
   name: z.string().trim().min(1).max(100),
@@ -12,6 +12,7 @@ const Body = z.object({
   notes: z.string().trim().max(500).optional().default(''),
   address_id: z.string().uuid().nullable().optional(),
   save_address: z.boolean().optional().default(false),
+  idempotency_key: z.string().uuid().optional(),
   items: z.array(z.object({
     id: z.string().min(1).max(80),
     size: z.enum(['small', 'large']),
@@ -19,14 +20,26 @@ const Body = z.object({
   })).min(1).max(50),
 });
 
+const digits = (s: string) => s.replace(/\D/g, '').slice(-9);
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   try {
-    const parsed = Body.safeParse(await req.json());
-    if (!parsed.success) return json({ error: parsed.error.flatten().fieldErrors }, 400);
+    const parsed = Body.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) return json({ error: 'validation', fields: Object.keys(parsed.error.flatten().fieldErrors) }, 400);
     const b = parsed.data;
     const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+    const sel = 'id, tracking_code, order_number, total_amount';
+    if (b.idempotency_key) {
+      const { data: prev } = await admin.from('orders').select(sel).eq('idempotency_key', b.idempotency_key).maybeSingle();
+      if (prev) return json({ id: prev.id, tracking_code: prev.tracking_code, order_number: prev.order_number, total: Number(prev.total_amount), pushed: 0, duplicate: true });
+    }
+
+    if (!(await allow(admin, `order:ip:${clientIp(req)}`, 15)) || !(await allow(admin, `order:phone:${digits(b.phone)}`, 5))) {
+      return json({ error: 'rate_limited' }, 429);
+    }
 
     let userId: string | null = null;
     const token = req.headers.get('Authorization')?.replace('Bearer ', '');
@@ -37,16 +50,18 @@ Deno.serve(async (req) => {
 
     // Recompute prices from the catalog — never trust client prices.
     const ids = [...new Set(b.items.map((i) => i.id))];
-    const { data: prods, error: pErr } = await admin.from('products').select('id,name_ar,name_en,price_small,price_large,is_available').in('id', ids);
+    const { data: prods, error: pErr } = await admin.from('products').select('id,name_ar,name_he,name_en,price_small,price_large,is_available').in('id', ids);
     if (pErr) throw pErr;
     const map = new Map((prods ?? []).map((p) => [p.id, p]));
     const lines = [];
     for (const it of b.items) {
       const p = map.get(it.id);
-      if (!p) return json({ error: `Unknown product ${it.id}` }, 400);
-      if (!p.is_available) return json({ error: `${p.name_ar} غير متوفر` }, 400);
-      const price = Number(it.size === 'large' && Number(p.price_large) ? p.price_large : p.price_small);
-      lines.push({ product_id: p.id, product_name: p.name_en || p.name_ar, name_ar: p.name_ar, size: it.size, quantity: it.quantity, price });
+      if (!p) return json({ error: 'unknown_product', product_id: it.id }, 400);
+      if (!p.is_available) return json({ error: 'product_unavailable', product_id: p.id, name: { ar: p.name_ar, he: p.name_he, en: p.name_en } }, 409);
+      const large = Number(p.price_large);
+      const size = it.size === 'large' && large > 0 ? 'large' : 'small';
+      const price = size === 'large' ? large : Number(p.price_small);
+      lines.push({ product_id: p.id, product_name: p.name_en || p.name_ar, name_ar: p.name_ar, size, quantity: it.quantity, price });
     }
     const total = lines.reduce((s, l) => s + l.price * l.quantity, 0);
     const addressText = `${b.street}, ${b.city}${b.postal ? ` (${b.postal})` : ''}`;
@@ -62,13 +77,19 @@ Deno.serve(async (req) => {
       }
     }
 
-    const { data: order, error: oErr } = await admin.from('orders').insert({
-      user_id: userId, address_id: addressId, total_amount: total, status: 'new',
-      notes: b.notes || null, customer_name: b.name, customer_phone: b.phone, delivery_address: addressText,
-    }).select('id, tracking_code, order_number').single();
-    if (oErr) throw oErr;
-    const { error: iErr } = await admin.from('order_items').insert(lines.map(({ name_ar: _n, ...l }) => ({ ...l, order_id: order.id })));
-    if (iErr) throw iErr;
+    const { data: rows, error: oErr } = await admin.rpc('create_order_with_items', {
+      p_order: { user_id: userId, address_id: addressId, total_amount: total, notes: b.notes, customer_name: b.name, customer_phone: b.phone, delivery_address: addressText, idempotency_key: b.idempotency_key ?? null },
+      p_items: lines.map(({ name_ar: _n, ...l }) => l),
+    });
+    if (oErr) {
+      if (oErr.code === '23505' && b.idempotency_key) {
+        const { data: prev } = await admin.from('orders').select(sel).eq('idempotency_key', b.idempotency_key).maybeSingle();
+        if (prev) return json({ id: prev.id, tracking_code: prev.tracking_code, order_number: prev.order_number, total: Number(prev.total_amount), pushed: 0, duplicate: true });
+      }
+      console.error('create order failed', oErr);
+      return json({ error: 'server_error' }, 500);
+    }
+    const order = (rows as any[])[0];
 
     let pushed = 0;
     try {
@@ -78,6 +99,6 @@ Deno.serve(async (req) => {
     return json({ id: order.id, tracking_code: order.tracking_code, order_number: order.order_number, total, pushed });
   } catch (e) {
     console.error(e);
-    return json({ error: String(e) }, 500);
+    return json({ error: 'server_error' }, 500);
   }
 });
