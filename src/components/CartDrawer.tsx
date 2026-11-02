@@ -62,7 +62,7 @@ const CartDrawer: React.FC = () => {
           dir={dir}
         >
           {/* Header with clear cart button */}
-          <SheetHeader className="pr-8 flex-shrink-0">
+          <SheetHeader className="pe-[40px] flex-shrink-0">
             <div className="flex items-center justify-between">
               <SheetTitle className="flex items-center gap-[8px] text-[20px] font-display text-foreground">
                 <ShoppingCart className="w-[18px] h-[18px] text-primary" />

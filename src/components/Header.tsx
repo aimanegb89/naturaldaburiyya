@@ -88,7 +88,7 @@ const Header: React.FC = () => {
 
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent side={dir === 'rtl' ? 'right' : 'left'} className="w-[280px] bg-background" dir={dir}>
-          <div className="flex items-center gap-[10px] mb-[24px]">
+          <div className="flex items-center gap-[10px] mb-[24px] pe-[44px] min-h-[44px]">
             <img src={logo} alt="" className="w-[44px] h-[44px] rounded-full" />
             <span className="font-display text-[20px] text-primary font-semibold">Natural</span>
           </div>

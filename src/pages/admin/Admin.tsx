@@ -128,7 +128,7 @@ export default function Admin() {
                 <div className="font-bold text-[15px] truncate">{r.name_ar}</div>
                 <div className="text-[12px] text-muted-foreground">{CAT_AR[r.category]} · ₪{r.price_small}{Number(r.price_large) ? ` / ₪${r.price_large}` : ''}</div>
               </div>
-              <div className="flex flex-col items-center gap-[2px]">
+              <div className="flex flex-col items-center gap-[4px] w-[64px] shrink-0">
                 <Switch checked={r.is_available} onCheckedChange={(v) => toggle(r, v)} />
                 <span className={`text-[11px] ${r.is_available ? 'text-primary' : 'text-destructive'}`}>{r.is_available ? 'متوفر' : 'غير متوفر'}</span>
               </div>
