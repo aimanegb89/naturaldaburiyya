@@ -108,7 +108,7 @@ const Profile = () => {
     if (!user) return;
     const { data: ordersData, error } = await supabase
       .from('orders')
-      .select('*, order_items(product_name, quantity, size, price)')
+      .select('*, order_items(product_id, product_name, quantity, size, price)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     
@@ -297,7 +297,7 @@ const Profile = () => {
         <h1 className="md-display-small text-foreground mb-8">{t('myProfile')}</h1>
 
         <Tabs defaultValue="profile" className="w-full" dir={dir}>
-          <TabsList className="grid w-full grid-cols-5 mb-8 bg-surface-container-high rounded-full p-[3px] h-auto">
+          <TabsList className="grid w-full ${isPhoneAccount ? 'grid-cols-4' : 'grid-cols-5'} mb-8 bg-surface-container-high rounded-full p-[3px] h-auto">
             <TabsTrigger 
               value="profile" 
               className="gap-[6px] rounded-full py-[8px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-elevation-1"
@@ -605,7 +605,7 @@ const Profile = () => {
                       if (!product) return (
                         <div key={productId} className="bg-surface-container rounded-xl p-3 flex items-center justify-between gap-4">
                           <p className="text-[14px] text-muted-foreground">{tx({ ar: 'منتج لم يعد متوفرًا', he: 'מוצר שאינו זמין עוד', en: 'Product no longer available' })}</p>
-                          <Button variant="ghost" size="sm" onClick={() => removeFavorite(productId)}>{t('removedFromFavorites') ? '✕' : '✕'}</Button>
+                          <Button variant="ghost" size="sm" aria-label={t("removedFromFavorites")} onClick={() => removeFavorite(productId)}>✕</Button>
                         </div>
                       );
                       return (
