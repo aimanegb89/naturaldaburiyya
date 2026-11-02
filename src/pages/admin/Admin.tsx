@@ -4,11 +4,13 @@ import { ClipboardList, Settings, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { useAdminManifest } from '@/lib/installPrompt';
 
 /** Manager app shell: sign-in + admin gate, top title and Orders | Settings menu. */
 export default function Admin() {
   const { user, loading, signOut } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  useAdminManifest();
 
   useEffect(() => {
     if (!user) { setIsAdmin(null); return; }

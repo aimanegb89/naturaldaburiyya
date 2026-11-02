@@ -23,6 +23,7 @@ import Checkout from "./pages/Checkout";
 import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
 import TrackOrder from "./pages/TrackOrder";
+import Contact from "./pages/Contact";
 import { ThemeProvider } from "next-themes";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
                     <Route path="/shop" element={<Shop />} />
                     <Route path="/product/:id" element={<ProductPage />} />
                     <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/contact" element={<Contact />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/checkout" element={<Checkout />} />

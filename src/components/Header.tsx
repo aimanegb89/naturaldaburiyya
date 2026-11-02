@@ -35,13 +35,13 @@ const Header: React.FC = () => {
     { to: '/shop', icon: Store, label: tx({ ar: 'المتجر', he: 'חנות', en: 'Shop' }), match: (p: string) => p.startsWith('/shop') },
     { to: user ? '/profile' : '/auth', icon: User, label: user ? tx({ ar: 'حسابي', he: 'הפרופיל שלי', en: 'My profile' }) : tx({ ar: 'تسجيل الدخول', he: 'התחברות', en: 'Sign in' }), match: (p: string) => p === '/profile' || p === '/auth' },
     { to: '/wishlist', icon: Heart, label: tx({ ar: 'المفضلة', he: 'מועדפים', en: 'Wishlist' }), match: (p: string) => p === '/wishlist', badge: ids.length },
-    { to: '/#contact', icon: Phone, label: tx({ ar: 'تواصل معنا', he: 'צור קשר', en: 'Contact us' }) },
+    { to: '/contact', icon: Phone, label: tx({ ar: 'تواصل معنا', he: 'צור קשר', en: 'Contact us' }), match: (p: string) => p === '/contact' },
   ];
   const [searchOpen, setSearchOpen] = useState(false);
 
   const links = [
     { to: '/shop', label: tx({ ar: 'المتجر', he: 'חנות', en: 'Shop' }) },
-    { to: '/#contact', label: tx({ ar: 'تواصل', he: 'צור קשר', en: 'Contact' }) },
+    { to: '/contact', label: tx({ ar: 'تواصل', he: 'צור קשר', en: 'Contact' }) },
   ];
 
   const iconBtn = 'relative w-[40px] h-[40px] rounded-full flex items-center justify-center text-foreground hover:bg-surface-container transition-colors';
