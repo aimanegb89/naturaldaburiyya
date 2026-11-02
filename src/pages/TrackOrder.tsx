@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import AppShell from '@/components/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTx } from '@/lib/i18n';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,7 +30,6 @@ export default function TrackOrder() {
   const tx = useTx();
   const { language } = useLanguage();
   const [code, setCode] = useState(urlCode ?? '');
-  const [phone, setPhone] = useState('');
   const [order, setOrder] = useState<Tracked | null>(null);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -63,8 +63,8 @@ export default function TrackOrder() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const c = code.trim().replace(/^#/, '').toUpperCase();
-    if (!c || !phone.trim()) return;
-    lookup(c, phone.trim());
+    if (!c) return;
+    lookup(c);
   };
 
   const steps = [
@@ -79,13 +79,20 @@ export default function TrackOrder() {
       <div className="max-w-[560px] mx-auto px-[16px] py-[24px] text-start">
         <h1 className="font-display text-[26px] font-bold mb-[6px]">{urlCode ? tx({ ar: 'تتبّع طلبك', he: 'מעקב הזמנה', en: 'Track your order' }) : tx({ ar: 'طلباتي', he: 'ההזמנות שלי', en: 'My orders' })}</h1>
         <p className="text-[14px] text-muted-foreground mb-[18px]">
-          {tx({ ar: 'أدخل رقم الطلب ورقم الهاتف الذي استخدمته.', he: 'הזינו את מספר ההזמנה ואת מספר הטלפון.', en: 'Enter your order number and the phone number you used.' })}
+          {tx({ ar: 'أدخل رقم الطلب لمعرفة حالته.', he: 'הזינו את מספר ההזמנה.', en: 'Enter your order number to see its status.' })}
         </p>
 
+        <Tabs defaultValue="track" dir={language === 'en' ? 'ltr' : 'rtl'}>
+        {!urlCode && (
+          <TabsList className="grid grid-cols-2 w-full mb-[16px]">
+            <TabsTrigger value="track">{tx({ ar: 'تتبّع طلب', he: 'מעקב', en: 'Track' })}</TabsTrigger>
+            <TabsTrigger value="history">{tx({ ar: 'سجل الطلبات', he: 'היסטוריה', en: 'History' })}</TabsTrigger>
+          </TabsList>
+        )}
+        <TabsContent value="track" className="mt-0">
         {!urlCode && (
           <form onSubmit={submit} className="bg-card rounded-[16px] p-[16px] shadow-soft space-y-[10px] mb-[18px]">
             <Input value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" placeholder={tx({ ar: 'رقم الطلب (مثال: 482)', he: 'מספר הזמנה (לדוגמה 482)', en: 'Order number (e.g. 482)' })} className="font-mono uppercase" dir="ltr" />
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder={tx({ ar: 'رقم الهاتف', he: 'מספר טלפון', en: 'Phone number' })} dir="ltr" />
             <Button type="submit" className="w-full gap-[8px]" disabled={loading}>
               <Search className="w-[16px] h-[16px]" />{tx({ ar: 'تتبّع', he: 'מעקב', en: 'Track' })}
             </Button>
@@ -112,19 +119,21 @@ export default function TrackOrder() {
               </Button>
             </div>
 
-            <ol className="grid grid-cols-3 gap-[6px]">
-              {steps.map(({ Icon, label }, i) => {
-                const reached = i <= stepOf(order.status);
-                return (
-                  <li key={i} className="flex flex-col items-center text-center gap-[6px]">
-                    <span className={`w-[40px] h-[40px] rounded-full flex items-center justify-center ${reached ? 'bg-primary text-primary-foreground' : 'bg-surface-container-high text-muted-foreground'}`}>
-                      {reached && i < stepOf(order.status) ? <Check className="w-[18px] h-[18px]" /> : <Icon className="w-[18px] h-[18px]" />}
-                    </span>
-                    <span className={`text-[12px] font-semibold ${reached ? 'text-foreground' : 'text-muted-foreground'}`}>{label}</span>
-                  </li>
-                );
-              })}
-            </ol>
+            <div>
+              <div className="h-[10px] rounded-full bg-surface-container-high overflow-hidden">
+                <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${[15, 55, 100][stepOf(order.status)]}%` }} />
+              </div>
+              <ol className="grid grid-cols-3 mt-[10px]">
+                {steps.map(({ Icon, label }, i) => {
+                  const reached = i <= stepOf(order.status);
+                  return (
+                    <li key={i} className={`flex items-center gap-[4px] text-[12px] font-semibold ${i === 0 ? 'justify-start' : i === 1 ? 'justify-center' : 'justify-end'} ${reached ? 'text-primary' : 'text-muted-foreground'}`}>
+                      {reached && i < stepOf(order.status) ? <Check className="w-[14px] h-[14px]" /> : <Icon className="w-[14px] h-[14px]" />}{label}
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
 
             <div className="border-t border-border pt-[12px] space-y-[6px]">
               {order.order_items.map((it, i) => (
@@ -143,9 +152,10 @@ export default function TrackOrder() {
           </div>
         )}
 
+        </TabsContent>
         {!urlCode && (
-          <section className="mt-[28px]">
-            <h2 className="font-display text-[20px] font-bold mb-[12px]">{tx({ ar: 'سجل الطلبات', he: 'היסטוריית הזמנות', en: 'Order history' })}</h2>
+          <TabsContent value="history" className="mt-0">
+          <section>
             {!user ? (
               <div className="bg-card rounded-[16px] p-[16px] text-center text-[14px] text-muted-foreground shadow-soft">
                 {tx({ ar: 'سجّل الدخول لرؤية طلباتك السابقة.', he: 'התחברו כדי לראות הזמנות קודמות.', en: 'Sign in to see your past orders.' })}
@@ -175,7 +185,9 @@ export default function TrackOrder() {
               </ul>
             )}
           </section>
+          </TabsContent>
         )}
+        </Tabs>
       </div>
     </AppShell>
   );
