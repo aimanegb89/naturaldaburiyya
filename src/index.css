@@ -6,41 +6,41 @@
 
 @layer base {
   :root {
-    --md-primary: 38 48% 40%;
-    --md-on-primary: 40 40% 98%;
-    --md-primary-container: 40 55% 90%;
-    --md-on-primary-container: 35 50% 18%;
-    --md-secondary: 225 12% 18%;
-    --md-on-secondary: 40 30% 96%;
-    --md-secondary-container: 225 10% 92%;
-    --md-on-secondary-container: 225 13% 14%;
-    --md-tertiary: 42 55% 55%;
-    --md-on-tertiary: 225 13% 8%;
-    --md-tertiary-container: 42 60% 90%;
-    --md-on-tertiary-container: 35 55% 18%;
-    --md-surface: 40 33% 97%;
-    --md-surface-dim: 40 18% 90%;
+    --md-primary: 150 30% 32%;
+    --md-on-primary: 0 0% 100%;
+    --md-primary-container: 140 30% 90%;
+    --md-on-primary-container: 150 40% 14%;
+    --md-secondary: 150 30% 32%;
+    --md-on-secondary: 0 0% 100%;
+    --md-secondary-container: 140 20% 93%;
+    --md-on-secondary-container: 150 30% 16%;
+    --md-tertiary: 95 22% 52%;
+    --md-on-tertiary: 0 0% 100%;
+    --md-tertiary-container: 95 30% 90%;
+    --md-on-tertiary-container: 95 35% 18%;
+    --md-surface: 0 0% 100%;
+    --md-surface-dim: 120 8% 92%;
     --md-surface-bright: 0 0% 100%;
     --md-surface-container-lowest: 0 0% 100%;
     --md-surface-container-low: 0 0% 100%;
-    --md-surface-container: 40 22% 94%;
-    --md-surface-container-high: 40 16% 90%;
-    --md-surface-container-highest: 40 12% 86%;
-    --md-on-surface: 225 12% 12%;
-    --md-on-surface-variant: 225 6% 40%;
-    --md-outline: 225 6% 60%;
-    --md-outline-variant: 40 15% 85%;
+    --md-surface-container: 120 14% 96%;
+    --md-surface-container-high: 120 10% 93%;
+    --md-surface-container-highest: 120 8% 89%;
+    --md-on-surface: 200 10% 14%;
+    --md-on-surface-variant: 200 6% 40%;
+    --md-outline: 150 6% 58%;
+    --md-outline-variant: 120 10% 88%;
     --md-error: 0 70% 45%;
     --md-on-error: 0 0% 100%;
     --md-error-container: 0 80% 92%;
     --md-on-error-container: 0 85% 20%;
-    --md-inverse-surface: 225 13% 10%;
-    --md-inverse-on-surface: 40 30% 94%;
-    --md-inverse-primary: 40 50% 66%;
-    --md-shadow: 225 20% 10%;
+    --md-inverse-surface: 150 15% 12%;
+    --md-inverse-on-surface: 120 20% 96%;
+    --md-inverse-primary: 145 35% 65%;
+    --md-shadow: 150 25% 12%;
 
     /* Map to existing tokens for compatibility */
-    --on-hero: 40 30% 97%;
+    --on-hero: 0 0% 100%;
     --background: var(--md-surface);
     --foreground: var(--md-on-surface);
     --card: var(--md-surface-container-low);
@@ -81,12 +81,12 @@
     --tropical-yellow: 45 95% 60%;
     --berry-purple: 280 50% 45%;
     --cream: 42 38% 96%;
-    --gold: 38 62% 48%;
+    --gold: 150 30% 32%;
     --terracotta: 18 52% 46%;
     --sage: 95 18% 62%;
-    --gradient-hero: linear-gradient(135deg, hsl(225 13% 8% / 0.82), hsl(38 40% 30% / 0.3));
-    --shadow-soft: 0 10px 30px -12px hsl(30 20% 20% / 0.18);
-    --shadow-lift: 0 18px 40px -16px hsl(38 40% 25% / 0.28);
+    --gradient-hero: linear-gradient(135deg, hsl(150 35% 10% / 0.78), hsl(150 30% 25% / 0.25));
+    --shadow-soft: 0 10px 30px -12px hsl(150 25% 15% / 0.16);
+    --shadow-lift: 0 18px 40px -16px hsl(150 30% 20% / 0.28);
 
     --sidebar-background: var(--md-surface-container-low);
     --sidebar-foreground: var(--md-on-surface);
@@ -99,41 +99,41 @@
   }
 
   .dark {
-    --md-primary: 40 50% 66%;
-    --md-on-primary: 225 13% 7%;
-    --md-primary-container: 38 30% 22%;
-    --md-on-primary-container: 40 55% 85%;
-    --md-secondary: 40 30% 88%;
-    --md-on-secondary: 225 13% 8%;
-    --md-secondary-container: 225 12% 18%;
-    --md-on-secondary-container: 40 30% 90%;
-    --md-tertiary: 42 60% 58%;
-    --md-on-tertiary: 225 13% 7%;
-    --md-tertiary-container: 38 35% 20%;
-    --md-on-tertiary-container: 42 60% 85%;
-    --md-surface: 225 13% 6%;
-    --md-surface-dim: 225 13% 5%;
-    --md-surface-bright: 225 12% 16%;
-    --md-surface-container-lowest: 225 13% 4%;
-    --md-surface-container-low: 225 13% 12%;
-    --md-surface-container: 225 12% 14%;
-    --md-surface-container-high: 225 12% 17%;
-    --md-surface-container-highest: 225 11% 21%;
-    --md-on-surface: 40 30% 92%;
-    --md-on-surface-variant: 225 6% 60%;
-    --md-outline: 225 7% 42%;
-    --md-outline-variant: 225 13% 19%;
+    --md-primary: 145 35% 58%;
+    --md-on-primary: 150 40% 8%;
+    --md-primary-container: 150 30% 20%;
+    --md-on-primary-container: 140 40% 88%;
+    --md-secondary: 145 35% 58%;
+    --md-on-secondary: 150 40% 8%;
+    --md-secondary-container: 150 15% 18%;
+    --md-on-secondary-container: 140 25% 90%;
+    --md-tertiary: 95 30% 62%;
+    --md-on-tertiary: 150 40% 8%;
+    --md-tertiary-container: 95 25% 20%;
+    --md-on-tertiary-container: 95 35% 85%;
+    --md-surface: 150 15% 7%;
+    --md-surface-dim: 150 15% 5%;
+    --md-surface-bright: 150 10% 17%;
+    --md-surface-container-lowest: 150 15% 5%;
+    --md-surface-container-low: 150 12% 11%;
+    --md-surface-container: 150 11% 13%;
+    --md-surface-container-high: 150 10% 16%;
+    --md-surface-container-highest: 150 9% 20%;
+    --md-on-surface: 120 15% 93%;
+    --md-on-surface-variant: 150 6% 62%;
+    --md-outline: 150 6% 42%;
+    --md-outline-variant: 150 10% 20%;
     --md-error: 0 70% 65%;
     --md-on-error: 0 80% 12%;
     --md-error-container: 0 50% 22%;
     --md-on-error-container: 0 75% 90%;
-    --md-inverse-surface: 40 30% 92%;
-    --md-inverse-on-surface: 225 13% 10%;
-    --md-inverse-primary: 38 48% 40%;
+    --md-inverse-surface: 120 15% 92%;
+    --md-inverse-on-surface: 150 15% 10%;
+    --md-inverse-primary: 150 30% 32%;
     --md-shadow: 0 0% 0%;
-    --gradient-hero: linear-gradient(135deg, hsl(225 13% 4% / 0.88), hsl(225 13% 6% / 0.4));
+    --gradient-hero: linear-gradient(135deg, hsl(150 25% 4% / 0.85), hsl(150 20% 8% / 0.35));
     --shadow-soft: 0 10px 30px -12px hsl(0 0% 0% / 0.6);
-    --shadow-lift: 0 18px 40px -16px hsl(40 50% 30% / 0.35);
+    --shadow-lift: 0 18px 40px -16px hsl(150 40% 20% / 0.4);
   }
 }
 

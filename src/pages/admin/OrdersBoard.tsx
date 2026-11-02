@@ -29,7 +29,7 @@ export default function OrdersBoard() {
 
   const load = async () => {
     const { data } = await supabase.from('orders')
-      .select('id,status,total_amount,notes,created_at,customer_name,customer_phone,delivery_address,order_items(product_name,size,quantity,price,product_id)')
+      .select('id,order_number,status,total_amount,notes,created_at,customer_name,customer_phone,delivery_address,order_items(product_name,size,quantity,price,product_id)')
       .order('created_at', { ascending: false }).limit(200);
     setOrders((data ?? []) as Order[]);
   };
@@ -74,7 +74,7 @@ export default function OrdersBoard() {
             <div className="flex items-center justify-between gap-[8px]">
               <div className="font-bold text-[16px]">{o.customer_name || 'زبون'}</div>
               <div className="text-[12px] text-muted-foreground">
-                #{o.id.slice(0, 6)} · {new Date(o.created_at).toLocaleString('ar', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric' })}
+                #{(o as any).order_number ?? o.id.slice(0, 6)} · {new Date(o.created_at).toLocaleString('ar', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric' })}
               </div>
             </div>
             {o.delivery_address && <div className="flex items-center gap-[6px] text-[13px]"><MapPin className="w-[14px] h-[14px] shrink-0" />{o.delivery_address}</div>}

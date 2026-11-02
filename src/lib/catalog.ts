@@ -65,3 +65,10 @@ export function searchCatalog(query: string, lang: Language) {
 }
 
 export const FREE_DELIVERY_THRESHOLD = 100;
+
+/** Order line name in the current language, falling back to the stored name. */
+export function orderItemName(productId: string | null | undefined, fallback: string, lang: Language) {
+  const p = productId ? getCatalogProduct(productId) : undefined;
+  if (!p) return fallback;
+  return (lang === 'ar' ? p.nameAr : lang === 'he' ? p.nameHe : p.nameEn) || p.nameAr || fallback;
+}

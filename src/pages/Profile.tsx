@@ -459,7 +459,7 @@ const Profile = () => {
                       <div key={order.id} className="bg-surface-container rounded-xl p-4 shadow-elevation-1">
                         <div className="flex justify-between items-start mb-3">
                           <div>
-                            <p className="md-title-small" dir="ltr">#{(order as any).tracking_code ?? order.id.slice(0, 8)}</p>
+                            <p className="md-title-small" dir="ltr">#{(order as any).order_number ?? order.id.slice(0, 8)}</p>
                             {(order as any).tracking_code && <button className="text-[12px] font-semibold text-primary underline" onClick={() => navigate(`/track/${(order as any).tracking_code}`)}>{language === 'ar' ? 'تتبّع' : language === 'he' ? 'מעקב' : 'Track'}</button>}
                             <p className="md-body-small text-muted-foreground">
                               {new Date(order.created_at).toLocaleDateString()}

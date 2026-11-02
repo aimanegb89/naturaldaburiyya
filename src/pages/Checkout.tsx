@@ -34,6 +34,7 @@ const Checkout: React.FC = () => {
   const [selectedAddressId, setSelectedAddressId] = useState<string>('new');
   const [submitting, setSubmitting] = useState(false);
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
+  const [confirmedNumber, setConfirmedNumber] = useState<number | null>(null);
   const [confirmedTotal, setConfirmedTotal] = useState(0);
 
   const tx = useTx();
@@ -122,13 +123,14 @@ const Checkout: React.FC = () => {
       });
       if (placeErr || !placed?.id) throw new Error(placed?.error ?? placeErr?.message ?? 'failed');
       orderId = placed.tracking_code ?? placed.id;
+      setConfirmedNumber(placed.order_number ?? null);
 
       if (channel === 'whatsapp') {
       const orderLines = items
         .map(i => `• ${getName(i)} (${sizeLabel(i.size)}) x${i.quantity} - ₪${i.price * i.quantity}`)
         .join('\n');
 
-      const message = `🌿 *Natural - ${t('orderDetails')}* #${orderId}\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${t('deliveryAddress')}:* ${street}, ${city}${postal ? ` (${postal})` : ''}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}\n*${tx({ ar: 'الدفع', he: 'תשלום', en: 'Payment' })}:* ${payment === 'cash' ? tx({ ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }) : tx({ ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' })}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}\n\n${tx({ ar: 'تتبّع الطلب', he: 'מעקב הזמנה', en: 'Track order' })}: ${window.location.origin}/track/${orderId}`;
+      const message = `🌿 *Natural - ${t('orderDetails')}* #${placed.order_number ?? orderId}\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${t('deliveryAddress')}:* ${street}, ${city}${postal ? ` (${postal})` : ''}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}\n*${tx({ ar: 'الدفع', he: 'תשלום', en: 'Payment' })}:* ${payment === 'cash' ? tx({ ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }) : tx({ ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' })}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}\n\n${tx({ ar: 'تتبّع الطلب', he: 'מעקב הזמנה', en: 'Track order' })}: ${window.location.origin}/track/${orderId}`;
 
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
       }
@@ -153,7 +155,7 @@ const Checkout: React.FC = () => {
         <p className="text-xs text-muted-foreground max-w-[280px] mb-3">{t('orderConfirmedDesc')}</p>
         {confirmedId && (
           <p className="text-[10px] text-muted-foreground mb-1">
-            {t('orderNumber')}: <span className="font-mono" dir="ltr">#{confirmedId.slice(0, 8)}</span>
+            {t('orderNumber')}: <span className="font-mono" dir="ltr">#{confirmedNumber ?? confirmedId.slice(0, 8)}</span>
           </p>
         )}
         <p className="text-sm font-semibold text-primary mb-6">
