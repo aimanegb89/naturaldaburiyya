@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import QrDialog from '@/components/admin/QrDialog';
 
 const CATEGORIES = ['juices', 'smoothies', 'supplements', 'bubbles', 'yogurt', 'proteins'] as const;
 const CAT_AR: Record<string, string> = { juices: 'عصائر', smoothies: 'كوكتيلات', supplements: 'مكملات', bubbles: 'بابلز', yogurt: 'يوجورت', proteins: 'بروتينات' };
@@ -105,6 +106,7 @@ export default function Admin() {
     <div dir="rtl" className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 bg-card border-b border-outline-variant px-[16px] py-[12px] flex items-center gap-[8px]">
         <h1 className="font-display text-[20px] flex-1">إدارة المنتجات</h1>
+        <QrDialog />
         <Button size="sm" variant="outline" onClick={async () => toast(pushMsg[await enableAdminPush(user.id)])}>
           <Bell className="w-[16px] h-[16px]" /> الإشعارات
         </Button>
