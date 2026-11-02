@@ -108,6 +108,21 @@ export type Database = {
           },
         ]
       }
+      internal_keys: {
+        Row: {
+          name: string
+          value: string
+        }
+        Insert: {
+          name: string
+          value: string
+        }
+        Update: {
+          name?: string
+          value?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           id: string
@@ -154,6 +169,7 @@ export type Database = {
           customer_phone: string | null
           delivery_address: string | null
           id: string
+          idempotency_key: string | null
           notes: string | null
           order_number: number | null
           status: string
@@ -169,6 +185,7 @@ export type Database = {
           customer_phone?: string | null
           delivery_address?: string | null
           id?: string
+          idempotency_key?: string | null
           notes?: string | null
           order_number?: number | null
           status?: string
@@ -184,6 +201,7 @@ export type Database = {
           customer_phone?: string | null
           delivery_address?: string | null
           id?: string
+          idempotency_key?: string | null
           notes?: string | null
           order_number?: number | null
           status?: string
@@ -356,22 +374,43 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          bucket: string
+          count: number
+          key: string
+        }
+        Insert: {
+          bucket: string
+          count?: number
+          key: string
+        }
+        Update: {
+          bucket?: string
+          count?: number
+          key?: string
+        }
+        Relationships: []
+      }
       store_settings: {
         Row: {
           auto_done_minutes: number
           id: number
+          last_reminder_date: string | null
           order_channel: string
           updated_at: string
         }
         Insert: {
           auto_done_minutes?: number
           id?: number
+          last_reminder_date?: string | null
           order_channel?: string
           updated_at?: string
         }
         Update: {
           auto_done_minutes?: number
           id?: number
+          last_reminder_date?: string | null
           order_channel?: string
           updated_at?: string
         }
@@ -397,15 +436,52 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      product_rating_summary: {
+        Row: {
+          avg: number | null
+          count: number | null
+          product_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      auto_done_sweep: { Args: never; Returns: number }
+      create_order_with_items: {
+        Args: { p_items: Json; p_order: Json }
+        Returns: {
+          id: string
+          order_number: number
+          total_amount: number
+          tracking_code: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      hit_rate_limit: {
+        Args: { p_key: string; p_limit: number }
+        Returns: boolean
+      }
+      otp_try: {
+        Args: { p_phone: string }
+        Returns: {
+          attempts: number
+          code_hash: string
+          expires_at: string
+          phone: string
+          sent_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "phone_otps"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
     }
     Enums: {
