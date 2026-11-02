@@ -6,7 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
+import { CartDrawerProvider } from "@/contexts/CartDrawerContext";
+import CartDrawer from "@/components/CartDrawer";
 import Index from "./pages/Index";
+import Shop from "./pages/Shop";
+import ProductPage from "./pages/ProductPage";
+import Wishlist from "./pages/Wishlist";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Checkout from "./pages/Checkout";
@@ -21,19 +27,27 @@ const App = () => (
       <LanguageProvider>
         <AuthProvider>
           <CartProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/index" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+            <WishlistProvider>
+              <CartDrawerProvider>
+                <Toaster />
+                <Sonner position="top-center" richColors />
+                <BrowserRouter>
+                  <CartDrawer />
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/index" element={<Index />} />
+                    <Route path="/shop" element={<Shop />} />
+                    <Route path="/product/:id" element={<ProductPage />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </CartDrawerProvider>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </LanguageProvider>

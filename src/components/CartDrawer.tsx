@@ -4,7 +4,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Trash2, Truck } from 'lucide-react';
+import { useCartDrawer } from '@/contexts/CartDrawerContext';
+import { FREE_DELIVERY_THRESHOLD } from '@/lib/catalog';
+import { useTx } from '@/lib/i18n';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,14 +19,14 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-interface CartDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
+const CartDrawer: React.FC = () => {
+  const { open: isOpen, setOpen } = useCartDrawer();
+  const onClose = () => setOpen(false);
+  const tx = useTx();
   const { language, t, dir } = useLanguage();
   const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCart();
+  const remaining = Math.max(0, FREE_DELIVERY_THRESHOLD - totalPrice);
+  const progress = Math.min(100, (totalPrice / FREE_DELIVERY_THRESHOLD) * 100);
   const navigate = useNavigate();
   const [deleteItemDialog, setDeleteItemDialog] = useState<{ id: string; size: 'small' | 'large' } | null>(null);
   const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
@@ -54,21 +57,21 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     <>
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent
-          side={dir === 'rtl' ? 'left' : 'right'}
-          className="w-full sm:max-w-md bg-surface border-outline-variant flex flex-col"
+          side="right"
+          className="w-full sm:max-w-[420px] bg-background border-outline-variant flex flex-col p-[20px]"
           dir={dir}
         >
           {/* Header with clear cart button */}
           <SheetHeader className="pr-8 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <SheetTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <SheetTitle className="flex items-center gap-[8px] text-[20px] font-display text-foreground">
                 <ShoppingCart className="w-[18px] h-[18px] text-primary" />
                 {t('yourCart')}
               </SheetTitle>
               {items.length > 0 && (
                 <button
                   onClick={() => setShowEmptyCartDialog(true)}
-                  className="flex items-center gap-1 text-[10px] text-destructive hover:underline transition-all"
+                  className="flex items-center gap-[4px] text-[12px] text-destructive hover:underline transition-all"
                 >
                   <Trash2 className="w-[11px] h-[11px]" />
                   {t('emptyCartButton')}
@@ -76,6 +79,19 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               )}
             </div>
           </SheetHeader>
+          {items.length > 0 && (
+            <div className="mt-[14px] rounded-[14px] bg-surface-container p-[12px]">
+              <p className="flex items-center gap-[8px] text-[13px] font-semibold mb-[8px]">
+                <Truck className="w-[16px] h-[16px] text-primary" />
+                {remaining > 0
+                  ? tx({ ar: `أضف ₪${remaining} للحصول على توصيل مجاني`, he: `הוסיפו ₪${remaining} למשלוח חינם`, en: `Add ₪${remaining} more for free delivery` })
+                  : tx({ ar: 'مبروك! حصلت على توصيل مجاني', he: 'מעולה! המשלוח בחינם', en: 'You unlocked free delivery!' })}
+              </p>
+              <div className="h-[6px] rounded-full bg-surface-container-highest overflow-hidden">
+                <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col flex-1 min-h-0 mt-4">
             {items.length === 0 ? (
@@ -98,13 +114,13 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                         <img
                           src={item.image}
                           alt={getName(item)}
-                          className="w-[48px] h-[48px] rounded-lg object-cover flex-shrink-0"
+                          className="w-[72px] h-[72px] rounded-[14px] object-cover flex-shrink-0"
                         />
                       )}
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-xs font-semibold text-foreground truncate">{getName(item)}</h4>
-                        <p className="text-[10px] text-muted-foreground">{sizeLabel(item.size)}</p>
-                        <p className="text-xs font-semibold text-primary mt-0.5">{t('currency')}{item.price}</p>
+                        <h4 className="text-[14px] font-bold text-foreground truncate">{getName(item)}</h4>
+                        <p className="text-[12px] text-muted-foreground">{sizeLabel(item.size)}</p>
+                        <p className="text-[14px] font-bold text-foreground mt-[4px]">{t('currency')}{item.price * item.quantity}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                         <button
@@ -116,14 +132,14 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                         <div className="flex items-center gap-[2px] bg-surface-container-high rounded-full p-[2px]">
                           <button
                             onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
-                            className="w-[24px] h-[24px] flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors"
+                            className="w-[32px] h-[32px] flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors"
                           >
                             <Minus className="w-[11px] h-[11px]" />
                           </button>
-                          <span className="w-[20px] text-center text-xs font-semibold">{item.quantity}</span>
+                          <span className="w-[24px] text-center text-[14px] font-bold">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
-                            className="w-[24px] h-[24px] flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors"
+                            className="w-[32px] h-[32px] flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors"
                           >
                             <Plus className="w-[11px] h-[11px]" />
                           </button>
@@ -134,12 +150,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="flex-shrink-0 space-y-3 pt-3 border-t border-outline-variant mt-2">
-                  <div className="flex justify-between items-center text-sm font-semibold">
-                    <span>{t('total')}</span>
-                    <span className="text-primary">{t('currency')}{totalPrice}</span>
+                  <div className="flex justify-between items-center text-[13px] text-muted-foreground">
+                    <span>{tx({ ar: 'التوصيل', he: 'משלוח', en: 'Delivery' })}</span>
+                    <span>{remaining > 0 ? tx({ ar: 'يُحدَّد عند التأكيد', he: 'ייקבע באישור', en: 'Confirmed on WhatsApp' }) : tx({ ar: 'مجاني', he: 'חינם', en: 'Free' })}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[17px] font-extrabold">
+                    <span>{tx({ ar: 'المجموع الفرعي', he: 'סכום ביניים', en: 'Subtotal' })}</span>
+                    <span>{t('currency')}{totalPrice}</span>
                   </div>
                   <Button
-                    className="w-full"
+                    className="w-full h-[52px] rounded-full text-[16px] font-bold bg-secondary text-secondary-foreground hover:bg-secondary/90"
                     onClick={() => {
                       onClose();
                       navigate('/checkout');

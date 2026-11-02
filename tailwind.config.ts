@@ -18,8 +18,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Roboto', 'Tajawal', 'sans-serif'],
-        display: ['Roboto', 'Tajawal', 'sans-serif'],
+        sans: ['Manrope', 'Tajawal', 'sans-serif'],
+        display: ['Fraunces', 'Tajawal', 'serif'],
       },
       spacing: {
         // Material 8dp grid
@@ -96,6 +96,9 @@ export default {
         tropical: "hsl(var(--tropical-yellow))",
         berry: "hsl(var(--berry-purple))",
         cream: "hsl(var(--cream))",
+        gold: "hsl(var(--gold))",
+        terracotta: "hsl(var(--terracotta))",
+        sage: "hsl(var(--sage))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

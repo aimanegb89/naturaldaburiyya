@@ -3,93 +3,46 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Home, UtensilsCrossed, ShoppingCart, User } from 'lucide-react';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { useCartDrawer } from '@/contexts/CartDrawerContext';
+import { Home, Store, Heart, ShoppingBag, User } from 'lucide-react';
+import { useTx } from '@/lib/i18n';
 
-interface BottomNavProps {
-  onCartClick: () => void;
-}
-
-const BottomNav: React.FC<BottomNavProps> = ({ onCartClick }) => {
+const BottomNav: React.FC = () => {
   const { t, dir } = useLanguage();
+  const tx = useTx();
   const { totalItems } = useCart();
+  const { ids } = useWishlist();
   const { user } = useAuth();
+  const { setOpen } = useCartDrawer();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const isHome = location.pathname === '/';
-
-  const handleHomeClick = () => {
-    if (!isHome) {
-      navigate('/');
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handleMenuClick = () => {
-    if (!isHome) {
-      navigate('/');
-      setTimeout(() => {
-        document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    } else {
-      document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const handleProfileClick = () => {
-    navigate(user ? '/profile' : '/auth');
-  };
+  const { pathname } = useLocation();
 
   const items = [
-    { key: 'home', icon: Home, label: t('home'), active: isHome && location.hash !== '#menu', onClick: handleHomeClick },
-    { key: 'menu', icon: UtensilsCrossed, label: t('menu'), active: isHome && location.hash === '#menu', onClick: handleMenuClick },
-    { key: 'cart', icon: ShoppingCart, label: t('cart'), active: false, onClick: onCartClick, badge: totalItems },
-    { key: 'profile', icon: User, label: t('profile'), active: location.pathname === '/profile' || location.pathname === '/auth', onClick: handleProfileClick },
+    { key: 'home', icon: Home, label: t('home'), active: pathname === '/', onClick: () => navigate('/') },
+    { key: 'shop', icon: Store, label: tx({ ar: 'المتجر', he: 'חנות', en: 'Shop' }), active: pathname.startsWith('/shop') || pathname.startsWith('/product'), onClick: () => navigate('/shop') },
+    { key: 'wish', icon: Heart, label: tx({ ar: 'المفضلة', he: 'מועדפים', en: 'Wishlist' }), active: pathname === '/wishlist', onClick: () => navigate('/wishlist'), badge: ids.length },
+    { key: 'cart', icon: ShoppingBag, label: t('cart'), active: false, onClick: () => setOpen(true), badge: totalItems },
+    { key: 'profile', icon: User, label: t('profile'), active: pathname === '/profile' || pathname === '/auth', onClick: () => navigate(user ? '/profile' : '/auth') },
   ];
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-surface-container/95 backdrop-blur-md border-t border-outline-variant/30 rounded-t-2xl shadow-elevation-3"
-      dir={dir}
-    >
-      <div className="flex items-center justify-around h-[60px] px-1">
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-surface-container-lowest/95 backdrop-blur-xl border-t border-outline-variant/50 shadow-lift" dir={dir}>
+      <div className="flex items-center justify-around h-[64px] px-[4px]">
         {items.map((item) => {
           const Icon = item.icon;
           return (
-            <button
-              key={item.key}
-              onClick={item.onClick}
-              className="flex flex-col items-center justify-center flex-1 min-w-0 h-full focus:outline-none"
-            >
-              {/* Pill + icon + badge, all in one sized container */}
-              <div className="relative flex items-center justify-center w-14 h-7">
-                {/* Active pill perfectly covers this container */}
-                <div
-                  className={`absolute inset-0 rounded-full transition-all duration-300 ${
-                    item.active ? 'bg-primary/15' : 'bg-transparent'
-                  }`}
-                />
-                <Icon
-                  className={`w-[20px] h-[20px] relative z-10 transition-colors duration-200 ${
-                    item.active ? 'text-primary' : 'text-foreground/60'
-                  }`}
-                />
-                {item.badge != null && item.badge > 0 && (
-                  <span className="absolute top-0 right-2 min-w-[15px] h-[15px] bg-primary text-primary-foreground rounded-full text-[9px] flex items-center justify-center font-bold px-[2px] z-20 shadow-elevation-1">
+            <button key={item.key} onClick={item.onClick} className="flex flex-col items-center justify-center flex-1 min-w-0 h-full gap-[4px]">
+              <div className="relative flex items-center justify-center w-[56px] h-[30px]">
+                <div className={`absolute inset-0 rounded-full transition-all duration-300 ${item.active ? 'bg-primary/15 scale-100' : 'scale-75 opacity-0'}`} />
+                <Icon className={`w-[21px] h-[21px] relative z-10 ${item.active ? 'text-primary' : 'text-foreground/60'}`} />
+                {!!item.badge && (
+                  <span className="absolute top-0 end-[8px] min-w-[16px] h-[16px] bg-secondary text-secondary-foreground rounded-full text-[9px] flex items-center justify-center font-bold px-[3px] z-20">
                     {item.badge > 9 ? '9+' : item.badge}
                   </span>
                 )}
               </div>
-
-              {/* Label */}
-              <span
-                className={`text-[9px] leading-none mt-[2px] transition-colors duration-200 ${
-                  item.active ? 'text-primary font-semibold' : 'text-foreground/60 font-medium'
-                }`}
-              >
-                {item.label}
-              </span>
+              <span className={`text-[10px] leading-none ${item.active ? 'text-primary font-bold' : 'text-foreground/60 font-medium'}`}>{item.label}</span>
             </button>
           );
         })}

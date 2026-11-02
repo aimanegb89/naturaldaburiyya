@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { WHATSAPP_NUMBER } from '@/lib/constants';
+import { useTx } from '@/lib/i18n';
+import { Banknote, CreditCard } from 'lucide-react';
 import { ArrowLeft, CheckCircle2, MapPin, ShoppingCart, Loader2 } from 'lucide-react';
 
 interface SavedAddress {
@@ -34,6 +36,9 @@ const Checkout: React.FC = () => {
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
   const [confirmedTotal, setConfirmedTotal] = useState(0);
 
+  const tx = useTx();
+  const [payment, setPayment] = useState<'cash' | 'card'>('cash');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -84,12 +89,15 @@ const Checkout: React.FC = () => {
     const usingSaved = !!selectedAddress;
     const phoneDigits = form.phone.replace(/\D/g, '');
 
-    if (!form.name.trim() || phoneDigits.length < 9 || phoneDigits.length > 15) {
-      toast({ title: t('requiredFields'), description: t('phoneNumber') });
-      return;
-    }
-    if (!usingSaved && (!form.street.trim() || !form.city.trim())) {
-      toast({ title: t('requiredFields'), description: t('deliveryAddress') });
+    const errs: Record<string, string> = {};
+    const req = tx({ ar: 'هذا الحقل مطلوب', he: 'שדה חובה', en: 'This field is required' });
+    if (!form.name.trim()) errs.name = req;
+    if (phoneDigits.length < 9 || phoneDigits.length > 15) errs.phone = tx({ ar: 'رقم هاتف غير صالح', he: 'מספר טלפון לא תקין', en: 'Enter a valid phone number' });
+    if (!usingSaved && !form.street.trim()) errs.street = req;
+    if (!usingSaved && !form.city.trim()) errs.city = req;
+    setErrors(errs);
+    if (Object.keys(errs).length) {
+      toast({ title: t('requiredFields') });
       return;
     }
 
@@ -153,7 +161,7 @@ const Checkout: React.FC = () => {
         .map(i => `• ${getName(i)} (${sizeLabel(i.size)}) x${i.quantity} - ₪${i.price * i.quantity}`)
         .join('\n');
 
-      const message = `🌿 *Natural - ${t('orderDetails')}*\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${t('deliveryAddress')}:* ${street}, ${city}${postal ? ` (${postal})` : ''}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}`;
+      const message = `🌿 *Natural - ${t('orderDetails')}*\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${t('deliveryAddress')}:* ${street}, ${city}${postal ? ` (${postal})` : ''}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}\n*${tx({ ar: 'الدفع', he: 'תשלום', en: 'Payment' })}:* ${payment === 'cash' ? tx({ ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }) : tx({ ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' })}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}`;
 
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
 
@@ -204,8 +212,8 @@ const Checkout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background pb-[32px]" dir={dir}>
-      <header className="sticky top-0 z-40 bg-surface-container/95 backdrop-blur-md border-b border-outline-variant/30">
-        <div className="flex items-center gap-2 h-[56px] px-[16px]">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-outline-variant/50">
+        <div className="flex items-center gap-[8px] h-[64px] px-[16px] max-w-[1100px] mx-auto">
           <button
             onClick={() => navigate('/')}
             className="w-[36px] h-[36px] flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"
@@ -213,15 +221,15 @@ const Checkout: React.FC = () => {
           >
             <ArrowLeft className="w-[20px] h-[20px] rtl:rotate-180" />
           </button>
-          <h1 className="text-sm font-semibold text-foreground">{t('checkoutTitle')}</h1>
+          <h1 className="font-display text-[22px] text-foreground">{t('checkoutTitle')}</h1>
         </div>
       </header>
 
-      <form onSubmit={handleConfirm} className="px-[16px] py-[16px] space-y-[20px]">
+      <form onSubmit={handleConfirm} noValidate className="px-[16px] py-[20px] max-w-[1100px] mx-auto grid md:grid-cols-[1fr_380px] gap-[24px] items-start">
         {/* Order summary */}
-        <section>
+        <section className="md:col-start-2 md:row-start-1 md:sticky md:top-[88px]">
           <h2 className="text-xs font-semibold text-foreground mb-2">{t('orderSummary')}</h2>
-          <div className="rounded-2xl bg-surface-container p-[12px]">
+          <div className="rounded-[20px] bg-surface-container-low border border-outline-variant/50 shadow-soft p-[16px]">
             {items.map(item => (
               <div
                 key={`${item.id}-${item.size}`}
@@ -252,10 +260,12 @@ const Checkout: React.FC = () => {
           </div>
         </section>
 
+        <div className="md:col-start-1 md:row-start-1 flex flex-col gap-[20px]">
         {/* Delivery address */}
-        <section>
-          <h2 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-            <MapPin className="w-[14px] h-[14px] text-primary" />
+        <section className="rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px]">
+          <h2 className="text-[16px] font-bold text-foreground mb-[12px] flex items-center gap-[8px]">
+            <span className="w-[26px] h-[26px] rounded-full bg-primary text-primary-foreground text-[13px] flex items-center justify-center">2</span>
+            <MapPin className="w-[16px] h-[16px] text-primary" />
             {t('deliveryAddress')}
           </h2>
 
@@ -296,24 +306,28 @@ const Checkout: React.FC = () => {
           {!selectedAddress && (
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('street')}</label>
+                <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('street')}</label>
                 <Input
                   value={form.street}
                   onChange={e => setForm(p => ({ ...p, street: e.target.value }))}
-                  required
+                  aria-invalid={!!errors.street}
+                  className={errors.street ? 'border-destructive' : ''}
                 />
+                {errors.street && <p className="text-[12px] text-destructive mt-[4px]">{errors.street}</p>}
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('city')}</label>
+                  <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('city')}</label>
                   <Input
                     value={form.city}
                     onChange={e => setForm(p => ({ ...p, city: e.target.value }))}
-                    required
+                    aria-invalid={!!errors.city}
+                    className={errors.city ? 'border-destructive' : ''}
                   />
+                  {errors.city && <p className="text-[12px] text-destructive mt-[4px]">{errors.city}</p>}
                 </div>
                 <div className="w-[110px]">
-                  <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('postalCode')}</label>
+                  <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('postalCode')}</label>
                   <Input
                     value={form.postalCode}
                     onChange={e => setForm(p => ({ ...p, postalCode: e.target.value }))}
@@ -326,28 +340,32 @@ const Checkout: React.FC = () => {
         </section>
 
         {/* Contact */}
-        <section className="space-y-3">
-          <h2 className="text-xs font-semibold text-foreground">{t('contactDetails')}</h2>
+        <section className="space-y-3 rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px] -order-1">
+          <h2 className="text-[16px] font-bold text-foreground flex items-center gap-[8px]"><span className="w-[26px] h-[26px] rounded-full bg-primary text-primary-foreground text-[13px] flex items-center justify-center">1</span>{t('contactDetails')}</h2>
           <div>
-            <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('name')}</label>
+            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('name')}</label>
             <Input
               value={form.name}
               onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-              required
+              aria-invalid={!!errors.name}
+              className={errors.name ? 'border-destructive' : ''}
             />
+            {errors.name && <p className="text-[12px] text-destructive mt-[4px]">{errors.name}</p>}
           </div>
           <div>
-            <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('phoneNumber')}</label>
+            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('phoneNumber')}</label>
             <Input
               type="tel"
               dir="ltr"
               value={form.phone}
               onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
-              required
+              aria-invalid={!!errors.phone}
+              className={errors.phone ? 'border-destructive' : ''}
             />
+            {errors.phone && <p className="text-[12px] text-destructive mt-[4px]">{errors.phone}</p>}
           </div>
           <div>
-            <label className="text-[10px] font-medium text-muted-foreground mb-1 block">{t('notes')}</label>
+            <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('notes')}</label>
             <Textarea
               value={form.notes}
               onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
@@ -357,7 +375,22 @@ const Checkout: React.FC = () => {
           </div>
         </section>
 
-        <Button type="submit" className="w-full gap-2" disabled={submitting}>
+        {/* Payment */}
+        <section className="rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px]">
+          <h2 className="text-[16px] font-bold text-foreground mb-[12px] flex items-center gap-[8px]"><span className="w-[26px] h-[26px] rounded-full bg-primary text-primary-foreground text-[13px] flex items-center justify-center">3</span>{tx({ ar: 'طريقة الدفع', he: 'אמצעי תשלום', en: 'Payment method' })}</h2>
+          <div className="grid grid-cols-2 gap-[10px]">
+            {([['cash', Banknote, { ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }], ['card', CreditCard, { ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' }]] as const).map(([k, Icon, l]) => (
+              <button key={k} type="button" onClick={() => setPayment(k)} className={`rounded-[14px] border-2 p-[14px] flex flex-col items-start gap-[6px] text-start transition-all ${payment === k ? 'border-primary bg-primary/10' : 'border-outline-variant'}`}>
+                <Icon className="w-[20px] h-[20px] text-primary" />
+                <span className="text-[14px] font-bold">{tx(l)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+        </div>
+
+        <div className="md:col-start-2 space-y-[8px]">
+        <Button type="submit" className="w-full gap-2 h-[52px] rounded-full text-[16px] font-bold bg-secondary text-secondary-foreground hover:bg-secondary/90" disabled={submitting}>
           {submitting ? (
             <Loader2 className="w-[16px] h-[16px] animate-spin" />
           ) : (
@@ -365,7 +398,8 @@ const Checkout: React.FC = () => {
           )}
           {t('confirmOrder')}
         </Button>
-        <p className="text-[10px] text-center text-muted-foreground">{t('sendViaWhatsApp')}</p>
+        <p className="text-[12px] text-center text-muted-foreground">{t('sendViaWhatsApp')}</p>
+        </div>
       </form>
     </div>
   );

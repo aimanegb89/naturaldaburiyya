@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Tajawal:wght@300;400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,38 +8,38 @@
   :root {
     /* Material Design 3 Color System */
     /* Primary - Teal/Green */
-    --md-primary: 162 63% 35%;
+    --md-primary: 150 24% 30%;
     --md-on-primary: 0 0% 100%;
-    --md-primary-container: 162 52% 88%;
-    --md-on-primary-container: 162 80% 10%;
+    --md-primary-container: 95 22% 88%;
+    --md-on-primary-container: 150 30% 14%;
     
     /* Secondary - Warm Earth */
-    --md-secondary: 30 45% 42%;
+    --md-secondary: 18 52% 46%;
     --md-on-secondary: 0 0% 100%;
-    --md-secondary-container: 35 60% 90%;
+    --md-secondary-container: 30 60% 91%;
     --md-on-secondary-container: 30 55% 15%;
     
     /* Tertiary - Soft Purple */
-    --md-tertiary: 280 40% 50%;
+    --md-tertiary: 38 62% 48%;
     --md-on-tertiary: 0 0% 100%;
-    --md-tertiary-container: 280 45% 92%;
-    --md-on-tertiary-container: 280 50% 15%;
+    --md-tertiary-container: 42 70% 90%;
+    --md-on-tertiary-container: 35 60% 16%;
     
     /* Surface colors */
-    --md-surface: 150 20% 98%;
-    --md-surface-dim: 150 15% 92%;
-    --md-surface-bright: 0 0% 100%;
-    --md-surface-container-lowest: 0 0% 100%;
-    --md-surface-container-low: 150 20% 96%;
-    --md-surface-container: 150 15% 94%;
-    --md-surface-container-high: 150 12% 91%;
-    --md-surface-container-highest: 150 10% 88%;
-    --md-on-surface: 150 20% 15%;
-    --md-on-surface-variant: 150 12% 40%;
+    --md-surface: 42 38% 96%;
+    --md-surface-dim: 40 22% 90%;
+    --md-surface-bright: 45 50% 99%;
+    --md-surface-container-lowest: 45 50% 99%;
+    --md-surface-container-low: 42 40% 98%;
+    --md-surface-container: 40 30% 93%;
+    --md-surface-container-high: 40 22% 89%;
+    --md-surface-container-highest: 40 18% 85%;
+    --md-on-surface: 30 8% 15%;
+    --md-on-surface-variant: 30 6% 38%;
     
     /* Outline */
-    --md-outline: 150 10% 60%;
-    --md-outline-variant: 150 15% 82%;
+    --md-outline: 35 10% 58%;
+    --md-outline-variant: 38 20% 84%;
     
     /* Error */
     --md-error: 0 75% 45%;
@@ -53,7 +53,7 @@
     --md-inverse-primary: 162 50% 70%;
     
     /* Shadows */
-    --md-shadow: 150 20% 15%;
+    --md-shadow: 30 20% 20%;
 
     /* Map to existing tokens for compatibility */
     --background: var(--md-surface);
@@ -77,7 +77,7 @@
     --ring: var(--md-primary);
 
     /* Material radius */
-    --radius: 0.75rem;
+    --radius: 0.875rem;
     --radius-sm: 0.5rem;
     --radius-lg: 1rem;
     --radius-xl: 1.75rem;
@@ -95,7 +95,13 @@
     --mint: 160 45% 65%;
     --tropical-yellow: 45 95% 60%;
     --berry-purple: 280 50% 45%;
-    --cream: 45 40% 95%;
+    --cream: 42 38% 96%;
+    --gold: 38 62% 48%;
+    --terracotta: 18 52% 46%;
+    --sage: 95 18% 62%;
+    --gradient-hero: linear-gradient(135deg, hsl(150 24% 22% / 0.85), hsl(150 24% 30% / 0.35));
+    --shadow-soft: 0 10px 30px -12px hsl(30 20% 20% / 0.18);
+    --shadow-lift: 0 18px 40px -16px hsl(150 24% 20% / 0.28);
 
     --sidebar-background: var(--md-surface-container-low);
     --sidebar-foreground: var(--md-on-surface);
@@ -157,7 +163,7 @@
   }
 
   html {
-    font-family: 'Roboto', 'Tajawal', sans-serif;
+    font-family: 'Manrope', 'Tajawal', sans-serif;
   }
 
   body {
@@ -167,7 +173,7 @@
   /* RTL Support */
   [dir="rtl"] {
     text-align: right;
-    font-family: 'Tajawal', 'Roboto', sans-serif;
+    font-family: 'Tajawal', 'Manrope', sans-serif;
   }
 
   [dir="ltr"] {
@@ -309,6 +315,14 @@
   .text-gradient {
     @apply text-primary;
   }
+
+  .font-display { font-family: 'Fraunces', 'Tajawal', serif; letter-spacing: -0.01em; }
+  [dir="rtl"] .font-display { font-family: 'Tajawal', 'Fraunces', serif; font-weight: 800; letter-spacing: 0; }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-lift { box-shadow: var(--shadow-lift); }
+  .bg-hero-overlay { background: var(--gradient-hero); }
+  .page-enter { animation: page-enter 0.35s ease-out both; }
+  @keyframes page-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
   /* Hide scrollbar utility */
   .scrollbar-hide {
