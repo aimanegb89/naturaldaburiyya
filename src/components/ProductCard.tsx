@@ -9,7 +9,7 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import { useAddToCart } from '@/hooks/useAddToCart';
 import { useRatingSummary } from '@/hooks/useReviews';
 import { getProductName, getProductDescription } from '@/lib/product-utils';
-import { hasSizes, type CatalogProduct } from '@/lib/catalog';
+import { hasSizes, isAvailable, type CatalogProduct } from '@/lib/catalog';
 import { useTx } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +28,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, classNa
   const rating = ratings?.[product.id];
   const name = getProductName(product, language);
   const liked = has(product.id);
+  const available = isAvailable(product);
 
   const onHeart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -42,7 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, classNa
         className
       )}
     >
-      <Link to={`/product/${product.id}`} className="relative block aspect-square overflow-hidden bg-surface-container">
+      <Link to={`/product/${product.id}`} className={cn('relative block aspect-square overflow-hidden bg-surface-container', !available && 'grayscale opacity-70')}>
         <ShimmerImage
           src={product.img}
           alt={name}
@@ -51,16 +52,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, classNa
         />
         <div className="absolute top-[8px] start-[8px] flex flex-col gap-[4px]">
           {product.meta.isNew && (
-            <span className="px-[8px] py-[2px] rounded-full bg-gold text-primary-foreground text-[10px] font-bold">
+            <span className="px-[8px] py-[2px] rounded-full bg-gold text-primary-foreground text-[12px] font-bold">
               {tx({ ar: 'جديد', he: 'חדש', en: 'New' })}
             </span>
           )}
           {product.isPopular && (
-            <span className="px-[8px] py-[2px] rounded-full bg-secondary text-secondary-foreground text-[10px] font-bold">
+            <span className="px-[8px] py-[2px] rounded-full bg-secondary text-secondary-foreground text-[12px] font-bold">
               {tx({ ar: 'الأكثر طلبًا', he: 'הכי נמכר', en: 'Best seller' })}
             </span>
           )}
-          <span className="px-[8px] py-[2px] rounded-full bg-surface-container-lowest/90 text-primary text-[10px] font-semibold w-fit">
+          <span className="px-[8px] py-[2px] rounded-full bg-surface-container-lowest/90 text-primary text-[12px] font-semibold w-fit">
             🌿 {tx({ ar: 'طبيعي', he: 'טבעי', en: 'Natural' })}
           </span>
         </div>
@@ -68,8 +69,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, classNa
 
       <button
         onClick={onHeart}
-        aria-label="wishlist"
-        className="absolute top-[8px] end-[8px] w-[34px] h-[34px] rounded-full bg-surface-container-lowest/90 backdrop-blur flex items-center justify-center shadow-soft transition-transform active:scale-90"
+        aria-label={liked ? tx({ ar: 'إزالة من المفضلة', he: 'הסרה מהמועדפים', en: 'Remove from wishlist' }) : tx({ ar: 'إضافة إلى المفضلة', he: 'הוספה למועדפים', en: 'Add to wishlist' })}
+        aria-pressed={liked}
+        className="absolute top-[4px] end-[4px] w-[44px] h-[44px] rounded-full bg-surface-container-lowest/90 backdrop-blur flex items-center justify-center shadow-soft transition-transform active:scale-90"
       >
         <Heart className={cn('w-[16px] h-[16px]', liked ? 'fill-secondary text-secondary' : 'text-foreground/70')} />
       </button>
@@ -84,40 +86,40 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, classNa
           {rating ? (
             <StarRating value={rating.avg} count={rating.count} size={11} />
           ) : (
-            <span className="text-[11px] text-muted-foreground">{tx({ ar: 'لا تقييمات بعد', he: 'אין דירוגים', en: 'No reviews yet' })}</span>
+            <span className="text-[12px] text-muted-foreground">{tx({ ar: 'لا تقييمات بعد', he: 'אין דירוגים', en: 'No reviews yet' })}</span>
           )}
         </div>
         {product.isAvailable !== false ? (
-          <div className="flex items-center gap-[6px] text-[11px] text-primary font-medium">
+          <div className="flex items-center gap-[6px] text-[12px] text-primary font-medium">
             <span className="w-[6px] h-[6px] rounded-full bg-primary" />
             {tx({ ar: 'متوفر الآن', he: 'במלאי', en: 'In stock' })}
           </div>
         ) : (
-          <div className="flex items-center gap-[6px] text-[11px] text-destructive font-medium">
+          <div className="flex items-center gap-[6px] text-[12px] text-destructive font-medium">
             <span className="w-[6px] h-[6px] rounded-full bg-destructive" />
             {tx({ ar: 'غير متوفر', he: 'אזל', en: 'Out of stock' })}
           </div>
         )}
         <div className="mt-auto pt-[8px] flex items-center justify-between gap-[6px]">
           <div className="leading-none">
-            {hasSizes(product) && <span className="text-[10px] text-muted-foreground block mb-[2px]">{tx({ ar: 'من', he: 'החל מ', en: 'From' })}</span>}
-            <span className="text-[17px] font-extrabold text-foreground">{t('currency')}{product.priceSmall}</span>
+            {hasSizes(product) && <span className="text-[12px] text-muted-foreground block mb-[2px]">{tx({ ar: 'من', he: 'החל מ', en: 'From' })}</span>}
+            <bdi dir="ltr" className="text-[17px] font-extrabold text-foreground">{t('currency')}{product.priceSmall}</bdi>
           </div>
           <div className="flex gap-[6px]">
             {onQuickView && (
               <button
                 onClick={() => onQuickView(product)}
                 aria-label={tx({ ar: 'عرض سريع', he: 'צפייה מהירה', en: 'Quick view' })}
-                className="w-[36px] h-[36px] rounded-full border border-outline-variant flex items-center justify-center text-foreground/80 hover:bg-surface-container transition-colors"
+                className="w-[44px] h-[44px] rounded-full border border-outline-variant flex items-center justify-center text-foreground/80 hover:bg-surface-container transition-colors"
               >
                 <Eye className="w-[16px] h-[16px]" />
               </button>
             )}
             <button
               onClick={() => add(product)}
-              disabled={product.isAvailable === false}
-              aria-label={t('addToCart')}
-              className="disabled:opacity-40 disabled:pointer-events-none w-[36px] h-[36px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-soft transition-all hover:bg-primary/90 active:scale-90"
+              disabled={!available}
+              aria-label={available ? `${t('addToCart')}: ${name}` : tx({ ar: 'غير متوفر', he: 'אזל מהמלאי', en: 'Out of stock' })}
+              className="disabled:opacity-40 disabled:pointer-events-none w-[44px] h-[44px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-soft transition-all hover:bg-primary/90 active:scale-90"
             >
               <Plus className="w-[18px] h-[18px]" />
             </button>
@@ -127,5 +129,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView, classNa
     </div>
   );
 };
+
+export const ProductCardSkeleton = () => (
+  <div className="flex flex-col rounded-[18px] overflow-hidden border border-outline-variant/50 bg-surface-container-low" aria-hidden="true">
+    <div className="aspect-square bg-surface-container animate-pulse" />
+    <div className="p-[12px] space-y-[8px]">
+      <div className="h-[14px] w-3/4 rounded bg-surface-container animate-pulse" />
+      <div className="h-[12px] w-1/2 rounded bg-surface-container animate-pulse" />
+      <div className="h-[44px] w-full rounded-full bg-surface-container animate-pulse" />
+    </div>
+  </div>
+);
 
 export default ProductCard;

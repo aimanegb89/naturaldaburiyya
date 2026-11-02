@@ -112,7 +112,7 @@ const Header: React.FC = () => {
                     <m.icon className="w-[18px] h-[18px]" />
                   </span>
                   <span className="flex-1">{m.label}</span>
-                  {!!m.badge && <span className="min-w-[22px] h-[22px] px-[6px] rounded-full bg-primary text-primary-foreground text-[11px] font-bold flex items-center justify-center">{m.badge}</span>}
+                  {!!m.badge && <span className="min-w-[22px] h-[22px] px-[6px] rounded-full bg-primary text-primary-foreground text-[12px] font-bold flex items-center justify-center">{m.badge}</span>}
                   <Chevron className="w-[16px] h-[16px] text-muted-foreground" />
                 </Link>
               );

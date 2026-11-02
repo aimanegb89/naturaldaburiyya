@@ -30,7 +30,7 @@ const StarRating = ({ value, count, size = 12, onChange, className }: Props) => 
       );
     })}
     {count !== undefined && (
-      <span className="text-[11px] text-muted-foreground ms-[4px]">({count})</span>
+      <span className="text-[12px] text-muted-foreground ms-[4px]">({count})</span>
     )}
   </div>
 );

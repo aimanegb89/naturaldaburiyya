@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { searchCatalog } from '@/lib/catalog';
+import { searchCatalog, useCatalog } from '@/lib/catalog';
 import { getProductName } from '@/lib/product-utils';
 import { HEALTH_GOALS } from '@/data/product-meta';
 import { useTx, pick } from '@/lib/i18n';
@@ -15,6 +15,7 @@ const SearchCommand: React.FC<{ className?: string; autoFocus?: boolean; onDone?
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  useCatalog();
   const results = searchCatalog(q, language).slice(0, 6);
 
   useEffect(() => {
@@ -61,7 +62,7 @@ const SearchCommand: React.FC<{ className?: string; autoFocus?: boolean; onDone?
             )
           ) : (
             <div className="p-[6px]">
-              <p className="text-[11px] font-semibold text-muted-foreground mb-[8px] uppercase tracking-wide">{tx({ ar: 'تسوق حسب الهدف', he: 'קנו לפי מטרה', en: 'Shop by goal' })}</p>
+              <p className="text-[12px] font-semibold text-muted-foreground mb-[8px] uppercase tracking-wide">{tx({ ar: 'تسوق حسب الهدف', he: 'קנו לפי מטרה', en: 'Shop by goal' })}</p>
               <div className="flex flex-wrap gap-[6px]">
                 {HEALTH_GOALS.map((g) => (
                   <button key={g.key} onClick={() => go(`/shop?goal=${g.key}`)} className="px-[12px] h-[32px] rounded-full bg-surface-container text-[12px] font-medium hover:bg-primary hover:text-primary-foreground transition-colors">

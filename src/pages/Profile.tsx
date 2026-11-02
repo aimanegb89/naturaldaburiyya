@@ -12,7 +12,8 @@ import {
   ArrowLeft, User, Package, MapPin, Heart, LogOut, Plus, Trash2, Edit2, Check, X, Lock, Mail, KeyRound
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { products } from '@/data/products';
+import { catalog as products, orderItemName, useCatalog } from '@/lib/catalog';
+import { useTx } from '@/lib/i18n';
 import { getProductName as getLocalizedName } from '@/lib/product-utils';
 
 interface Address {
@@ -47,6 +48,15 @@ interface ProfileData {
 const Profile = () => {
   const { t, dir, language } = useLanguage();
   const { user, signOut, resetPassword, updatePassword, loading } = useAuth();
+  useCatalog();
+  const tx = useTx();
+  const isPhoneAccount = !!user?.email?.endsWith('@phone.natural.local');
+  const statusText = (s: string) => ({
+    new: tx({ ar: 'جديد', he: 'חדשה', en: 'New' }), pending: tx({ ar: 'جديد', he: 'חדשה', en: 'New' }),
+    preparing: tx({ ar: 'قيد التحضير', he: 'בהכנה', en: 'Preparing' }),
+    done: tx({ ar: 'جاهز', he: 'מוכן', en: 'Done' }), completed: tx({ ar: 'جاهز', he: 'מוכן', en: 'Done' }),
+    cancelled: tx({ ar: 'ملغي', he: 'בוטלה', en: 'Cancelled' }),
+  } as Record<string, string>)[s] ?? s;
   const navigate = useNavigate();
   
   const [profile, setProfile] = useState<ProfileData>({ full_name: '', phone: '' });
@@ -79,7 +89,9 @@ const Profile = () => {
       return;
     }
     if (data) setProfile({ full_name: data.full_name || '', phone: data.phone || '' });
-  }, [user, t]);
+  // Don't refetch (and overwrite edits) when only the language changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const fetchAddresses = useCallback(async () => {
     if (!user) return;
@@ -96,7 +108,7 @@ const Profile = () => {
     if (!user) return;
     const { data: ordersData, error } = await supabase
       .from('orders')
-      .select('*, order_items(product_name, quantity, size, price)')
+      .select('*, order_items(product_id, product_name, quantity, size, price)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     
@@ -147,6 +159,10 @@ const Profile = () => {
 
   const addAddress = async () => {
     if (!user) return;
+    if (!newAddress.label.trim() || !newAddress.street.trim() || !newAddress.city.trim()) {
+      toast.error(tx({ ar: 'أدخل الاسم والشارع والمدينة', he: 'מלאו שם, רחוב ועיר', en: 'Enter a label, street and city' }));
+      return;
+    }
     const { error } = await supabase
       .from('addresses')
       .insert({
@@ -174,7 +190,7 @@ const Profile = () => {
       .delete()
       .eq('id', id);
     
-    if (error) return;
+    if (error) { toast.error(tx({ ar: 'تعذر حذف العنوان', he: 'מחיקת הכתובת נכשלה', en: 'Could not delete the address' })); return; }
     setAddresses(addresses.filter(a => a.id !== id));
     toast.success(t('addressDeleted'));
   };
@@ -244,8 +260,9 @@ const Profile = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-primary bg-primary/10';
-      case 'pending': return 'text-secondary bg-secondary/10';
+      case 'completed': case 'done': return 'text-primary bg-primary/10';
+      case 'pending': case 'new': return 'text-secondary bg-secondary/10';
+      case 'preparing': return 'text-foreground bg-accent';
       case 'cancelled': return 'text-destructive bg-destructive/10';
       default: return 'text-muted-foreground bg-muted';
     }
@@ -280,7 +297,7 @@ const Profile = () => {
         <h1 className="md-display-small text-foreground mb-8">{t('myProfile')}</h1>
 
         <Tabs defaultValue="profile" className="w-full" dir={dir}>
-          <TabsList className="grid w-full grid-cols-5 mb-8 bg-surface-container-high rounded-full p-[3px] h-auto">
+          <TabsList className={`grid w-full ${isPhoneAccount ? 'grid-cols-4' : 'grid-cols-5'} mb-8 bg-surface-container-high rounded-full p-[3px] h-auto`}>
             <TabsTrigger 
               value="profile" 
               className="gap-[6px] rounded-full py-[8px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-elevation-1"
@@ -288,13 +305,13 @@ const Profile = () => {
               <User className="w-[16px] h-[16px]" />
               <span className="hidden sm:inline md-label-large">{t('profile')}</span>
             </TabsTrigger>
-            <TabsTrigger 
+            {!isPhoneAccount && <TabsTrigger 
               value="security" 
               className="gap-[6px] rounded-full py-[8px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-elevation-1"
             >
               <Lock className="w-[16px] h-[16px]" />
               <span className="hidden sm:inline md-label-large">{t('security')}</span>
-            </TabsTrigger>
+            </TabsTrigger>}
             <TabsTrigger 
               value="orders" 
               className="gap-[6px] rounded-full py-[8px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-elevation-1"
@@ -466,13 +483,13 @@ const Profile = () => {
                             </p>
                           </div>
                           <span className={`px-3 py-1 rounded-full md-label-small ${getStatusColor(order.status)}`}>
-                            {t(order.status as TranslationKey)}
+                            {statusText(order.status)}
                           </span>
                         </div>
                         <div className="space-y-1">
                           {order.items.map((item, idx) => (
                             <p key={idx} className="md-body-medium text-muted-foreground">
-                              {item.quantity}x {item.product_name} ({item.size})
+                              {item.quantity}× {orderItemName((item as any).product_id, item.product_name, language)} ({item.size === 'large' ? t('large') : t('small')})
                             </p>
                           ))}
                         </div>
@@ -585,7 +602,12 @@ const Profile = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {favorites.map((productId) => {
                       const product = products.find(p => p.id === productId);
-                      if (!product) return null;
+                      if (!product) return (
+                        <div key={productId} className="bg-surface-container rounded-xl p-3 flex items-center justify-between gap-4">
+                          <p className="text-[14px] text-muted-foreground">{tx({ ar: 'منتج لم يعد متوفرًا', he: 'מוצר שאינו זמין עוד', en: 'Product no longer available' })}</p>
+                          <Button variant="ghost" size="sm" aria-label={t("removedFromFavorites")} onClick={() => removeFavorite(productId)}>✕</Button>
+                        </div>
+                      );
                       return (
                         <div key={productId} className="bg-surface-container rounded-xl p-3 flex items-center gap-4 shadow-elevation-1">
                           <img 
