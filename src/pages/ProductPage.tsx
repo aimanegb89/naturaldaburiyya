@@ -81,7 +81,9 @@ const ProductPage: React.FC = () => {
             <h1 className="font-display text-[28px] md:text-[38px] leading-tight mb-[8px]">{name}</h1>
             <div className="flex items-center gap-[10px] mb-[14px]">
               {rating ? <StarRating value={rating.avg} count={rating.count} size={15} /> : <span className="text-[13px] text-muted-foreground">{tx({ ar: 'لا تقييمات بعد', he: 'אין דירוגים', en: 'No reviews yet' })}</span>}
-              <span className="flex items-center gap-[6px] text-[13px] text-primary font-semibold"><span className="w-[7px] h-[7px] rounded-full bg-primary" />{tx({ ar: 'متوفر', he: 'במלאי', en: 'In stock' })}</span>
+              {p.isAvailable !== false
+                ? <span className="flex items-center gap-[6px] text-[13px] text-primary font-semibold"><span className="w-[7px] h-[7px] rounded-full bg-primary" />{tx({ ar: 'متوفر', he: 'במלאי', en: 'In stock' })}</span>
+                : <span className="flex items-center gap-[6px] text-[13px] text-destructive font-semibold"><span className="w-[7px] h-[7px] rounded-full bg-destructive" />{tx({ ar: 'غير متوفر حاليًا', he: 'אזל כרגע', en: 'Out of stock' })}</span>}
             </div>
             <p className="text-[15px] text-muted-foreground leading-relaxed mb-[16px]">{getProductDescription(p, language)}</p>
             <div className="flex flex-wrap gap-[6px] mb-[20px]">
