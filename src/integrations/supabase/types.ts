@@ -150,32 +150,41 @@ export type Database = {
         Row: {
           address_id: string | null
           created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          delivery_address: string | null
           id: string
           notes: string | null
           status: string
           total_amount: number
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           address_id?: string | null
           created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_address?: string | null
           id?: string
           notes?: string | null
           status?: string
           total_amount: number
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           address_id?: string | null
           created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_address?: string | null
           id?: string
           notes?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -193,6 +202,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      phone_otps: {
+        Row: {
+          attempts: number
+          code_hash: string
+          expires_at: string
+          phone: string
+          sent_at: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          expires_at: string
+          phone: string
+          sent_at?: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          expires_at?: string
+          phone?: string
+          sent_at?: string
+        }
+        Relationships: []
       }
       product_reviews: {
         Row: {
@@ -314,6 +347,24 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      store_settings: {
+        Row: {
+          id: number
+          order_channel: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          order_channel?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          order_channel?: string
+          updated_at?: string
         }
         Relationships: []
       }

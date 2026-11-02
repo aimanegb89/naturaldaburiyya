@@ -109,54 +109,21 @@ const Checkout: React.FC = () => {
     let orderId: string | null = null;
 
     try {
-      if (user) {
-        let addressId = usingSaved ? selectedAddress!.id : null;
+      const { data: settings } = await supabase.from('store_settings').select('order_channel').eq('id', 1).maybeSingle();
+      const channel = settings?.order_channel ?? 'push';
+      const { data: placed, error: placeErr } = await supabase.functions.invoke('place-order', {
+        body: {
+          name: form.name, phone: form.phone, street, city, postal,
+          notes: [payment === 'cash' ? 'Cash' : 'Card', form.notes].filter(Boolean).join(' · '),
+          address_id: usingSaved ? selectedAddress!.id : null,
+          save_address: !!user && !usingSaved,
+          items: items.map(i => ({ id: i.id, size: i.size, quantity: i.quantity })),
+        },
+      });
+      if (placeErr || !placed?.id) throw new Error(placed?.error ?? placeErr?.message ?? 'failed');
+      orderId = placed.id;
 
-        if (!usingSaved) {
-          const { data: newAddr } = await supabase
-            .from('addresses')
-            .insert({
-              user_id: user.id,
-              label: t('deliveryAddress'),
-              street,
-              city,
-              postal_code: postal || null,
-              phone: form.phone,
-              is_default: addresses.length === 0,
-            })
-            .select('id')
-            .single();
-          addressId = newAddr?.id ?? null;
-        }
-
-        const { data: order, error: orderError } = await supabase
-          .from('orders')
-          .insert({
-            user_id: user.id,
-            address_id: addressId,
-            total_amount: orderTotal,
-            status: 'pending',
-            notes: form.notes || null,
-          })
-          .select('id')
-          .single();
-
-        if (orderError) throw orderError;
-        orderId = order.id;
-
-        const { error: itemsError } = await supabase.from('order_items').insert(
-          items.map(item => ({
-            order_id: order.id,
-            product_id: item.id,
-            product_name: item.nameEn,
-            size: item.size,
-            quantity: item.quantity,
-            price: item.price,
-          }))
-        );
-        if (itemsError) throw itemsError;
-      }
-
+      if (channel === 'whatsapp') {
       const orderLines = items
         .map(i => `• ${getName(i)} (${sizeLabel(i.size)}) x${i.quantity} - ₪${i.price * i.quantity}`)
         .join('\n');
@@ -164,6 +131,7 @@ const Checkout: React.FC = () => {
       const message = `🌿 *Natural - ${t('orderDetails')}*\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${t('deliveryAddress')}:* ${street}, ${city}${postal ? ` (${postal})` : ''}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}\n*${tx({ ar: 'الدفع', he: 'תשלום', en: 'Payment' })}:* ${payment === 'cash' ? tx({ ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }) : tx({ ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' })}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}`;
 
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+      }
 
       setConfirmedTotal(orderTotal);
       setConfirmedId(orderId);
