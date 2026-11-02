@@ -1,10 +1,10 @@
-Make the published site open for everyone
+Fix the blank published site
 
-Why it's blank: the published site is set to **private**, so anyone not on the invite list (and not signed in to Lovable) is blocked. Checked directly: the address answers "Unauthorized" and the page never loads.
+What's happening: the site is now public and loads, but it crashes right away with "supabaseUrl is required". The published version was built without the app's backend connection settings, so nothing renders.
+
+Cause: the project's ignore list excludes the settings file that holds those connection details. It's there in the editor, but it's left out when the site is published.
 
 Fix:
-1. Switch the published site's visibility to **public**, so anyone with the link can open it.
-2. Republish so the latest changes (checkout, larger product images, etc.) are live.
-3. Open the published link again and confirm the shop loads.
-
-If you'd rather keep it private, the other option is to add people one by one in the Publish dialog under "Invite only". They'll need to sign in to Lovable to open it.
+1. Remove the `.env` lines from `.gitignore` so the connection settings go into the published build. (These are public, safe-to-share values, not secrets.)
+2. Republish the site.
+3. Open the published link and confirm the shop loads with no errors.
