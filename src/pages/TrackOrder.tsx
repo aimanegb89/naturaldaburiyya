@@ -77,7 +77,7 @@ export default function TrackOrder() {
   return (
     <AppShell>
       <div className="max-w-[560px] mx-auto px-[16px] py-[24px] text-start">
-        <h1 className="font-display text-[26px] font-bold mb-[6px]">{{urlCode ? tx({ ar: 'تتبّع طلبك', he: 'מעקב הזמנה', en: 'Track your order' }) : tx({ ar: 'طلباتي', he: 'ההזמנות שלי', en: 'My orders' })}</h1>
+        <h1 className="font-display text-[26px] font-bold mb-[6px]">{urlCode ? tx({ ar: 'تتبّع طلبك', he: 'מעקב הזמנה', en: 'Track your order' }) : tx({ ar: 'طلباتي', he: 'ההזמנות שלי', en: 'My orders' })}</h1>
         <p className="text-[14px] text-muted-foreground mb-[18px]">
           {tx({ ar: 'أدخل رقم الطلب ورقم الهاتف الذي استخدمته.', he: 'הזינו את מספר ההזמנה ואת מספר הטלפון.', en: 'Enter your order number and the phone number you used.' })}
         </p>
