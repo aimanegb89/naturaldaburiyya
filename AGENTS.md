@@ -2,7 +2,7 @@
 
 - Products live in the `products` table (edited at `/admin`, admin role via `user_roles`); `CatalogProvider` loads them into `catalog` in `src/lib/catalog.ts`, with `src/data/products.ts` as fallback list and image source; merchandising extras stay in `src/data/product-meta.ts` — so the manager edits products without code changes.
 - New UI copy uses inline `useTx()({ ar, he, en })` from `src/lib/i18n.ts`; the legacy `t()` keys remain for existing strings — avoids growing the giant translation map.
-- Storefront pages wrap content in `AppShell` (header, footer, bottom nav); the cart drawer is mounted once in `App.tsx` and opened via `useCartDrawer` — so any page can open the cart.
+- Storefront pages wrap content in `AppShell` (header, bottom nav; no footer — contact + copyright live on `/contact`); the cart drawer is mounted once in `App.tsx` and opened via `useCartDrawer` — so any page can open the cart.
 - `vite.config.ts` defines fallback public backend URL/key because published builds were shipping without `.env` — do not remove.
 - Availability reminder: `availability-reminder` edge function sends FCM pushes to `admin_push_tokens`; pg_cron calls it at 13:50 and 14:50 UTC and the function acts only at 16:xx Jerusalem — DST-safe single daily send.
 - Orders are created only via the `place-order` edge function (recomputes prices server-side, pushes to managers via `_shared/fcm.ts`); `store_settings.order_channel` decides if checkout also opens WhatsApp — so guest and signed-in orders both land in the manager inbox.
@@ -11,3 +11,4 @@
 - Order tracking: public lookups go through the `track-order` edge function using `orders.tracking_code` or the 3-digit number alone (picks the latest active order) and return only status/items/total — orders stay private under RLS.
 - Theme: `next-themes` (class, default system) with `:root`/`.dark` tokens in `src/index.css`; toggle is `ThemeToggle`, shown in the side menu.
 - Customer-facing order numbers are `orders.order_number` (random 3-digit, assigned by DB trigger, not unique forever) — number-only lookups resolve to the latest active order; stale new/preparing orders are auto-marked done (store_settings.auto_done_minutes) lazily in track-order and OrdersBoard load instead of a cron; `tracking_code` stays the unique link key.
+- PWA: two manifests — `manifest.webmanifest` (shop, start /) and `manifest-admin.webmanifest` (start/scope /admin); index.html inline script + `useAdminManifest` pick the admin one on /admin, and `src/lib/installPrompt.ts` captures `beforeinstallprompt` globally — so installing from /admin opens the manager app.
