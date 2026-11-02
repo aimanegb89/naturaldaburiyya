@@ -30,9 +30,9 @@ Deno.serve(async (req) => {
       const { data } = await admin.from('orders').select(sel).eq('tracking_code', code).maybeSingle();
       o = data;
     }
-    if (!o) return json({ error: 'not_found' }, 404);
+    if (!o) return json({ error: 'not_found' });
     if (parsed.data.phone && o.customer_phone && digits(parsed.data.phone) !== digits(o.customer_phone)) {
-      return json({ error: 'not_found' }, 404);
+      return json({ error: 'not_found' });
     }
     const { customer_phone: _p, ...safe } = o;
     return json(safe);
