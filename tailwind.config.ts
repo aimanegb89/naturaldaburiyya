@@ -96,6 +96,9 @@ export default {
         tropical: "hsl(var(--tropical-yellow))",
         berry: "hsl(var(--berry-purple))",
         cream: "hsl(var(--cream))",
+        gold: "hsl(var(--gold))",
+        terracotta: "hsl(var(--terracotta))",
+        sage: "hsl(var(--sage))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
