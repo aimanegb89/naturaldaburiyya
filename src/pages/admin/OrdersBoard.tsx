@@ -29,7 +29,7 @@ export default function OrdersBoard() {
 
   const load = async () => {
     const { data } = await supabase.from('orders')
-      .select('id,status,total_amount,notes,created_at,customer_name,customer_phone,delivery_address,order_items(product_name,size,quantity,price,product_id)')
+      .select('id,order_number,status,total_amount,notes,created_at,customer_name,customer_phone,delivery_address,order_items(product_name,size,quantity,price,product_id)')
       .order('created_at', { ascending: false }).limit(200);
     setOrders((data ?? []) as Order[]);
   };
