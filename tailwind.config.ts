@@ -18,8 +18,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Roboto', 'Tajawal', 'sans-serif'],
-        display: ['Roboto', 'Tajawal', 'sans-serif'],
+        sans: ['Manrope', 'Tajawal', 'sans-serif'],
+        display: ['Fraunces', 'Tajawal', 'serif'],
       },
       spacing: {
         // Material 8dp grid
