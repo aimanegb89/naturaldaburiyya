@@ -15,3 +15,13 @@
 - TrackOrder: build the list of codes from the signed-in user's recent orders plus the codes saved in localStorage, without duplicates. Fetch each one through `track-order`. Show an order as a progress card when it isn't done, or when it is done and `updated_at` was less than 30 minutes ago. Poll every 20s.
 - Orders done more than 30 minutes ago are left out of the Track tab and are removed from the localStorage list.
 - Move the progress card into a small `TrackedOrderCard` component that both the auto list and the manual search use.
+
+## Automatic "Done" if the manager forgets
+- In the manager's Settings page, a new "Auto-complete orders after" field (in minutes, default 60).
+- Any order that is still New or Preparing that long after it was placed is marked Done automatically. Its normal 30 minutes in the Track tab start then, and after that it moves to History.
+- Background check runs every 5 minutes.
+
+### Technical details
+- Migration: add `store_settings.auto_done_minutes integer not null default 60` with a check that it is between 10 and 1440.
+- A scheduled job (pg_cron, every 5 min) runs `update orders set status='done', updated_at=now() where status in ('new','preparing') and created_at < now() - make_interval(mins => (select auto_done_minutes from store_settings where id=1))`.
+- SettingsPage: number input saved to `store_settings` (admins only, as the current rules allow).
