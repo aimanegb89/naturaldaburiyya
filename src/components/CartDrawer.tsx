@@ -61,19 +61,25 @@ const CartDrawer: React.FC = () => {
           className="w-full sm:max-w-[420px] bg-background border-outline-variant flex flex-col p-[20px]"
           dir={dir}
         >
-          {/* Header with clear cart button */}
-          <SheetHeader className="pe-[40px] flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <SheetTitle className="flex items-center gap-[8px] text-[20px] font-display text-foreground">
-                <ShoppingCart className="w-[18px] h-[18px] text-primary" />
+          <SheetHeader className="pe-[40px] flex-shrink-0 text-start">
+            <div className="flex items-center justify-between gap-[8px]">
+              <SheetTitle className="flex items-center gap-[10px] text-[20px] font-bold text-foreground">
+                <span className="flex h-[36px] w-[36px] items-center justify-center rounded-full bg-primary/10">
+                  <ShoppingCart className="w-[18px] h-[18px] text-primary" />
+                </span>
                 {t('yourCart')}
+                {items.length > 0 && (
+                  <span className="rounded-full bg-primary px-[8px] py-[2px] text-[12px] font-bold text-primary-foreground">
+                    {items.reduce((s, i) => s + i.quantity, 0)}
+                  </span>
+                )}
               </SheetTitle>
               {items.length > 0 && (
                 <button
                   onClick={() => setShowEmptyCartDialog(true)}
-                  className="flex items-center gap-[4px] text-[12px] text-destructive hover:underline transition-all"
+                  className="flex items-center gap-[4px] rounded-full px-[10px] py-[6px] text-[12px] font-semibold text-destructive hover:bg-destructive/10 transition-colors"
                 >
-                  <Trash2 className="w-[11px] h-[11px]" />
+                  <Trash2 className="w-[13px] h-[13px]" />
                   {t('emptyCartButton')}
                 </button>
               )}
