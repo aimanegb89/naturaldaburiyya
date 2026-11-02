@@ -54,7 +54,7 @@ const Header: React.FC = () => {
 
         <nav className="hidden md:flex items-center gap-[4px] ms-[16px]">
           {links.map((l) => (
-            <NavLink key={l.to} to={l.to} className="px-[12px] h-[36px] flex items-center rounded-full text-[14px] font-semibold text-foreground/80 hover:text-primary hover:bg-surface-container transition-colors">
+            <NavLink key={l.to} to={l.to} className="px-[12px] h-[36px] flex items-center whitespace-nowrap rounded-full text-[14px] font-semibold text-foreground/80 hover:text-primary hover:bg-surface-container transition-colors">
               {l.label}
             </NavLink>
           ))}
