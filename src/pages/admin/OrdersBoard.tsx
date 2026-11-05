@@ -20,10 +20,10 @@ const NEXT: Record<string, { to: string; label: string } | undefined> = {
   new: { to: 'preparing', label: 'بدء التحضير' },
   preparing: { to: 'done', label: 'جاهز — تم التسليم' },
 };
-const WAIT_WARN_MIN = 15;
+
 
 /** Short soft chime + vibration for a new order. */
-function chime() {
+export function chime() {
   try {
     const Ctx = window.AudioContext || (window as any).webkitAudioContext;
     const ctx = new Ctx();
@@ -45,6 +45,15 @@ export default function OrdersBoard() {
   const [tab, setTab] = useState<string>('new');
 
   const seen = useRef<Set<string> | null>(null);
+  const chimeOn = useRef(true);
+  const [warnMin, setWarnMin] = useState(15);
+  useEffect(() => {
+    supabase.from('store_settings').select('chime_enabled,stale_warn_minutes').eq('id', 1).maybeSingle().then(({ data }) => {
+      if (!data) return;
+      chimeOn.current = data.chime_enabled;
+      setWarnMin(data.stale_warn_minutes);
+    });
+  }, []);
   const [, tick] = useState(0);
   useEffect(() => { const id = setInterval(() => tick((x) => x + 1), 60000); return () => clearInterval(id); }, []);
   const load = async () => {
@@ -55,7 +64,7 @@ export default function OrdersBoard() {
       .order('created_at', { ascending: false }).limit(200);
     const list = (data ?? []) as Order[];
     const ids = new Set(list.map((o) => o.id));
-    if (seen.current && list.some((o) => !seen.current!.has(o.id) && bucket(o.status) === 'new')) chime();
+    if (seen.current && list.some((o) => !seen.current!.has(o.id) && bucket(o.status) === 'new') && chimeOn.current) chime();
     seen.current = ids;
     setOrders(list);
   };
@@ -104,11 +113,11 @@ export default function OrdersBoard() {
       {shown.map((o) => {
         const next = NEXT[bucket(o.status)];
         return (
-          <div key={o.id} className={`bg-card rounded-[14px] p-[14px] shadow-soft space-y-[8px] text-start ${bucket(o.status) !== 'done' && minsAgo(o.created_at) >= WAIT_WARN_MIN ? 'ring-2 ring-destructive' : ''}`}>
+          <div key={o.id} className={`bg-card rounded-[14px] p-[14px] shadow-soft space-y-[8px] text-start ${bucket(o.status) !== 'done' && minsAgo(o.created_at) >= warnMin ? 'ring-2 ring-destructive' : ''}`}>
             <div className="flex items-center justify-between gap-[8px]">
               <div className="font-bold text-[16px]">{o.customer_name || 'زبون'}</div>
               <div className="text-[12px] text-muted-foreground">
-                <bdi dir="ltr">#{(o as any).order_number ?? o.id.slice(0, 6)}</bdi> · <span className={bucket(o.status) !== 'done' && minsAgo(o.created_at) >= WAIT_WARN_MIN ? 'text-destructive font-bold' : ''}>قبل {minsAgo(o.created_at)} د</span> · {new Date(o.created_at).toLocaleString('ar', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric' })}
+                <bdi dir="ltr">#{(o as any).order_number ?? o.id.slice(0, 6)}</bdi> · <span className={bucket(o.status) !== 'done' && minsAgo(o.created_at) >= warnMin ? 'text-destructive font-bold' : ''}>قبل {minsAgo(o.created_at)} د</span> · {new Date(o.created_at).toLocaleString('ar', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric' })}
               </div>
             </div>
             {o.delivery_address && <div className="flex items-center gap-[6px] text-[13px]"><MapPin className="w-[14px] h-[14px] shrink-0" />{o.delivery_address}</div>}
