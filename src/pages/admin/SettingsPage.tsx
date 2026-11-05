@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import QrDialog from '@/components/admin/QrDialog';
 import ProductsManager from './ProductsManager';
 import ThemeToggle from '@/components/ThemeToggle';
+import { Switch } from '@/components/ui/switch';
+import { chime } from './OrdersBoard';
 
 const pushMsg: Record<string, string> = {
   registered: 'تم تفعيل الإشعارات على هذا الجهاز',
@@ -40,6 +42,21 @@ export default function SettingsPage() {
       .then(({ data }) => setAutoMins(String(data?.auto_done_minutes ?? 60)));
   }, []);
   const [autoMins, setAutoMins] = useState('60');
+  const [chimeOn, setChimeOn] = useState(true);
+  const [warnMin, setWarnMin] = useState('15');
+  const [prep, setPrep] = useState('10–15');
+  useEffect(() => {
+    supabase.from('store_settings').select('chime_enabled,stale_warn_minutes,prep_time_text').eq('id', 1).maybeSingle()
+      .then(({ data }) => { if (data) { setChimeOn(data.chime_enabled); setWarnMin(String(data.stale_warn_minutes)); setPrep(data.prep_time_text); } });
+  }, []);
+  const saveAlerts = async (patch: { chime_enabled?: boolean } = {}) => {
+    const n = Math.round(Number(warnMin));
+    if (!(n >= 1 && n <= 240)) { toast.error('مدة التنبيه بين 1 و 240 دقيقة'); return; }
+    const p = prep.trim();
+    if (!p || p.length > 20) { toast.error('أدخل مدة التحضير (حتى 20 حرفًا)'); return; }
+    const { error } = await supabase.from('store_settings').update({ chime_enabled: chimeOn, stale_warn_minutes: n, prep_time_text: p, ...patch, updated_at: new Date().toISOString() }).eq('id', 1);
+    if (error) toast.error('فشل الحفظ'); else toast.success('تم الحفظ');
+  };
   const saveAuto = async () => {
     const n = Math.round(Number(autoMins));
     if (!(n >= 10 && n <= 1440)) { toast.error('أدخل رقمًا بين 10 و 1440 دقيقة'); return; }
@@ -94,6 +111,30 @@ export default function SettingsPage() {
           <span className="text-[13px]">دقيقة</span>
           <button onClick={saveAuto} className="ms-auto h-[38px] px-[14px] rounded-[10px] bg-primary text-primary-foreground text-[13px] font-bold">حفظ</button>
         </div>
+      </Section>
+
+      <Section title="تنبيهات الطلبات ووقت التحضير">
+        <div className="flex items-center gap-[8px]">
+          <span className="text-[14px] font-semibold flex-1">صوت عند وصول طلب جديد</span>
+          <Button size="sm" variant="outline" onClick={chime}>تجربة</Button>
+          <Switch checked={chimeOn} onCheckedChange={(v) => { setChimeOn(v); saveAlerts({ chime_enabled: v }); }} aria-label="صوت الطلب الجديد" />
+        </div>
+        <div>
+          <p className="text-[12px] text-muted-foreground mb-[6px]">يظهر الطلب بإطار أحمر إذا انتظر أكثر من:</p>
+          <div className="flex items-center gap-[8px]">
+            <input type="number" min={1} max={240} value={warnMin} onChange={(e) => setWarnMin(e.target.value)} dir="ltr" className="w-[90px] h-[38px] rounded-[10px] border border-input bg-background px-[10px] text-[14px]" />
+            <span className="text-[13px]">دقيقة</span>
+          </div>
+        </div>
+        <div>
+          <p className="text-[12px] text-muted-foreground mb-[6px]">وقت التحضير المتوقّع الذي يراه الزبون (مثال: 10–15)</p>
+          <div className="flex items-center gap-[8px]">
+            <input value={prep} maxLength={20} onChange={(e) => setPrep(e.target.value)} dir="ltr" className="w-[90px] h-[38px] rounded-[10px] border border-input bg-background px-[10px] text-[14px]" />
+            <span className="text-[13px]">دقيقة</span>
+          </div>
+          <p className="text-[12px] text-muted-foreground mt-[6px]">سيظهر للزبون: «نحضّر طلبك الآن — عادةً خلال {prep || '…'} دقيقة»</p>
+        </div>
+        <button onClick={() => saveAlerts()} className="w-full h-[38px] rounded-[10px] bg-primary text-primary-foreground text-[13px] font-bold">حفظ</button>
       </Section>
 
       <Section title="الإشعارات على هذا الجهاز">

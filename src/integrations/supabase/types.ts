@@ -395,23 +395,32 @@ export type Database = {
       store_settings: {
         Row: {
           auto_done_minutes: number
+          chime_enabled: boolean
           id: number
           last_reminder_date: string | null
           order_channel: string
+          prep_time_text: string
+          stale_warn_minutes: number
           updated_at: string
         }
         Insert: {
           auto_done_minutes?: number
+          chime_enabled?: boolean
           id?: number
           last_reminder_date?: string | null
           order_channel?: string
+          prep_time_text?: string
+          stale_warn_minutes?: number
           updated_at?: string
         }
         Update: {
           auto_done_minutes?: number
+          chime_enabled?: boolean
           id?: number
           last_reminder_date?: string | null
           order_channel?: string
+          prep_time_text?: string
+          stale_warn_minutes?: number
           updated_at?: string
         }
         Relationships: []

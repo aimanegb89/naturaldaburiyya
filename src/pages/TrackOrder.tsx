@@ -29,6 +29,11 @@ export default function TrackOrder() {
   const { code: urlCode } = useParams();
   const navigate = useNavigate();
   const tx = useTx();
+  const [prep, setPrep] = useState('10–15');
+  useEffect(() => {
+    supabase.from('store_settings').select('prep_time_text').eq('id', 1).maybeSingle()
+      .then(({ data }) => { if (data?.prep_time_text) setPrep(data.prep_time_text); });
+  }, []);
   const { language } = useLanguage();
   const [order, setOrder] = useState<Tracked | null>(null);
   const [loading, setLoading] = useState(false);
@@ -108,7 +113,7 @@ export default function TrackOrder() {
   const statusLine = (o: Tracked) => {
     const st = stepOf(o.status);
     if (st === 2) return tx({ ar: 'طلبك جاهز. بالهناء والعافية!', he: 'ההזמנה מוכנה. בתיאבון!', en: 'Your order is ready. Enjoy!' });
-    if (st === 1) return tx({ ar: 'نحضّر طلبك الآن — عادةً خلال 10–15 دقيقة', he: 'מכינים את ההזמנה — בדרך כלל 10–15 דקות', en: 'We are preparing your order — usually 10–15 min' });
+    if (st === 1) return tx({ ar: `نحضّر طلبك الآن — عادةً خلال ${prep} دقيقة`, he: `מכינים את ההזמנה — בדרך כלל ${prep} דקות`, en: `We are preparing your order — usually ${prep} min` });
     return tx({ ar: 'استلمنا طلبك وسنبدأ بتحضيره قريبًا', he: 'קיבלנו את ההזמנה ונתחיל להכין בקרוב', en: 'We got your order and will start soon' });
   };
 
