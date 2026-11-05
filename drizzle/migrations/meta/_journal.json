@@ -57,6 +57,13 @@
       "when": 1793660300843,
       "tag": "0007_security_and_correctness_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793903631080,
+      "tag": "0008_order_alert_settings",
+      "breakpoints": true
     }
   ]
 }
