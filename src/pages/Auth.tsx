@@ -10,6 +10,10 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { useTx } from '@/lib/i18n';
 import { lovable } from '@/integrations/lovable/index';
+// Apple's official Sign in with Apple artwork (Apple Design Resources).
+// Left-aligned Medium: 31x44 logo box sized for a 44pt-tall button, black and white versions.
+import appleSignInBlack from '@/assets/apple-signin-black.svg';
+import appleSignInWhite from '@/assets/apple-signin-white.svg';
 
 /** Same rule as the server: 0-prefix → 972, 00 dropped, 11–15 digits. */
 export function normalizePhone(p: string) {
@@ -191,6 +195,23 @@ const Auth = () => {
                 {isLogin ? t('welcomeBack') : t('createAccount')}
               </p>
             </div>
+
+            {/* Apple sign-in — Apple HIG: black/white background only, official logo, same size and verb as the other provider */}
+            <button
+              type="button"
+              onClick={async () => {
+                try { sessionStorage.setItem('auth_next', next); } catch { /* ignore */ }
+                const result = await lovable.auth.signInWithOAuth('apple', { redirect_uri: window.location.origin });
+                if (result.error) { toast.error(tx({ ar: 'تعذر تسجيل الدخول عبر Apple', he: 'הכניסה עם Apple נכשלה', en: 'Apple sign-in failed' })); return; }
+                if (result.redirected) return;
+                goNext();
+              }}
+              className="w-full h-[44px] rounded-full overflow-hidden flex items-center justify-center gap-[8px] ps-[4px] pe-[12px] border border-[#747775] bg-[#FFFFFF] text-[#1F1F1F] dark:bg-[#000000] dark:border-[#8E918F] dark:text-[#FFFFFF] text-[14px] leading-[20px] font-medium mb-[12px]"
+            >
+              <img src={appleSignInBlack} alt="" width={31} height={44} className="dark:hidden shrink-0" />
+              <img src={appleSignInWhite} alt="" width={31} height={44} className="hidden dark:block shrink-0" />
+              {tx({ ar: 'المتابعة باستخدام Apple', he: 'המשך עם Apple', en: 'Continue with Apple' })}
+            </button>
 
             {/* Google sign-in */}
             <button
