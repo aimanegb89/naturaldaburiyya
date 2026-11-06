@@ -97,15 +97,12 @@ const Checkout: React.FC = () => {
     e.preventDefault();
     if (submitting) return;
 
-    const usingSaved = !!selectedAddress;
     const phoneDigits = form.phone.replace(/\D/g, '');
 
     const errs: Record<string, string> = {};
     const req = tx({ ar: 'هذا الحقل مطلوب', he: 'שדה חובה', en: 'This field is required' });
     if (!form.name.trim()) errs.name = req;
     if (phoneDigits.length < 9 || phoneDigits.length > 15) errs.phone = tx({ ar: 'رقم هاتف غير صالح', he: 'מספר טלפון לא תקין', en: 'Enter a valid phone number' });
-    if (!usingSaved && !form.street.trim()) errs.street = req;
-    if (!usingSaved && !form.city.trim()) errs.city = req;
     setErrors(errs);
     if (Object.keys(errs).length) {
       toast({ title: t('requiredFields') });
@@ -113,18 +110,13 @@ const Checkout: React.FC = () => {
     }
 
     setSubmitting(true);
-    const street = usingSaved ? selectedAddress!.street : form.street;
-    const city = usingSaved ? selectedAddress!.city : form.city;
-    const postal = usingSaved ? selectedAddress!.postal_code || '' : form.postalCode;
     let orderId: string | null = null;
 
     try {
       const { data: placed, error: placeErr } = await supabase.functions.invoke('place-order', {
         body: {
-          name: form.name, phone: form.phone, street, city, postal,
+          name: form.name, phone: form.phone,
           notes: form.notes, payment_method: payment,
-          address_id: usingSaved ? selectedAddress!.id : null,
-          save_address: !!user && !usingSaved,
           idempotency_key: idemKey.current,
           items: items.map(i => ({ id: i.id, size: i.size, quantity: i.quantity })),
         },
@@ -163,7 +155,7 @@ const Checkout: React.FC = () => {
         .map(i => `• ${getName(i)} (${sizeLabel(i.size)}) x${i.quantity} - ₪${i.price * i.quantity}`)
         .join('\n');
 
-      const message = `🌿 *Natural - ${t('orderDetails')}* #${placed.order_number ?? orderId}\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${t('deliveryAddress')}:* ${street}, ${city}${postal ? ` (${postal})` : ''}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}\n*${tx({ ar: 'الدفع', he: 'תשלום', en: 'Payment' })}:* ${payment === 'cash' ? tx({ ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }) : tx({ ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' })}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}\n\n${tx({ ar: 'تتبّع الطلب', he: 'מעקב הזמנה', en: 'Track order' })}: ${window.location.origin}/track/${orderId}`;
+      const message = `🌿 *Natural - ${t('orderDetails')}* #${placed.order_number ?? orderId}\n\n*${t('name')}:* ${form.name}\n*${t('phoneNumber')}:* ${form.phone}\n*${tx({ ar: 'الاستلام', he: 'איסוף', en: 'Pickup' })}:* ${tx({ ar: 'من المحل', he: 'מהחנות', en: 'From the shop' })}\n\n*${t('orderSummary')}:*\n${orderLines}\n\n*${t('total')}:* ₪${orderTotal}\n*${tx({ ar: 'الدفع', he: 'תשלום', en: 'Payment' })}:* ${payment === 'cash' ? tx({ ar: 'نقدًا عند الاستلام', he: 'מזומן באיסוף', en: 'Cash at pickup' }) : tx({ ar: 'بطاقة عند الاستلام', he: 'כרטיס באיסוף', en: 'Card at pickup' })}${form.notes ? `\n\n*${t('notes')}:* ${form.notes}` : ''}\n\n${tx({ ar: 'تتبّع الطلب', he: 'מעקב הזמנה', en: 'Track order' })}: ${window.location.origin}/track/${orderId}`;
 
       setWaLink(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`);
       }
@@ -324,92 +316,20 @@ const Checkout: React.FC = () => {
           </div>
         </section>
 
-        {/* Delivery address */}
-        <section className="rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px]">
-          <h2 className="text-[16px] font-bold text-foreground mb-[12px] flex items-center gap-[8px]">
-            <span className="w-[26px] h-[26px] rounded-full bg-primary text-primary-foreground text-[13px] flex items-center justify-center">2</span>
-            <MapPin className="w-[16px] h-[16px] text-primary" />
-            {t('deliveryAddress')}
-          </h2>
-
-          {addresses.length > 0 && (
-            <div className="space-y-2 mb-3">
-              <p className="text-[12px] text-muted-foreground">{t('selectAddress')}</p>
-              {addresses.map(addr => (
-                <button
-                  key={addr.id}
-                  type="button"
-                  onClick={() => setSelectedAddressId(addr.id)}
-                  className={`w-full text-start rounded-xl p-[12px] border transition-colors ${
-                    selectedAddressId === addr.id
-                      ? 'border-primary bg-primary/10'
-                      : 'border-outline-variant bg-surface-container'
-                  }`}
-                >
-                  <p className="text-xs font-semibold text-foreground">{addr.label}</p>
-                  <p className="text-[12px] text-muted-foreground">
-                    {addr.street}, {addr.city}
-                  </p>
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setSelectedAddressId('new')}
-                className={`w-full text-start rounded-xl p-[12px] border transition-colors ${
-                  selectedAddressId === 'new'
-                    ? 'border-primary bg-primary/10'
-                    : 'border-outline-variant bg-surface-container'
-                }`}
-              >
-                <p className="text-xs font-semibold text-foreground">{t('newAddress')}</p>
-              </button>
-            </div>
-          )}
-
-          {!selectedAddress && (
-            <div className="space-y-3">
-              <div>
-                <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('street')}</label>
-                <Input
-                  value={form.street}
-                  maxLength={200}
-                  onChange={e => { setForm(p => ({ ...p, street: e.target.value })); if (errors.street) setErrors(x => ({ ...x, street: '' })); }}
-                  aria-invalid={!!errors.street}
-                  className={errors.street ? 'border-destructive' : ''}
-                />
-                {errors.street && <p className="text-[12px] text-destructive mt-[4px]">{errors.street}</p>}
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('city')}</label>
-                  <Input
-                    value={form.city}
-                    maxLength={100}
-                    onChange={e => { setForm(p => ({ ...p, city: e.target.value })); if (errors.city) setErrors(x => ({ ...x, city: '' })); }}
-                    aria-invalid={!!errors.city}
-                    className={errors.city ? 'border-destructive' : ''}
-                  />
-                  {errors.city && <p className="text-[12px] text-destructive mt-[4px]">{errors.city}</p>}
-                </div>
-                <div className="w-[110px]">
-                  <label className="text-[12px] font-semibold text-muted-foreground mb-[4px] block">{t('postalCode')}</label>
-                  <Input
-                    value={form.postalCode}
-                    maxLength={20}
-                    onChange={e => setForm(p => ({ ...p, postalCode: e.target.value }))}
-                    dir="ltr"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+        {/* Pickup only */}
+        <section className="rounded-[20px] bg-primary/5 border border-primary/20 p-[16px] flex items-start gap-[12px]">
+          <MapPin className="w-[20px] h-[20px] text-primary flex-shrink-0 mt-[2px]" />
+          <div>
+            <p className="text-[15px] font-bold text-foreground">{tx({ ar: 'استلام من المحل', he: 'איסוף מהחנות', en: 'Pickup from the shop' })}</p>
+            <p className="text-[13px] text-muted-foreground mt-[2px]">{tx({ ar: 'نجهّز طلبك وتستلمه من محل Natural في دبورية', he: 'נכין את ההזמנה ותאספו אותה מחנות Natural בדבוריה', en: 'We prepare your order and you pick it up at Natural, Daburiyya' })}</p>
+          </div>
         </section>
 
         {/* Payment */}
         <section className="rounded-[20px] bg-surface-container-low border border-outline-variant/50 p-[16px]">
-          <h2 className="text-[16px] font-bold text-foreground mb-[12px] flex items-center gap-[8px]"><span className="w-[26px] h-[26px] rounded-full bg-primary text-primary-foreground text-[13px] flex items-center justify-center">3</span>{tx({ ar: 'طريقة الدفع', he: 'אמצעי תשלום', en: 'Payment method' })}</h2>
+          <h2 className="text-[16px] font-bold text-foreground mb-[12px] flex items-center gap-[8px]"><span className="w-[26px] h-[26px] rounded-full bg-primary text-primary-foreground text-[13px] flex items-center justify-center">2</span>{tx({ ar: 'طريقة الدفع', he: 'אמצעי תשלום', en: 'Payment method' })}</h2>
           <div className="grid grid-cols-2 gap-[10px]">
-            {([['cash', Banknote, { ar: 'نقدًا عند الاستلام', he: 'מזומן במסירה', en: 'Cash on delivery' }], ['card', CreditCard, { ar: 'بطاقة عند الاستلام', he: 'כרטיס במסירה', en: 'Card on delivery' }]] as const).map(([k, Icon, l]) => (
+            {([['cash', Banknote, { ar: 'نقدًا عند الاستلام', he: 'מזומן באיסוף', en: 'Cash at pickup' }], ['card', CreditCard, { ar: 'بطاقة عند الاستلام', he: 'כרטיס באיסוף', en: 'Card at pickup' }]] as const).map(([k, Icon, l]) => (
               <button key={k} type="button" onClick={() => setPayment(k)} className={`rounded-[14px] border-2 p-[14px] flex flex-col items-start gap-[6px] text-start transition-all ${payment === k ? 'border-primary bg-primary/10' : 'border-outline-variant'}`}>
                 <Icon className="w-[20px] h-[20px] text-primary" />
                 <span className="text-[14px] font-bold">{tx(l)}</span>
