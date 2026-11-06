@@ -29,8 +29,8 @@ const Hero: React.FC = () => {
           </h1>
           <p className="text-[15px] md:text-[17px] leading-relaxed text-[hsl(var(--on-hero))]/85 mb-[18px] max-w-[480px] line-clamp-2 md:line-clamp-none animate-fade-in" style={{ animationDelay: '0.2s' }}>
             {tx({
-              ar: 'عصائر معصورة يوميًا، سموذي ومكملات طبيعية — تُحضَّر بحب في دبورية وتصلك طازجة.',
-              he: 'מיצים סחוטים יומית, שייקים ותוספים טבעיים — מוכנים באהבה בדבוריה ומגיעים טריים.',
+              ar: 'عصائر معصورة يوميًا، سموذي ومكملات طبيعية — تُحضَّر بحب في دبورية وجاهزة للاستلام طازجة.',
+              he: 'מיצים סחוטים יומית, שייקים ותוספים טבעיים — מוכנים באהבה בדבוריה ומוכנים לאיסוף טריים.',
               en: 'Daily cold-pressed juices, smoothies and natural supplements — made with care in Daburiyya, ready for pickup.',
             })}
           </p>
