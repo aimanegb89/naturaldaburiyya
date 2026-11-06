@@ -10,6 +10,7 @@ const Body = z.object({
   city: z.string().trim().min(1).max(100),
   postal: z.string().trim().max(20).optional().default(''),
   notes: z.string().trim().max(500).optional().default(''),
+  payment_method: z.enum(['cash', 'card']).optional().default('cash'),
   address_id: z.string().uuid().nullable().optional(),
   save_address: z.boolean().optional().default(false),
   idempotency_key: z.string().uuid().optional(),
@@ -78,7 +79,7 @@ Deno.serve(async (req) => {
     }
 
     const { data: rows, error: oErr } = await admin.rpc('create_order_with_items', {
-      p_order: { user_id: userId, address_id: addressId, total_amount: total, notes: b.notes, customer_name: b.name, customer_phone: b.phone, delivery_address: addressText, idempotency_key: b.idempotency_key ?? null },
+      p_order: { user_id: userId, address_id: addressId, total_amount: total, notes: b.notes, customer_name: b.name, customer_phone: b.phone, delivery_address: addressText, idempotency_key: b.idempotency_key ?? null, payment_method: b.payment_method },
       p_items: lines.map(({ name_ar: _n, ...l }) => l),
     });
     if (oErr) {
@@ -93,7 +94,7 @@ Deno.serve(async (req) => {
 
     let pushed = 0;
     try {
-      pushed = await pushToAdmins(admin, `طلب جديد #${order.order_number ?? order.id.slice(0, 6)} – ₪${total}`, `${b.name} · ${lines.map((l) => `${l.name_ar}×${l.quantity}`).join('، ')}`);
+      pushed = await pushToAdmins(admin, `طلب جديد #${order.order_number ?? order.id.slice(0, 6)} – ₪${total}`, `${b.name} · ${b.payment_method === 'card' ? '💳 بطاقة' : '💵 نقدًا'} · ${lines.map((l) => `${l.name_ar}×${l.quantity}`).join('، ')}`);
     } catch (e) { console.error('push failed', e); }
 
     return json({ id: order.id, tracking_code: order.tracking_code, order_number: order.order_number, total, pushed });

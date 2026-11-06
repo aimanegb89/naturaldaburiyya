@@ -122,7 +122,7 @@ const Checkout: React.FC = () => {
       const { data: placed, error: placeErr } = await supabase.functions.invoke('place-order', {
         body: {
           name: form.name, phone: form.phone, street, city, postal,
-          notes: [payment === 'cash' ? 'Cash' : 'Card', form.notes].filter(Boolean).join(' · '),
+          notes: form.notes, payment_method: payment,
           address_id: usingSaved ? selectedAddress!.id : null,
           save_address: !!user && !usingSaved,
           idempotency_key: idemKey.current,

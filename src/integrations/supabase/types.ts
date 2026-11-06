@@ -172,6 +172,7 @@ export type Database = {
           idempotency_key: string | null
           notes: string | null
           order_number: number | null
+          payment_method: string | null
           status: string
           total_amount: number
           tracking_code: string | null
@@ -188,6 +189,7 @@ export type Database = {
           idempotency_key?: string | null
           notes?: string | null
           order_number?: number | null
+          payment_method?: string | null
           status?: string
           total_amount: number
           tracking_code?: string | null
@@ -204,6 +206,7 @@ export type Database = {
           idempotency_key?: string | null
           notes?: string | null
           order_number?: number | null
+          payment_method?: string | null
           status?: string
           total_amount?: number
           tracking_code?: string | null
