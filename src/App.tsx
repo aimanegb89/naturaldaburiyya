@@ -19,6 +19,7 @@ import ProductPage from "./pages/ProductPage";
 import Wishlist from "./pages/Wishlist";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import CartPage from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
@@ -51,6 +52,7 @@ const App = () => (
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/cart" element={<CartPage />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/track" element={<TrackOrder />} />
                     <Route path="/orders" element={<TrackOrder />} />

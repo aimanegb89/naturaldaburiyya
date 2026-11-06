@@ -11,7 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCatalogProduct, hasSizes, isAvailable, orderItemName, unitPrice } from '@/lib/catalog';
 import { useCart } from '@/contexts/CartContext';
-import { useCartDrawer } from '@/contexts/CartDrawerContext';
+import { useOpenCart } from '@/contexts/CartDrawerContext';
 
 type Tracked = {
   tracking_code: string;
@@ -50,7 +50,7 @@ export default function TrackOrder() {
   const statusLabel = (s: string) => [tx({ ar: 'جديد', he: 'חדשה', en: 'New' }), tx({ ar: 'قيد التحضير', he: 'בהכנה', en: 'Preparing' }), tx({ ar: 'جاهز', he: 'מוכן', en: 'Done' })][stepOf(s)];
 
   const { addItem, updateQuantity } = useCart();
-  const { setOpen: openCart } = useCartDrawer();
+  const openCart = useOpenCart();
   const reorder = (its: { product_id?: string; size?: string; quantity: number }[]) => {
     let added = 0;
     for (const it of its) {
@@ -61,7 +61,7 @@ export default function TrackOrder() {
       if (it.quantity > 1) updateQuantity(p.id, size, it.quantity);
       added++;
     }
-    if (added) openCart(true);
+    if (added) openCart();
     else toast.error(tx({ ar: 'منتجات هذا الطلب غير متوفرة الآن', he: 'המוצרים בהזמנה זו אזלו', en: 'Items from this order are unavailable now' }));
   };
   // Poll only while the tab is visible.

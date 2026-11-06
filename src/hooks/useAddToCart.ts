@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
-import { useCartDrawer } from '@/contexts/CartDrawerContext';
+import { useOpenCart } from '@/contexts/CartDrawerContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getProductName } from '@/lib/product-utils';
 import { hasSizes, isAvailable, unitPrice, type CatalogProduct } from '@/lib/catalog';
@@ -8,7 +8,7 @@ import { useTx } from '@/lib/i18n';
 
 export function useAddToCart() {
   const { addItem, updateQuantity, items } = useCart();
-  const { setOpen } = useCartDrawer();
+  const openCart = useOpenCart();
   const { language } = useLanguage();
   const tx = useTx();
 
@@ -24,7 +24,7 @@ export function useAddToCart() {
     if (qty > 1) updateQuantity(p.id, s, existing + qty);
     toast.success(tx({ ar: 'تمت الإضافة إلى السلة', he: 'נוסף לעגלה', en: 'Added to cart' }), {
       description: getProductName(p, language),
-      action: { label: tx({ ar: 'عرض السلة', he: 'לעגלה', en: 'View cart' }), onClick: () => setOpen(true) },
+      action: { label: tx({ ar: 'عرض السلة', he: 'לעגלה', en: 'View cart' }), onClick: () => openCart() },
     });
   };
 }

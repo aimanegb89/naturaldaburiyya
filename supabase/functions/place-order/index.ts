@@ -6,8 +6,8 @@ import { allow, clientIp, pushToAdmins } from '../_shared/fcm.ts';
 const Body = z.object({
   name: z.string().trim().min(1).max(100),
   phone: z.string().trim().min(6).max(20),
-  street: z.string().trim().min(1).max(200),
-  city: z.string().trim().min(1).max(100),
+  street: z.string().trim().max(200).optional().default(''),
+  city: z.string().trim().max(100).optional().default(''),
   postal: z.string().trim().max(20).optional().default(''),
   notes: z.string().trim().max(500).optional().default(''),
   payment_method: z.enum(['cash', 'card']).optional().default('cash'),
@@ -65,14 +65,15 @@ Deno.serve(async (req) => {
       lines.push({ product_id: p.id, product_name: p.name_en || p.name_ar, name_ar: p.name_ar, size, quantity: it.quantity, price });
     }
     const total = lines.reduce((s, l) => s + l.price * l.quantity, 0);
-    const addressText = `${b.street}, ${b.city}${b.postal ? ` (${b.postal})` : ''}`;
+    // Store is pickup only; street/city kept optional for old clients.
+    const addressText = b.street && b.city ? `${b.street}, ${b.city}${b.postal ? ` (${b.postal})` : ''}` : 'pickup';
 
     let addressId: string | null = null;
     if (userId) {
       if (b.address_id) {
         const { data: a } = await admin.from('addresses').select('id').eq('id', b.address_id).eq('user_id', userId).maybeSingle();
         addressId = a?.id ?? null;
-      } else if (b.save_address) {
+      } else if (b.save_address && b.street && b.city) {
         const { data: a } = await admin.from('addresses').insert({ user_id: userId, label: 'Delivery', street: b.street, city: b.city, postal_code: b.postal || null, phone: b.phone }).select('id').single();
         addressId = a?.id ?? null;
       }

@@ -58,7 +58,7 @@
       {
         "name": "create_order",
         "title": "Create order",
-        "description": "Place an order for the signed-in user. Prices are calculated by the shop, not the caller. The order appears in list_my_orders and the shop managers are notified. Provide a saved address_id or a new delivery address (street + city). name and phone default to the user's profile.",
+        "description": "Place an order for the signed-in user. Prices are calculated by the shop, not the caller. The order appears in list_my_orders and the shop managers are notified. The shop is pickup only, so no address is needed. name and phone default to the user's profile.",
         "annotations": {
           "readOnlyHint": false,
           "idempotentHint": false,

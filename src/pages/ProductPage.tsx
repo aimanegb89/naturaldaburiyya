@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { Check, Heart, Minus, Plus, ShoppingBag, ZoomIn, Leaf, Truck } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Check, Heart, Minus, Plus, ShoppingBag, ZoomIn, Leaf, Store, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import AppShell from '@/components/AppShell';
 import ShimmerImage from '@/components/ShimmerImage';
@@ -26,15 +26,15 @@ const ProductPage: React.FC = () => {
   const p = getCatalogProduct(id);
   const { language, t } = useLanguage();
   const tx = useTx();
+  const navigate = useNavigate();
   const add = useAddToCart();
   const { has, toggle } = useWishlist();
   const { data: ratings } = useRatingSummary();
-  const [img, setImg] = useState(0);
-  const [zoom, setZoom] = useState(false);
+    const [zoom, setZoom] = useState(false);
   const [size, setSize] = useState<'small' | 'large'>('small');
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  useEffect(() => { setSize('small'); setQty(1); setImg(0); setAdded(false); }, [id]);
+  useEffect(() => { setSize('small'); setQty(1); setAdded(false); }, [id]);
 
   if (!p) return <NotFound />;
   const name = getProductName(p, language);
@@ -52,66 +52,48 @@ const ProductPage: React.FC = () => {
   return (
     <AppShell>
       <div key={p.id} className="max-w-[1200px] mx-auto px-[16px] md:px-[24px] pt-[16px] pb-[200px] md:py-[40px]">
-        <nav className="text-[13px] text-muted-foreground mb-[16px] flex gap-[6px]">
-          <Link to="/" className="hover:text-primary">{t('home')}</Link>/
-          <Link to="/shop" className="hover:text-primary">{tx({ ar: 'المتجر', he: 'חנות', en: 'Shop' })}</Link>/
-          <span className="text-foreground line-clamp-1">{name}</span>
-        </nav>
+        <button
+          onClick={() => ((window.history.state?.idx ?? 0) > 0 ? navigate(-1) : navigate('/shop'))}
+          aria-label={tx({ ar: 'رجوع', he: 'חזרה', en: 'Back' })}
+          className="mb-[12px] w-[40px] h-[40px] rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-container-high"
+        >
+          <ArrowLeft className="w-[20px] h-[20px] rtl:rotate-180" />
+        </button>
 
-        <div className="grid md:grid-cols-2 gap-[24px] md:gap-[48px]">
-          {/* Gallery */}
-          <div className="flex flex-col gap-[12px]">
-            <button onClick={() => setZoom(true)} aria-label={tx({ ar: 'تكبير الصورة', he: 'הגדלת תמונה', en: 'Zoom image' })} className={cn('relative aspect-square rounded-[24px] overflow-hidden bg-surface-container shadow-soft group', !available && 'grayscale opacity-70')}>
-              <ShimmerImage src={p.gallery[img]} alt={name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" wrapperClassName="w-full h-full" />
-              <span className="absolute bottom-[12px] end-[12px] w-[40px] h-[40px] rounded-full bg-surface-container-lowest/90 flex items-center justify-center shadow-soft"><ZoomIn className="w-[18px] h-[18px]" /></span>
-            </button>
-            <div className="flex gap-[10px]">
-              {p.gallery.map((g, i) => (
-                <button key={i} onClick={() => setImg(i)} className={cn('w-[72px] h-[72px] rounded-[14px] overflow-hidden border-2 transition-all', i === img ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100')}>
-                  <img src={g} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="grid md:grid-cols-2 gap-[16px] md:gap-[48px]">
+          <button onClick={() => setZoom(true)} aria-label={tx({ ar: 'تكبير الصورة', he: 'הגדלת תמונה', en: 'Zoom image' })} className={cn('relative h-[38vh] md:h-auto md:aspect-square rounded-[24px] overflow-hidden bg-surface-container shadow-soft group', !available && 'grayscale opacity-70')}>
+            <ShimmerImage src={p.gallery[0]} alt={name} className="w-full h-full object-contain md:object-cover transition-transform duration-500 group-hover:scale-[1.04]" wrapperClassName="w-full h-full" />
+            <span className="absolute bottom-[12px] end-[12px] w-[40px] h-[40px] rounded-full bg-surface-container-lowest/90 flex items-center justify-center shadow-soft"><ZoomIn className="w-[18px] h-[18px]" /></span>
+          </button>
 
-          {/* Info */}
           <div className="flex flex-col">
-            <div className="flex flex-wrap gap-[6px] mb-[10px]">
-              <span className="px-[10px] h-[26px] flex items-center rounded-full bg-primary/10 text-primary text-[12px] font-bold">🌿 {tx({ ar: 'طبيعي 100%', he: '100% טבעי', en: '100% Natural' })}</span>
-              {p.meta.isNew && <span className="px-[10px] h-[26px] flex items-center rounded-full bg-gold text-primary-foreground text-[12px] font-bold">{tx({ ar: 'جديد', he: 'חדש', en: 'New' })}</span>}
-              {p.isPopular && <span className="px-[10px] h-[26px] flex items-center rounded-full bg-secondary text-secondary-foreground text-[12px] font-bold">{tx({ ar: 'الأكثر طلبًا', he: 'הכי נמכר', en: 'Best seller' })}</span>}
+            <div className="flex items-start justify-between gap-[12px] mb-[6px]">
+              <h1 className="font-display text-[24px] md:text-[38px] leading-tight">{name}</h1>
+              <p className="text-[24px] md:text-[32px] font-extrabold flex-shrink-0"><bdi dir="ltr">{t('currency')}{price}</bdi></p>
             </div>
-            <h1 className="font-display text-[28px] md:text-[38px] leading-tight mb-[8px]">{name}</h1>
-            <div className="flex items-center gap-[10px] mb-[14px]">
-              {rating ? <StarRating value={rating.avg} count={rating.count} size={15} /> : <span className="text-[13px] text-muted-foreground">{tx({ ar: 'لا تقييمات بعد', he: 'אין דירוגים', en: 'No reviews yet' })}</span>}
+            <div className="flex flex-wrap items-center gap-[8px] mb-[14px] text-[12px]">
               {p.isAvailable !== false
-                ? <span className="flex items-center gap-[6px] text-[13px] text-primary font-semibold"><span className="w-[7px] h-[7px] rounded-full bg-primary" />{tx({ ar: 'متوفر', he: 'במלאי', en: 'In stock' })}</span>
-                : <span className="flex items-center gap-[6px] text-[13px] text-destructive font-semibold"><span className="w-[7px] h-[7px] rounded-full bg-destructive" />{tx({ ar: 'غير متوفر حاليًا', he: 'אזל כרגע', en: 'Out of stock' })}</span>}
+                ? <span className="flex items-center gap-[6px] text-primary font-semibold"><span className="w-[7px] h-[7px] rounded-full bg-primary" />{tx({ ar: 'متوفر', he: 'במלאי', en: 'In stock' })}</span>
+                : <span className="flex items-center gap-[6px] text-destructive font-semibold"><span className="w-[7px] h-[7px] rounded-full bg-destructive" />{tx({ ar: 'غير متوفر حاليًا', he: 'אזל כרגע', en: 'Out of stock' })}</span>}
+              {rating && <StarRating value={rating.avg} count={rating.count} size={13} />}
+              {p.meta.isNew && <span className="px-[8px] h-[22px] flex items-center rounded-full bg-gold text-primary-foreground font-bold">{tx({ ar: 'جديد', he: 'חדש', en: 'New' })}</span>}
+              {p.isPopular && <span className="px-[8px] h-[22px] flex items-center rounded-full bg-secondary text-secondary-foreground font-bold">{tx({ ar: 'الأكثر طلبًا', he: 'הכי נמכר', en: 'Best seller' })}</span>}
             </div>
-            <p className="text-[15px] text-muted-foreground leading-relaxed mb-[16px]">{getProductDescription(p, language)}</p>
-            <div className="flex flex-wrap gap-[6px] mb-[20px]">
-              {p.meta.goals.map((g) => {
-                const goal = HEALTH_GOALS.find((x) => x.key === g)!;
-                return <Link key={g} to={`/shop?goal=${g}`} className="px-[10px] h-[28px] flex items-center rounded-full bg-surface-container text-[12px] font-semibold hover:bg-surface-container-high">{goal.icon} {pick(goal.label, language)}</Link>;
-              })}
-            </div>
-
-            <p className="text-[32px] font-extrabold mb-[20px]"><bdi dir="ltr">{t('currency')}{price}</bdi></p>
 
             {hasSizes(p) && (
-              <div className="mb-[18px]">
+              <div className="mb-[14px]">
                 <p className="text-[13px] font-bold mb-[8px]">{tx({ ar: 'الحجم', he: 'גודל', en: 'Size' })}</p>
                 <div className="flex gap-[8px]">
                   {(['small', 'large'] as const).map((s) => (
-                    <button key={s} onClick={() => setSize(s)} className={cn('h-[48px] px-[20px] rounded-[14px] border-2 text-[14px] font-bold transition-all', size === s ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant hover:border-primary/50')}>
-                      {t(s)}
+                    <button key={s} onClick={() => setSize(s)} className={cn('h-[44px] px-[20px] rounded-[14px] border-2 text-[14px] font-bold transition-all', size === s ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant hover:border-primary/50')}>
+                      {t(s)} · <bdi dir="ltr">{t('currency')}{unitPrice(p, s)}</bdi>
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="flex items-center gap-[10px] mb-[16px]">
+            <div className="flex items-center gap-[10px] mb-[18px]">
               <div className="flex items-center h-[52px] rounded-full border border-outline-variant bg-surface-container-lowest">
                 <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="w-[48px] h-full flex items-center justify-center" aria-label={tx({ ar: 'إنقاص الكمية', he: 'הפחתת כמות', en: 'Decrease quantity' })}><Minus className="w-[16px] h-[16px]" /></button>
                 <span className="w-[28px] text-center text-[16px] font-bold">{qty}</span>
@@ -133,8 +115,17 @@ const ProductPage: React.FC = () => {
                 <Heart className={cn('w-[20px] h-[20px]', has(p.id) ? 'fill-secondary text-secondary' : '')} />
               </button>
             </div>
+
+            <p className="text-[15px] text-muted-foreground leading-relaxed mb-[12px]">{getProductDescription(p, language)}</p>
+            <div className="flex flex-wrap gap-[6px] mb-[14px]">
+              <span className="px-[10px] h-[28px] flex items-center rounded-full bg-primary/10 text-primary text-[12px] font-bold">🌿 {tx({ ar: 'طبيعي 100%', he: '100% טבעי', en: '100% Natural' })}</span>
+              {p.meta.goals.map((g) => {
+                const goal = HEALTH_GOALS.find((x) => x.key === g)!;
+                return <Link key={g} to={`/shop?goal=${g}`} className="px-[10px] h-[28px] flex items-center rounded-full bg-surface-container text-[12px] font-semibold hover:bg-surface-container-high">{goal.icon} {pick(goal.label, language)}</Link>;
+              })}
+            </div>
             <div className="flex flex-col gap-[6px] text-[13px] text-muted-foreground mb-[16px]">
-              <span className="flex items-center gap-[8px]"><Truck className="w-[16px] h-[16px] text-primary" />{tx({ ar: 'توصيل محلي سريع في دبورية والمنطقة', he: 'משלוח מקומי מהיר בדבוריה והסביבה', en: 'Fast local delivery around Daburiyya' })}</span>
+              <span className="flex items-center gap-[8px]"><Store className="w-[16px] h-[16px] text-primary" />{tx({ ar: 'جاهز للاستلام من المحل', he: 'מוכן לאיסוף מהחנות', en: 'Ready for pickup at the shop' })}</span>
               <span className="flex items-center gap-[8px]"><Leaf className="w-[16px] h-[16px] text-primary" />{tx({ ar: 'يُحضَّر طازجًا عند الطلب', he: 'מוכן טרי בהזמנה', en: 'Prepared fresh to order' })}</span>
             </div>
 
@@ -181,7 +172,7 @@ const ProductPage: React.FC = () => {
       <Dialog open={zoom} onOpenChange={setZoom}>
         <DialogContent className="max-w-[min(92vw,900px)] p-0 overflow-hidden bg-background rounded-[20px]">
           <DialogTitle className="sr-only">{name}</DialogTitle>
-          <img src={p.gallery[img]} alt={name} className="w-full max-h-[85vh] object-contain" />
+          <img src={p.gallery[0]} alt={name} className="w-full max-h-[85vh] object-contain" />
         </DialogContent>
       </Dialog>
     </AppShell>

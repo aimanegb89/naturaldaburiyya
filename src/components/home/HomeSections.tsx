@@ -86,8 +86,8 @@ export const TrustStrip = () => {
   const items = [
     { icon: Leaf, t: { ar: '100% طبيعي', he: '100% טבעי', en: '100% Natural' }, d: { ar: 'فواكه وخضار طازجة يوميًا', he: 'פירות וירקות טריים מדי יום', en: 'Fresh fruit & veg, every day' } },
     { icon: FlaskConicalOff, t: { ar: 'بدون كيماويات', he: 'ללא כימיקלים', en: 'Chemical-free' }, d: { ar: 'لا سكر مضاف ولا مواد حافظة', he: 'ללא סוכר מוסף וחומרים משמרים', en: 'No added sugar or preservatives' } },
-    { icon: Truck, t: { ar: 'توصيل محلي سريع', he: 'משלוח מקומי מהיר', en: 'Fast local delivery' }, d: { ar: 'دبورية والمنطقة', he: 'דבוריה והסביבה', en: 'Daburiyya & surroundings' } },
-    { icon: ShieldCheck, t: { ar: 'طلب آمن', he: 'הזמנה בטוחה', en: 'Secure ordering' }, d: { ar: 'تأكيد عبر واتساب والدفع عند الاستلام', he: 'אישור בוואטסאפ ותשלום במסירה', en: 'WhatsApp confirmation, pay on delivery' } },
+    { icon: Truck, t: { ar: 'جاهز للاستلام', he: 'מוכן לאיסוף', en: 'Ready for pickup' }, d: { ar: 'من محلنا في دبورية', he: 'מהחנות שלנו בדבוריה', en: 'At our shop in Daburiyya' } },
+    { icon: ShieldCheck, t: { ar: 'طلب آمن', he: 'הזמנה בטוחה', en: 'Secure ordering' }, d: { ar: 'تأكيد عبر واتساب والدفع عند الاستلام', he: 'אישור בוואטסאפ ותשלום באיסוף', en: 'WhatsApp confirmation, pay at pickup' } },
   ];
   return (
     <section id="benefits" className={`${wrap} pt-[56px] scroll-mt-[80px]`}>

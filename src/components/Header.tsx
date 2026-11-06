@@ -4,7 +4,7 @@ import { Heart, ShoppingBag, Menu as MenuIcon, Search, User, X, Store, Phone, Ch
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { useCartDrawer } from '@/contexts/CartDrawerContext';
+import { useOpenCart } from '@/contexts/CartDrawerContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -25,7 +25,7 @@ const Header: React.FC = () => {
   const tx = useTx();
   const { totalItems } = useCart();
   const { ids } = useWishlist();
-  const { setOpen } = useCartDrawer();
+  const openCart = useOpenCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -80,7 +80,7 @@ const Header: React.FC = () => {
           <button className={`${iconBtn} hidden md:flex`} onClick={() => navigate(user ? '/profile' : '/auth')} aria-label="account">
             <User className="w-[20px] h-[20px]" />
           </button>
-          <button className={iconBtn} onClick={() => setOpen(true)} aria-label="cart">
+          <button className={iconBtn} onClick={openCart} aria-label="cart">
             <ShoppingBag className="w-[20px] h-[20px]" />
             <Badge key={totalItems} n={totalItems} />
           </button>

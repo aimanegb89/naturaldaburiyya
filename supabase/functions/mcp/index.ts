@@ -93,7 +93,7 @@ function supabaseForUser3(ctx) {
 var create_order_default = defineTool3({
   name: "create_order",
   title: "Create order",
-  description: "Place an order for the signed-in user. Prices are calculated by the shop, not the caller. The order appears in list_my_orders and the shop managers are notified. Provide a saved address_id or a new delivery address (street + city). name and phone default to the user's profile.",
+  description: "Place an order for the signed-in user. Prices are calculated by the shop, not the caller. The order appears in list_my_orders and the shop managers are notified. The shop is pickup only, so no address is needed. name and phone default to the user's profile.",
   inputSchema: {
     items: z2.array(
       z2.object({
@@ -118,18 +118,17 @@ var create_order_default = defineTool3({
     const supabase = supabaseForUser3(ctx);
     const userId = ctx.getUserId();
     const { data: profile } = await supabase.from("profiles").select("full_name, phone").eq("id", userId).maybeSingle();
-    let s = street, c = city, pc = postal_code, ph = phone;
+    void street;
+    void city;
+    void postal_code;
+    let ph = phone;
     if (address_id) {
       const { data: a } = await supabase.from("addresses").select("street, city, postal_code, phone").eq("id", address_id).maybeSingle();
       if (!a) return { content: [{ type: "text", text: "Address not found." }], isError: true };
-      s = a.street;
-      c = a.city;
-      pc = a.postal_code ?? void 0;
       ph = ph ?? a.phone ?? void 0;
     }
     const finalName = name ?? profile?.full_name ?? void 0;
     const finalPhone = ph ?? profile?.phone ?? void 0;
-    if (!s || !c) return { content: [{ type: "text", text: "Provide address_id, or street and city." }], isError: true };
     if (!finalName || !finalPhone) return { content: [{ type: "text", text: "name and phone are required (not found on profile)." }], isError: true };
     const res = await fetch(`${process.env.SUPABASE_URL}/functions/v1/place-order`, {
       method: "POST",
@@ -141,12 +140,7 @@ var create_order_default = defineTool3({
       body: JSON.stringify({
         name: finalName,
         phone: finalPhone,
-        street: s,
-        city: c,
-        postal: pc ?? "",
         notes: notes ?? "",
-        address_id: address_id ?? null,
-        save_address: !address_id,
         idempotency_key: crypto.randomUUID(),
         items: items.map((i) => ({ id: i.product_id, size: i.size, quantity: i.quantity }))
       })

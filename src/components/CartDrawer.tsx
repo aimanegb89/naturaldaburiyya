@@ -4,9 +4,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { ShoppingCart, ShoppingBag, Store, Minus, Plus, Trash2, Truck } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, Store, Minus, Plus, Trash2 } from 'lucide-react';
 import { useCartDrawer } from '@/contexts/CartDrawerContext';
-import { FREE_DELIVERY_THRESHOLD } from '@/lib/catalog';
 import { useTx } from '@/lib/i18n';
 import {
   AlertDialog,
@@ -19,14 +18,26 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-const CartDrawer: React.FC = () => {
-  const { open: isOpen, setOpen } = useCartDrawer();
-  const onClose = () => setOpen(false);
+const Shell: React.FC<{ asPage?: boolean; isOpen: boolean; onClose: () => void; dir: string; children: React.ReactNode }> = ({ asPage, isOpen, onClose, dir, children }) =>
+  asPage ? (
+    <div dir={dir} className="max-w-[640px] mx-auto w-full flex flex-col px-[16px] pt-[16px] pb-[24px] min-h-[calc(100dvh-160px)]">{children}</div>
+  ) : (
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="right" className="w-full sm:max-w-[420px] bg-background border-outline-variant flex flex-col p-[20px]" dir={dir as 'rtl' | 'ltr'}>{children}</SheetContent>
+    </Sheet>
+  );
+const Hdr: React.FC<{ asPage?: boolean; className?: string; children: React.ReactNode }> = ({ asPage, className, children }) =>
+  asPage ? <div className={className?.replace('pe-[40px]', '')}>{children}</div> : <SheetHeader className={className}>{children}</SheetHeader>;
+const Ttl: React.FC<{ asPage?: boolean; className?: string; children: React.ReactNode }> = ({ asPage, className, children }) =>
+  asPage ? <h1 className={className}>{children}</h1> : <SheetTitle className={className}>{children}</SheetTitle>;
+
+const CartDrawer: React.FC<{ asPage?: boolean }> = ({ asPage }) => {
+  const { open: drawerOpen, setOpen } = useCartDrawer();
+  const isOpen = asPage ? true : drawerOpen;
+  const onClose = () => { if (!asPage) setOpen(false); };
   const tx = useTx();
   const { language, t, dir } = useLanguage();
   const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCart();
-  const remaining = Math.max(0, FREE_DELIVERY_THRESHOLD - totalPrice);
-  const progress = Math.min(100, (totalPrice / FREE_DELIVERY_THRESHOLD) * 100);
   const navigate = useNavigate();
   const [deleteItemDialog, setDeleteItemDialog] = useState<{ id: string; size: 'small' | 'large' } | null>(null);
   const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
@@ -55,15 +66,10 @@ const CartDrawer: React.FC = () => {
 
   return (
     <>
-      <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-[420px] bg-background border-outline-variant flex flex-col p-[20px]"
-          dir={dir}
-        >
-          <SheetHeader className="pe-[40px] flex-shrink-0 text-start">
+      <Shell asPage={asPage} isOpen={isOpen} onClose={onClose} dir={dir}>
+          <Hdr asPage={asPage} className="pe-[40px] flex-shrink-0 text-start">
             <div className="flex items-center justify-between gap-[8px]">
-              <SheetTitle className="flex items-center gap-[10px] text-[20px] font-bold text-foreground">
+              <Ttl asPage={asPage} className="flex items-center gap-[10px] text-[20px] font-bold text-foreground">
                 <span className="flex h-[36px] w-[36px] items-center justify-center rounded-full bg-primary/10">
                   <ShoppingCart className="w-[18px] h-[18px] text-primary" />
                 </span>
@@ -73,7 +79,7 @@ const CartDrawer: React.FC = () => {
                     {items.reduce((s, i) => s + i.quantity, 0)}
                   </span>
                 )}
-              </SheetTitle>
+              </Ttl>
               {items.length > 0 && (
                 <button
                   onClick={() => setShowEmptyCartDialog(true)}
@@ -84,21 +90,7 @@ const CartDrawer: React.FC = () => {
                 </button>
               )}
             </div>
-          </SheetHeader>
-          {items.length > 0 && (
-            <div className="mt-[14px] rounded-[14px] bg-surface-container p-[12px]">
-              <p className="flex items-center gap-[8px] text-[13px] font-semibold mb-[8px]">
-                <Truck className="w-[16px] h-[16px] text-primary" />
-                {remaining > 0
-                  ? tx({ ar: `أضف ₪${remaining} للحصول على توصيل مجاني`, he: `הוסיפו ₪${remaining} למשלוח חינם`, en: `Add ₪${remaining} more for free delivery` })
-                  : tx({ ar: 'مبروك! حصلت على توصيل مجاني', he: 'מעולה! המשלוח בחינם', en: 'You unlocked free delivery!' })}
-              </p>
-              <div className="h-[6px] rounded-full bg-surface-container-highest overflow-hidden">
-                <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
-          )}
-
+          </Hdr>
           <div className="flex flex-col flex-1 min-h-0 mt-[12px]">
             {items.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center px-[16px]">
@@ -166,12 +158,8 @@ const CartDrawer: React.FC = () => {
                 </div>
 
                 <div className="flex-shrink-0 space-y-[10px] pt-[14px] border-t border-outline-variant mt-[8px]">
-                  <div className="flex justify-between items-center text-[13px] text-muted-foreground">
-                    <span>{tx({ ar: 'التوصيل', he: 'משלוח', en: 'Delivery' })}</span>
-                    <span>{remaining > 0 ? tx({ ar: 'يُحدَّد عند التأكيد', he: 'ייקבע באישור', en: 'Confirmed on WhatsApp' }) : tx({ ar: 'مجاني', he: 'חינם', en: 'Free' })}</span>
-                  </div>
                   <div className="flex justify-between items-center text-[17px] font-extrabold">
-                    <span>{tx({ ar: 'المجموع الفرعي', he: 'סכום ביניים', en: 'Subtotal' })}</span>
+                    <span>{tx({ ar: 'المجموع', he: 'סה״כ', en: 'Total' })}</span>
                     <span>{t('currency')}{totalPrice}</span>
                   </div>
                   <Button
@@ -187,8 +175,7 @@ const CartDrawer: React.FC = () => {
               </>
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+      </Shell>
 
       {[
         { open: !!deleteItemDialog, onChange: () => setDeleteItemDialog(null), title: t('confirmDelete'), msg: t('confirmDeleteMessage'), action: handleConfirmDelete, cta: tx({ ar: 'حذف', he: 'מחק', en: 'Remove' }) },

@@ -297,7 +297,7 @@ const Profile = () => {
         <h1 className="md-display-small text-foreground mb-8">{t('myProfile')}</h1>
 
         <Tabs defaultValue="profile" className="w-full" dir={dir}>
-          <TabsList className={`grid w-full ${isPhoneAccount ? 'grid-cols-4' : 'grid-cols-5'} mb-8 bg-surface-container-high rounded-full p-[3px] h-auto`}>
+          <TabsList className={`grid w-full ${isPhoneAccount ? 'grid-cols-3' : 'grid-cols-4'} mb-8 bg-surface-container-high rounded-full p-[3px] h-auto`}>
             <TabsTrigger 
               value="profile" 
               className="gap-[6px] rounded-full py-[8px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-elevation-1"
@@ -319,13 +319,7 @@ const Profile = () => {
               <Package className="w-[16px] h-[16px]" />
               <span className="hidden sm:inline md-label-large">{t('orders')}</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="addresses" 
-              className="gap-[6px] rounded-full py-[8px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-elevation-1"
-            >
-              <MapPin className="w-[16px] h-[16px]" />
-              <span className="hidden sm:inline md-label-large">{t('addresses')}</span>
-            </TabsTrigger>
+            {/* Addresses tab hidden: store is pickup only */}
             <TabsTrigger 
               value="favorites" 
               className="gap-[6px] rounded-full py-[8px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-elevation-1"
