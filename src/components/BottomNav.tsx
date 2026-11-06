@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
-import { useCartDrawer } from '@/contexts/CartDrawerContext';
 import { Home, Store, ShoppingBag, ClipboardList } from 'lucide-react';
 import { useTx } from '@/lib/i18n';
 
@@ -10,7 +9,6 @@ const BottomNav: React.FC = () => {
   const { t, dir } = useLanguage();
   const tx = useTx();
   const { totalItems } = useCart();
-  const { setOpen } = useCartDrawer();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -18,7 +16,7 @@ const BottomNav: React.FC = () => {
     { key: 'home', icon: Home, label: t('home'), active: pathname === '/', onClick: () => navigate('/') },
     { key: 'shop', icon: Store, label: tx({ ar: 'المتجر', he: 'חנות', en: 'Shop' }), active: pathname.startsWith('/shop') || pathname.startsWith('/product'), onClick: () => navigate('/shop') },
     { key: 'orders', icon: ClipboardList, label: tx({ ar: 'طلباتي', he: 'ההזמנות שלי', en: 'My orders' }), active: pathname === '/orders' || pathname.startsWith('/track'), onClick: () => navigate('/orders') },
-    { key: 'cart', icon: ShoppingBag, label: t('cart'), active: false, onClick: () => setOpen(true), badge: totalItems },
+    { key: 'cart', icon: ShoppingBag, label: t('cart'), active: pathname === '/cart', onClick: () => navigate('/cart'), badge: totalItems },
   ];
 
   return (
