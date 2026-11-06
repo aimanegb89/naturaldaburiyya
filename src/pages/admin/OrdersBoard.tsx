@@ -128,7 +128,7 @@ export default function OrdersBoard() {
                 <bdi dir="ltr">#{(o as any).order_number ?? o.id.slice(0, 6)}</bdi> · <span className={bucket(o.status) !== 'done' && minsAgo(o.created_at) >= warnMin ? 'text-destructive font-bold' : ''}>قبل {minsAgo(o.created_at)} د</span> · {new Date(o.created_at).toLocaleString('ar', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric' })}
               </div>
             </div>
-            {o.delivery_address && <div className="flex items-center gap-[6px] text-[13px]"><MapPin className="w-[14px] h-[14px] shrink-0" />{o.delivery_address}</div>}
+            {o.delivery_address && <div className="flex items-center gap-[6px] text-[13px]"><MapPin className="w-[14px] h-[14px] shrink-0" />{o.delivery_address === 'pickup' ? 'استلام من المحل' : o.delivery_address}</div>}
             <ul className="text-[14px] space-y-[2px]">
               {o.order_items.map((i, k) => (
                 <li key={k} className="flex justify-between gap-[8px]">

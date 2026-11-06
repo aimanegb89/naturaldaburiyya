@@ -31,7 +31,7 @@ const Hero: React.FC = () => {
             {tx({
               ar: 'عصائر معصورة يوميًا، سموذي ومكملات طبيعية — تُحضَّر بحب في دبورية وتصلك طازجة.',
               he: 'מיצים סחוטים יומית, שייקים ותוספים טבעיים — מוכנים באהבה בדבוריה ומגיעים טריים.',
-              en: 'Daily cold-pressed juices, smoothies and natural supplements — made with care in Daburiyya, delivered fresh.',
+              en: 'Daily cold-pressed juices, smoothies and natural supplements — made with care in Daburiyya, ready for pickup.',
             })}
           </p>
           <div className="flex flex-wrap items-center gap-[12px] animate-fade-in" style={{ animationDelay: '0.3s' }}>
