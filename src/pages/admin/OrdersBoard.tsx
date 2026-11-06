@@ -1,12 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Phone, MessageCircle, MapPin } from 'lucide-react';
+import { Phone, MessageCircle, MapPin, Banknote, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 
+const payInfo = (o: { notes: string | null; payment_method?: string | null }) => {
+  const m = (o.notes || '').match(/^(Cash|Card)(\s*·\s*)?/i);
+  const method = o.payment_method || (m ? m[1].toLowerCase() : null);
+  const note = m ? (o.notes || '').slice(m[0].length).trim() : o.notes;
+  return { method, note };
+};
+
 type Item = { product_name: string; size: string; quantity: number; price: number; product_id: string };
 type Order = {
-  id: string; status: string; total_amount: number; notes: string | null; created_at: string;
+  id: string; status: string; total_amount: number; notes: string | null; payment_method?: string | null; created_at: string;
   customer_name: string | null; customer_phone: string | null; delivery_address: string | null;
   order_items: Item[];
 };
@@ -60,7 +67,7 @@ export default function OrdersBoard() {
     // Server-side sweep (uses the last status change, so "back" sticks).
     await supabase.rpc('auto_done_sweep');
     const { data } = await supabase.from('orders')
-      .select('id,order_number,status,total_amount,notes,created_at,customer_name,customer_phone,delivery_address,order_items(product_name,size,quantity,price,product_id)')
+      .select('id,order_number,status,total_amount,notes,payment_method,created_at,customer_name,customer_phone,delivery_address,order_items(product_name,size,quantity,price,product_id)')
       .order('created_at', { ascending: false }).limit(200);
     const list = (data ?? []) as Order[];
     const ids = new Set(list.map((o) => o.id));
@@ -112,6 +119,7 @@ export default function OrdersBoard() {
 
       {shown.map((o) => {
         const next = NEXT[bucket(o.status)];
+        const pay = payInfo(o);
         return (
           <div key={o.id} className={`bg-card rounded-[14px] p-[14px] shadow-soft space-y-[8px] text-start ${bucket(o.status) !== 'done' && minsAgo(o.created_at) >= warnMin ? 'ring-2 ring-destructive' : ''}`}>
             <div className="flex items-center justify-between gap-[8px]">
@@ -129,7 +137,13 @@ export default function OrdersBoard() {
                 </li>
               ))}
             </ul>
-            {o.notes && <div className="text-[13px] bg-surface-container rounded-[8px] p-[8px]">{o.notes}</div>}
+            {pay.method && (
+              <div className="inline-flex items-center gap-[6px] text-[13px] font-semibold rounded-full bg-primary/10 text-primary px-[10px] py-[4px]" title={pay.method === 'card' ? 'بطاقة عند الاستلام' : 'نقدًا عند الاستلام'}>
+                {pay.method === 'card' ? <CreditCard className="w-[16px] h-[16px]" /> : <Banknote className="w-[16px] h-[16px]" />}
+                {pay.method === 'card' ? 'بطاقة' : 'نقدًا'}
+              </div>
+            )}
+            {pay.note && <div className="text-[13px] bg-surface-container rounded-[8px] p-[8px]">{pay.note}</div>}
             <div className="flex items-center justify-between font-bold text-[15px] border-t border-outline-variant pt-[8px]">
               <span>المجموع</span><bdi dir="ltr" className="text-primary">₪{Number(o.total_amount)}</bdi>
             </div>

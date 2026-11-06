@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 const ScrollToTop: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const ticking = useRef(false);
+  const onProduct = useLocation().pathname.startsWith('/product');
 
   const toggleVisibility = useCallback(() => {
     if (ticking.current) return;
@@ -35,7 +37,7 @@ const ScrollToTop: React.FC = () => {
   return (
     <Button
       onClick={scrollToTop}
-      className="fixed bottom-[72px] end-[24px] z-50 w-[40px] h-[40px] rounded-full gradient-hero shadow-lg hover:scale-110 transition-transform p-0 min-w-0 min-h-0"
+      className={`fixed ${onProduct ? 'bottom-[150px] md:bottom-[72px]' : 'bottom-[72px]'} end-[24px] z-50 w-[40px] h-[40px] rounded-full gradient-hero shadow-lg hover:scale-110 transition-transform p-0 min-w-0 min-h-0`}
       size="icon"
       aria-label="Scroll to top"
     >
