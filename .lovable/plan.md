@@ -24,7 +24,16 @@
 - Badges and the rating move into a smaller row, so they take less space.
 - The add-to-cart bar fixed at the bottom of the phone screen stays. It shows the total and works with the chosen size.
 
+## 5. Pickup only, no delivery
+- Cart: remove the free-delivery progress bar and any delivery fee. The total is just the items.
+- Checkout: remove the address step. The customer enters only name, phone, payment method and an optional note. A "Pickup from the shop" card shows the shop's address and opening hours.
+- Confirmation, tracking page and WhatsApp message say "Pickup" instead of a delivery address.
+- Product page and home page: change "Fast local delivery" to "Ready for pickup at the shop".
+- Manager board: shows a "Pickup" badge instead of an address. Old orders keep their saved address.
+- Profile: hide the saved addresses section.
+
 ## Technical notes
+- Pickup: `place-order` makes street/city optional and stores `delivery_address = 'pickup'`, no address saving; same for the MCP `create-order` tool. No database change. Save "store is pickup only" to project memory and update the WhatsApp-checkout memory.
 - New `src/pages/Cart.tsx` in `AppShell`. Reuse the cart panel's insides by moving its body into a shared `CartContents` component that the panel and page both use. Add the `/cart` route in `App.tsx`. `BottomNav` cart item: `navigate('/cart')`, `active: pathname === '/cart'`.
 - In `ProductPage.tsx`: replace the breadcrumb `nav` with a back button (`navigate(-1)` if `window.history.state?.idx > 0`, else `/shop`), using an `rtl:rotate-180` arrow. Drop `img` state and thumbnails; use `p.gallery[0]`. Image: `h-[40vh] md:aspect-square`, `object-contain`. Reorder the info column as listed above.
 - Update the AGENTS.md cart-drawer rule: drawer on desktop, `/cart` page on mobile.
