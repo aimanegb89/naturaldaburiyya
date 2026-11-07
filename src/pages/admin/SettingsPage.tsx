@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Bell, Send, Download, Share, Check } from 'lucide-react';
+import { Bell, Send, Download, Share, Check, ChevronDown } from 'lucide-react';
 import { useInstallPrompt } from '@/lib/installPrompt';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,12 +23,15 @@ const pushMsg: Record<string, string> = {
   failed: 'هذا الجهاز مسجّل لحساب مدير آخر — سجّل خروجه أولاً ثم أعد المحاولة',
 };
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, id, open }: { title: string; children: React.ReactNode; id?: string; open?: boolean }) {
   return (
-    <section className="bg-card rounded-[14px] p-[14px] shadow-soft space-y-[10px] text-start">
-      <h2 className="font-bold text-[16px]">{title}</h2>
-      {children}
-    </section>
+    <details id={id} open={open} className="group bg-card rounded-[14px] shadow-soft text-start scroll-mt-[120px]">
+      <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer select-none flex items-center gap-[8px] p-[14px] font-bold text-[16px]">
+        <span className="flex-1">{title}</span>
+        <ChevronDown className="w-[18px] h-[18px] text-muted-foreground transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="px-[14px] pb-[14px] space-y-[10px]">{children}</div>
+    </details>
   );
 }
 
@@ -82,8 +85,8 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-[14px]">
-      <StoreAvailability />
-      <BroadcastPush />
+      <Section title="حالة المحل وساعات العمل" id="store-availability-section" open><StoreAvailability /></Section>
+      <Section title="إرسال إشعار للزبائن"><BroadcastPush /></Section>
       <Section title="تثبيت تطبيق الإدارة">
         {inst.standalone ? (
           <p className="text-[13px] text-primary font-bold flex items-center gap-[6px]"><Check className="w-[16px] h-[16px]" /> التطبيق مثبّت على هذا الجهاز</p>

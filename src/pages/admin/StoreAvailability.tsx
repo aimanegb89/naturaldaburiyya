@@ -71,8 +71,7 @@ export default function StoreAvailability() {
   );
 
   return (
-    <section id="store-availability" className="bg-card rounded-[14px] p-[14px] shadow-soft space-y-[14px] text-start scroll-mt-[120px]">
-      <h2 className="font-bold text-[16px] flex items-center gap-[6px]"><Store className="w-[18px] h-[18px] text-primary" />حالة المحل وساعات العمل</h2>
+    <section id="store-availability" className="space-y-[14px] text-start scroll-mt-[120px]">
 
       {s && (
         <div className={`rounded-[12px] p-[12px] ${s.is_open ? 'bg-primary/10' : 'bg-destructive/10'}`}>
