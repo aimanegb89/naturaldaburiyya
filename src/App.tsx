@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
@@ -29,6 +29,17 @@ import { ThemeProvider } from "next-themes";
 
 const queryClient = new QueryClient();
 
+// Manager app lives on admin.<domain> so it installs as a separate app; shop pages there go to the shop domain.
+const isAdminHost = typeof window !== "undefined" && window.location.hostname.startsWith("admin.");
+const ADMIN_PATHS = ["/admin", "/auth", "/.lovable", "/~oauth"];
+function AdminHostGuard() {
+  const { pathname, search } = useLocation();
+  if (!isAdminHost || ADMIN_PATHS.some((p) => pathname.startsWith(p))) return null;
+  if (pathname === "/" || pathname === "/index") return <Navigate to="/admin" replace />;
+  window.location.replace(`https://${window.location.hostname.replace(/^admin\./, "")}${pathname}${search}`);
+  return null;
+}
+
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="natural-theme">
   <QueryClientProvider client={queryClient}>
@@ -42,6 +53,7 @@ const App = () => (
                 <Toaster />
                 <Sonner position="top-center" richColors />
                 <BrowserRouter>
+                  <AdminHostGuard />
                   <CartDrawer />
                   <Routes>
                     <Route path="/" element={<Index />} />
