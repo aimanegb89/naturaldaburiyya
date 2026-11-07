@@ -11,7 +11,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { WHATSAPP_NUMBER } from '@/lib/constants';
 import { useTx } from '@/lib/i18n';
-import { Banknote, CreditCard } from 'lucide-react';
+import { Banknote, CreditCard, Bell, Clock } from 'lucide-react';
+import { useStoreStatus, fmtWhen, refreshStoreStatus } from '@/lib/storeStatus';
+import { enableOrderPush } from '@/lib/push';
 import { ArrowLeft, CheckCircle2, MapPin, ShoppingCart, Loader2 } from 'lucide-react';
 
 interface SavedAddress {
@@ -48,6 +50,12 @@ const Checkout: React.FC = () => {
   }, []);
 
   const tx = useTx();
+  const store = useStoreStatus();
+  const closed = store?.is_open === false;
+  const closedMsg = closed ? (store?.next_open && store.mode !== 'closed'
+    ? tx({ ar: `المحل مغلق الآن، نفتح ${fmtWhen(store.next_open, language)}`, he: `החנות סגורה כרגע, נפתחים ${fmtWhen(store.next_open, language)}`, en: `We're closed now, we open ${fmtWhen(store.next_open, language)}` })
+    : tx({ ar: 'المحل مغلق الآن ولا يستقبل طلبات', he: 'החנות סגורה כרגע ולא מקבלת הזמנות', en: "We're closed now and not taking orders" })) : '';
+  const [notify, setNotify] = useState<'idle' | 'busy' | 'on'>('idle');
   const [payment, setPayment] = useState<'cash' | 'card'>('cash');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
@@ -109,6 +117,7 @@ const Checkout: React.FC = () => {
       return;
     }
 
+    if (closed) { toast({ title: closedMsg }); return; }
     setSubmitting(true);
     let orderId: string | null = null;
 
@@ -116,7 +125,7 @@ const Checkout: React.FC = () => {
       const { data: placed, error: placeErr } = await supabase.functions.invoke('place-order', {
         body: {
           name: form.name, phone: form.phone,
-          notes: form.notes, payment_method: payment,
+          notes: form.notes, payment_method: payment, locale: language,
           idempotency_key: idemKey.current,
           items: items.map(i => ({ id: i.id, size: i.size, quantity: i.quantity })),
         },
@@ -129,6 +138,9 @@ const Checkout: React.FC = () => {
           const nm = body.name?.[language] || body.name?.ar || body.product_id;
           setUnavailable({ id: body.product_id, name: nm });
           toast({ title: tx({ ar: `«${nm}» غير متوفر الآن`, he: `«${nm}» אזל כרגע`, en: `“${nm}” is out of stock` }) });
+        } else if (code === 'store_closed') {
+          await refreshStoreStatus();
+          toast({ title: tx({ ar: 'المحل مغلق الآن ولا يستقبل طلبات', he: 'החנות סגורה כרגע ולא מקבלת הזמנות', en: "We're closed now and not taking orders" }) });
         } else if (code === 'rate_limited') {
           toast({ title: tx({ ar: 'طلبات كثيرة، حاول بعد قليل', he: 'יותר מדי הזמנות, נסו שוב בעוד מעט', en: 'Too many orders, please try again shortly' }) });
         } else if (code === 'validation') {
@@ -190,6 +202,16 @@ const Checkout: React.FC = () => {
         {waLink && (
           <Button asChild className="w-full max-w-[280px] mb-[10px]">
             <a href={waLink} target="_blank" rel="noopener noreferrer">{tx({ ar: 'أرسل الطلب عبر واتساب', he: 'שליחת ההזמנה בוואטסאפ', en: 'Send order on WhatsApp' })}</a>
+          </Button>
+        )}
+        {confirmedId && (
+          <Button variant="outline" className="w-full max-w-[280px] mb-[10px] gap-[6px]" disabled={notify !== 'idle'} onClick={async () => {
+            setNotify('busy');
+            const r = await enableOrderPush(confirmedId);
+            setNotify(r === 'registered' ? 'on' : 'idle');
+            if (r !== 'registered') toast({ title: tx({ ar: 'تعذّر تفعيل الإشعارات على هذا الجهاز', he: 'לא ניתן להפעיל התראות במכשיר הזה', en: "Couldn't turn on notifications on this device" }) });
+          }}>
+            <Bell className="w-[16px] h-[16px]" />{notify === 'on' ? tx({ ar: 'ستصلك إشعارات عن طلبك', he: 'תקבלו התראות על ההזמנה', en: "You'll be notified about this order" }) : tx({ ar: 'أعلمني بتحديثات طلبي', he: 'עדכנו אותי על ההזמנה', en: 'Notify me about my order' })}
           </Button>
         )}
         {confirmedId && (
@@ -340,7 +362,8 @@ const Checkout: React.FC = () => {
         </div>
 
         <div className="md:col-start-2 space-y-[8px] sticky bottom-0 md:static -mx-[16px] md:mx-0 px-[16px] md:px-0 py-[10px] md:py-0 bg-background/95 md:bg-transparent backdrop-blur border-t border-border md:border-0">
-        <Button type="submit" className="w-full gap-2 h-[52px] rounded-full text-[16px] font-bold bg-secondary text-secondary-foreground hover:bg-secondary/90" disabled={submitting}>
+        {closed && <p role="alert" className="flex items-center justify-center gap-[6px] text-[13px] font-semibold text-destructive text-center"><Clock className="w-[14px] h-[14px]" />{closedMsg}</p>}
+        <Button type="submit" className="w-full gap-2 h-[52px] rounded-full text-[16px] font-bold bg-secondary text-secondary-foreground hover:bg-secondary/90" disabled={submitting || closed}>
           {submitting ? (
             <Loader2 className="w-[16px] h-[16px] animate-spin" />
           ) : (

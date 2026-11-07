@@ -17,13 +17,14 @@ type Tracked = {
   tracking_code: string;
   order_number?: number | null;
   status: string;
+  cancel_reason?: string | null;
   total_amount: number;
   created_at: string;
   updated_at: string;
   order_items: { product_id?: string; product_name: string; size: string; quantity: number; price: number }[];
 };
 
-const stepOf = (s: string) => (s === 'done' || s === 'completed' ? 2 : s === 'preparing' ? 1 : 0);
+const stepOf = (s: string) => (s === 'done' || s === 'completed' || s === 'cancelled' ? 2 : s === 'preparing' ? 1 : 0);
 
 export default function TrackOrder() {
   const { code: urlCode } = useParams();
@@ -47,7 +48,7 @@ export default function TrackOrder() {
       .then(({ data }) => setHistory(data ?? []));
   }, [user, urlCode]);
   const sizeLabel = (s: string) => s === 'large' ? tx({ ar: 'كبير', he: 'גדול', en: 'Large' }) : s === 'small' ? tx({ ar: 'صغير', he: 'קטן', en: 'Small' }) : s;
-  const statusLabel = (s: string) => [tx({ ar: 'جديد', he: 'חדשה', en: 'New' }), tx({ ar: 'قيد التحضير', he: 'בהכנה', en: 'Preparing' }), tx({ ar: 'جاهز', he: 'מוכן', en: 'Done' })][stepOf(s)];
+  const statusLabel = (s: string) => s === 'cancelled' ? tx({ ar: 'ملغى', he: 'בוטלה', en: 'Cancelled' }) : [tx({ ar: 'جديد', he: 'חדשה', en: 'New' }), tx({ ar: 'قيد التحضير', he: 'בהכנה', en: 'Preparing' }), tx({ ar: 'جاهز', he: 'מוכן', en: 'Done' })][stepOf(s)];
 
   const { addItem, updateQuantity } = useCart();
   const openCart = useOpenCart();
@@ -109,9 +110,19 @@ export default function TrackOrder() {
   const refreshOrder = useCallback(() => { if (order) lookup(order.tracking_code, true); }, [order, lookup]);
   useVisiblePoll(refreshOrder, !!order && stepOf(order.status) < 2);
 
+  const reasonText = (r?: string | null) => !r ? '' : ({
+    out_of_stock: tx({ ar: 'نفاد المنتج', he: 'המוצר אזל', en: 'Out of stock' }),
+    closing: tx({ ar: 'المحل يغلق', he: 'החנות נסגרת', en: 'Store closing' }),
+    customer: tx({ ar: 'بطلب من الزبون', he: 'לבקשת הלקוח', en: 'Customer request' }),
+    other: '',
+  } as Record<string, string>)[r] ?? r;
   const minsAgo = (iso: string) => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
   const statusLine = (o: Tracked) => {
     const st = stepOf(o.status);
+    if (o.status === 'cancelled') {
+      const r = reasonText(o.cancel_reason);
+      return tx({ ar: 'تم إلغاء طلبك من قبل المحل', he: 'ההזמנה בוטלה על ידי החנות', en: 'Your order was cancelled by the store' }) + (r ? ` (${r})` : '');
+    }
     if (st === 2) return tx({ ar: 'طلبك جاهز. بالهناء والعافية!', he: 'ההזמנה מוכנה. בתיאבון!', en: 'Your order is ready. Enjoy!' });
     if (st === 1) return tx({ ar: `نحضّر طلبك الآن — عادةً خلال ${prep} دقيقة`, he: `מכינים את ההזמנה — בדרך כלל ${prep} דקות`, en: `We are preparing your order — usually ${prep} min` });
     return tx({ ar: 'استلمنا طلبك وسنبدأ بتحضيره قريبًا', he: 'קיבלנו את ההזמנה ונתחיל להכין בקרוב', en: 'We got your order and will start soon' });
@@ -198,8 +209,9 @@ export default function TrackOrder() {
               </Button>
             </div>
 
-            <p className="text-[15px] font-semibold">{statusLine(order)}</p>
-            <div>
+            <p className={`text-[15px] font-semibold ${order.status === 'cancelled' ? 'text-destructive' : ''}`}>{statusLine(order)}</p>
+            {stepOf(order.status) < 2 && <NotifyButton code={order.tracking_code} />}
+            {order.status !== 'cancelled' && <div>
               <div className="h-[10px] rounded-full bg-surface-container-high overflow-hidden">
                 <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${[15, 55, 100][stepOf(order.status)]}%` }} />
               </div>

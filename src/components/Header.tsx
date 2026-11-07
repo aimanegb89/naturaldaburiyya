@@ -12,6 +12,7 @@ import ThemeToggle from './ThemeToggle';
 import SearchCommand from './SearchCommand';
 import { useTx } from '@/lib/i18n';
 import logo from '@/assets/logo.png';
+import { StatusPill, useStoreStatus } from '@/lib/storeStatus';
 
 const Badge = ({ n }: { n: number }) =>
   n > 0 ? (
@@ -21,7 +22,8 @@ const Badge = ({ n }: { n: number }) =>
   ) : null;
 
 const Header: React.FC = () => {
-  const { dir } = useLanguage();
+  const { dir, language } = useLanguage();
+  const store = useStoreStatus();
   const tx = useTx();
   const { totalItems } = useCart();
   const { ids } = useWishlist();
@@ -56,6 +58,7 @@ const Header: React.FC = () => {
         <Link to="/" className="flex items-center gap-[8px] flex-shrink-0">
           <span className="font-display text-[22px] font-semibold text-primary">Natural</span>
         </Link>
+        <StatusPill s={store} tx={tx} lang={language} />
 
         <nav className="hidden md:flex items-center gap-[4px] ms-[16px]">
           {links.map((l) => (
