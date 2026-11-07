@@ -8,6 +8,8 @@ export type StoreStatus = {
   open_until: string | null;
   next_open: string | null;
   today: [string, string][];
+  weekly_hours?: Record<string, [string, string][]>;
+  date_overrides?: Record<string, [string, string][]>;
 };
 
 let cache: StoreStatus | null = null;
@@ -15,8 +17,11 @@ const subs = new Set<(s: StoreStatus) => void>();
 let started = false;
 
 export async function refreshStoreStatus() {
-  const { data } = await supabase.rpc('store_status' as never);
-  if (data) { cache = data as unknown as StoreStatus; subs.forEach((f) => f(cache!)); }
+  const [{ data }, { data: hrs }] = await Promise.all([
+    supabase.rpc('store_status' as never),
+    supabase.from('store_settings').select('weekly_hours,date_overrides').eq('id', 1).maybeSingle(),
+  ]);
+  if (data) { cache = { ...(data as unknown as StoreStatus), weekly_hours: (hrs?.weekly_hours as never) ?? {}, date_overrides: (hrs?.date_overrides as never) ?? {} }; subs.forEach((f) => f(cache!)); }
   return cache;
 }
 
