@@ -12,6 +12,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { Switch } from '@/components/ui/switch';
 import { chime } from './OrdersBoard';
 import StoreAvailability from './StoreAvailability';
+import BroadcastPush from './BroadcastPush';
 
 const pushMsg: Record<string, string> = {
   registered: 'تم تفعيل الإشعارات على هذا الجهاز',
@@ -82,6 +83,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-[14px]">
       <StoreAvailability />
+      <BroadcastPush />
       <Section title="تثبيت تطبيق الإدارة">
         {inst.standalone ? (
           <p className="text-[13px] text-primary font-bold flex items-center gap-[6px]"><Check className="w-[16px] h-[16px]" /> التطبيق مثبّت على هذا الجهاز</p>

@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
+import NotificationToggle from './NotificationToggle';
 import SearchCommand from './SearchCommand';
 import { useTx } from '@/lib/i18n';
 import logo from '@/assets/logo.png';
@@ -132,6 +133,7 @@ const Header: React.FC = () => {
               <p className="flex items-center gap-[6px] text-[13px] font-semibold"><Palette className="w-[14px] h-[14px] text-primary" />{tx({ ar: 'المظهر', he: 'ערכת נושא', en: 'Theme' })}</p>
               <ThemeToggle withLabels />
             </div>
+            <NotificationToggle />
           </div>
         </SheetContent>
       </Sheet>

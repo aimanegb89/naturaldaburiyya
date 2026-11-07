@@ -13,7 +13,7 @@ import { WHATSAPP_NUMBER } from '@/lib/constants';
 import { useTx } from '@/lib/i18n';
 import { Banknote, CreditCard, Bell, Clock } from 'lucide-react';
 import { useStoreStatus, fmtWhen, refreshStoreStatus } from '@/lib/storeStatus';
-import { enableOrderPush } from '@/lib/push';
+import { enableOrderPush, autoOrderPush } from '@/lib/push';
 import { ArrowLeft, CheckCircle2, MapPin, ShoppingCart, Loader2 } from 'lucide-react';
 
 interface SavedAddress {
@@ -174,6 +174,7 @@ const Checkout: React.FC = () => {
 
       setConfirmedTotal(orderTotal);
       setConfirmedId(orderId);
+      if (orderId) autoOrderPush(orderId).then((ok) => { if (ok) setNotify('on'); });
       clearCart();
       idemKey.current = crypto.randomUUID();
     } catch {

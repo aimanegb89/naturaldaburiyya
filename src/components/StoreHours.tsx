@@ -10,7 +10,7 @@ const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: TZ });
 const dateAt = (ymd: string) => new Date(`${ymd}T12:00:00Z`);
 const addDays = (ymd: string, n: number) => { const d = dateAt(ymd); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const slotsText = (slots: [string, string][] | undefined, closed: string) =>
-  slots?.length ? slots.map(([a, b]) => `${a}–${b}`).join(' · ') : closed;
+  slots?.length ? slots.map(([a, b]) => `${a}–${b === '00:00' ? '24:00' : b}`).join(' · ') : closed;
 
 function useClosedLabel() {
   const tx = useTx();
