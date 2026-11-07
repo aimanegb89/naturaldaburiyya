@@ -60,7 +60,7 @@ export function StatusPill({ s, tx, lang, onClick }: { s: StoreStatus | null; tx
       className={`inline-flex items-center gap-[6px] h-[28px] px-[10px] rounded-full text-[12px] font-bold whitespace-nowrap ${s.is_open ? 'bg-primary/12 text-primary' : 'bg-destructive/12 text-destructive'}`}>
       <span className={`w-[8px] h-[8px] rounded-full ${s.is_open ? 'bg-primary animate-pulse' : 'bg-destructive'}`} />
       {s.is_open ? tx({ ar: 'مفتوح', he: 'פתוח', en: 'Open' }) : tx({ ar: 'مغلق', he: 'סגור', en: 'Closed' })}
-      {extra && <span className="font-semibold opacity-80 hidden min-[380px]:inline">· {extra}</span>}
+      {extra && <span className="font-semibold opacity-80 hidden sm:inline">· {extra}</span>}
     </Tag>
   );
 }
