@@ -36,6 +36,27 @@ export async function pushToAdmins(admin: any, title: string, body: string, link
   return results.filter((r) => r.status === 'fulfilled' && r.value).length;
 }
 
+/** Sends one push per token in parallel; deletes dead tokens from `table`. Returns delivered count. */
+export async function pushToTokens(admin: any, table: string, tokens: string[], title: string, body: string, link: string) {
+  if (!tokens.length) return 0;
+  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+  const FCM_KEY = Deno.env.get('FIREBASE_MESSAGING_API_KEY');
+  if (!LOVABLE_API_KEY || !FCM_KEY) throw new Error('Push credentials not configured');
+  const results = await Promise.allSettled(tokens.map(async (token) => {
+    const res = await fetch(`${GATEWAY_URL}/v1/projects/_/messages:send`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'X-Connection-Api-Key': FCM_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: { token, notification: { title, body }, webpush: { fcm_options: { link } } } }),
+    });
+    if (res.ok) return true;
+    const err = await res.text();
+    console.error(`FCM send failed [${res.status}]: ${err}`);
+    if (isDeadToken(res.status, err)) await admin.from(table).delete().eq('token', token);
+    return false;
+  }));
+  return results.filter((r) => r.status === 'fulfilled' && r.value).length;
+}
+
 export function clientIp(req: Request) {
   return (req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('cf-connecting-ip') || 'unknown').trim();
 }

@@ -10,6 +10,7 @@ const Body = z.object({
   city: z.string().trim().max(100).optional().default(''),
   postal: z.string().trim().max(20).optional().default(''),
   notes: z.string().trim().max(500).optional().default(''),
+  locale: z.enum(['ar', 'he', 'en']).optional().default('ar'),
   payment_method: z.enum(['cash', 'card']).optional().default('cash'),
   address_id: z.string().uuid().nullable().optional(),
   save_address: z.boolean().optional().default(false),
@@ -41,6 +42,9 @@ Deno.serve(async (req) => {
     if (!(await allow(admin, `order:ip:${clientIp(req)}`, 15)) || !(await allow(admin, `order:phone:${digits(b.phone)}`, 5))) {
       return json({ error: 'rate_limited' }, 429);
     }
+
+    const { data: status } = await admin.rpc('store_status');
+    if (status && status.is_open === false) return json({ error: 'store_closed', next_open: status.next_open ?? null }, 409);
 
     let userId: string | null = null;
     const token = req.headers.get('Authorization')?.replace('Bearer ', '');
@@ -92,6 +96,7 @@ Deno.serve(async (req) => {
       return json({ error: 'server_error' }, 500);
     }
     const order = (rows as any[])[0];
+    await admin.from('orders').update({ locale: b.locale }).eq('id', order.id);
 
     let pushed = 0;
     try {
