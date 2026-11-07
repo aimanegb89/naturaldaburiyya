@@ -34,6 +34,47 @@ async function deviceToken(): Promise<{ status: PushStatus; token?: string }> {
   return token ? { status: 'registered', token } : { status: 'denied' };
 }
 
+const DEVICE_KEY = 'natural-device-push-token';
+const DEVICE_OFF = 'natural-device-push-off';
+export const devicePushOn = () => { try { return !!localStorage.getItem(DEVICE_KEY) && !localStorage.getItem(DEVICE_OFF); } catch { return false; } };
+
+/** Customer: allow general notifications on this device (offers + orders). Call from a click handler. */
+export async function enableDevicePush(locale: string): Promise<PushStatus> {
+  try {
+    const r = await deviceToken();
+    if (!r.token) return r.status;
+    const { data, error } = await supabase.functions.invoke('register-device', { body: { token: r.token, locale, enabled: true } });
+    if (error || !data?.ok) return 'failed';
+    try { localStorage.setItem(DEVICE_KEY, r.token); localStorage.removeItem(DEVICE_OFF); } catch { /* ignore */ }
+    return 'registered';
+  } catch (e) { console.error(e); return 'failed'; }
+}
+
+export async function disableDevicePush() {
+  let token: string | null = null;
+  try { token = localStorage.getItem(DEVICE_KEY); localStorage.setItem(DEVICE_OFF, '1'); } catch { /* ignore */ }
+  if (token) await supabase.functions.invoke('register-device', { body: { token, enabled: false } });
+}
+
+/** Refreshes language / account link for an already-allowed device (no prompts). */
+export async function syncDevicePush(locale: string) {
+  let token: string | null = null;
+  try { token = localStorage.getItem(DEVICE_KEY); } catch { /* ignore */ }
+  if (!token || !devicePushOn() || !('Notification' in window) || Notification.permission !== 'granted') return;
+  await supabase.functions.invoke('register-device', { body: { token, locale, enabled: true } });
+}
+
+/** If this device already allows notifications, links it to a new order silently. */
+export async function autoOrderPush(trackingCode: string): Promise<boolean> {
+  let token: string | null = null;
+  try { token = localStorage.getItem(DEVICE_KEY); } catch { /* ignore */ }
+  if (!token || !devicePushOn()) return false;
+  const { data, error } = await supabase.functions.invoke('register-order-push', { body: { tracking_code: trackingCode, token } });
+  if (error || !data?.ok) return false;
+  try { localStorage.setItem(`natural-order-push-${trackingCode}`, '1'); } catch { /* ignore */ }
+  return true;
+}
+
 /** Customer: get notified about one order (works for guests). Call from a click handler. */
 export async function enableOrderPush(trackingCode: string): Promise<PushStatus> {
   try {
