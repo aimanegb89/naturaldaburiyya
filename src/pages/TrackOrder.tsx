@@ -11,6 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCatalogProduct, hasSizes, isAvailable, orderItemName, unitPrice } from '@/lib/catalog';
 import { useCart } from '@/contexts/CartContext';
+import { Bell } from 'lucide-react';
+import { enableOrderPush, orderPushEnabled } from '@/lib/push';
 import { useOpenCart } from '@/contexts/CartDrawerContext';
 
 type Tracked = {
@@ -225,7 +227,7 @@ export default function TrackOrder() {
                   );
                 })}
               </ol>
-            </div>
+            </div>}
 
             <div className="border-t border-border pt-[12px] space-y-[6px]">
               {order.order_items.map((it, i) => (
@@ -285,5 +287,23 @@ export default function TrackOrder() {
         </Tabs>
       </div>
     </AppShell>
+  );
+}
+
+function NotifyButton({ code }: { code: string }) {
+  const tx = useTx();
+  const [state, setState] = useState<'idle' | 'busy' | 'on'>(() => (orderPushEnabled(code) ? 'on' : 'idle'));
+  if (state === 'on') return <p className="text-[12px] text-primary font-semibold flex items-center gap-[6px]"><Bell className="w-[14px] h-[14px]" />{tx({ ar: 'ستصلك إشعارات عن هذا الطلب', he: 'תקבלו התראות על ההזמנה', en: "You'll be notified about this order" })}</p>;
+  return (
+    <Button variant="outline" size="sm" className="gap-[6px] h-[34px]" disabled={state === 'busy'} onClick={async () => {
+      setState('busy');
+      const r = await enableOrderPush(code);
+      setState(r === 'registered' ? 'on' : 'idle');
+      if (r !== 'registered') toast.error(r === 'unsupported'
+        ? tx({ ar: 'الإشعارات غير مدعومة هنا (على iPhone أضف التطبيق للشاشة الرئيسية)', he: 'התראות לא נתמכות כאן (באייפון הוסיפו למסך הבית)', en: 'Notifications not supported here (on iPhone add the app to Home Screen)' })
+        : tx({ ar: 'تعذّر تفعيل الإشعارات', he: 'לא ניתן להפעיל התראות', en: "Couldn't turn on notifications" }));
+    }}>
+      <Bell className="w-[14px] h-[14px]" />{tx({ ar: 'أعلمني بتحديثات طلبي', he: 'עדכנו אותי על ההזמנה', en: 'Notify me about my order' })}
+    </Button>
   );
 }
