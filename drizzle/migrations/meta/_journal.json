@@ -71,6 +71,13 @@
       "when": 1793948121599,
       "tag": "0009_order_payment_method",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794076643206,
+      "tag": "0010_store_hours_and_cancellation",
+      "breakpoints": true
     }
   ]
 }

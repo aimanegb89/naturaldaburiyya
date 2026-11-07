@@ -161,15 +161,45 @@ export type Database = {
           },
         ]
       }
+      order_push_tokens: {
+        Row: {
+          created_at: string
+          order_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          order_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          order_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_push_tokens_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           address_id: string | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           created_at: string
           customer_name: string | null
           customer_phone: string | null
           delivery_address: string | null
           id: string
           idempotency_key: string | null
+          locale: string | null
           notes: string | null
           order_number: number | null
           payment_method: string | null
@@ -181,12 +211,16 @@ export type Database = {
         }
         Insert: {
           address_id?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           customer_name?: string | null
           customer_phone?: string | null
           delivery_address?: string | null
           id?: string
           idempotency_key?: string | null
+          locale?: string | null
           notes?: string | null
           order_number?: number | null
           payment_method?: string | null
@@ -198,12 +232,16 @@ export type Database = {
         }
         Update: {
           address_id?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           customer_name?: string | null
           customer_phone?: string | null
           delivery_address?: string | null
           id?: string
           idempotency_key?: string | null
+          locale?: string | null
           notes?: string | null
           order_number?: number | null
           payment_method?: string | null
@@ -395,36 +433,69 @@ export type Database = {
         }
         Relationships: []
       }
+      store_audit_log: {
+        Row: {
+          action: string
+          actor: string | null
+          created_at: string
+          details: Json
+          id: string
+        }
+        Insert: {
+          action: string
+          actor?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Relationships: []
+      }
       store_settings: {
         Row: {
           auto_done_minutes: number
           chime_enabled: boolean
+          date_overrides: Json
           id: number
           last_reminder_date: string | null
+          manual_mode: string
           order_channel: string
           prep_time_text: string
           stale_warn_minutes: number
           updated_at: string
+          weekly_hours: Json
         }
         Insert: {
           auto_done_minutes?: number
           chime_enabled?: boolean
+          date_overrides?: Json
           id?: number
           last_reminder_date?: string | null
+          manual_mode?: string
           order_channel?: string
           prep_time_text?: string
           stale_warn_minutes?: number
           updated_at?: string
+          weekly_hours?: Json
         }
         Update: {
           auto_done_minutes?: number
           chime_enabled?: boolean
+          date_overrides?: Json
           id?: number
           last_reminder_date?: string | null
+          manual_mode?: string
           order_channel?: string
           prep_time_text?: string
           stale_warn_minutes?: number
           updated_at?: string
+          weekly_hours?: Json
         }
         Relationships: []
       }
@@ -495,6 +566,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      store_status: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
