@@ -46,8 +46,7 @@ export default function BroadcastPush() {
   );
 
   return (
-    <section className="bg-card rounded-[14px] p-[14px] shadow-soft space-y-[12px] text-start">
-      <h2 className="font-bold text-[16px] flex items-center gap-[6px]"><Megaphone className="w-[18px] h-[18px] text-primary" />إرسال إشعار للزبائن</h2>
+    <section className="space-y-[12px] text-start">
       <p className="text-[13px] text-muted-foreground">الأجهزة المشتركة: <b>{count ?? '…'}</b>. كل زبون يستلم الإشعار بلغته (أو بالعربية إذا تُركت لغته فارغة).</p>
       {field('ar', 'العربية (مطلوب)', 'rtl')}
       {field('he', 'עברית (اختياري)', 'rtl')}
