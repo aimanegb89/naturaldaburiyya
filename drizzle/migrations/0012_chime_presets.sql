@@ -1,0 +1,1 @@
+ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS chime_sound text NOT NULL DEFAULT 'classic', ADD COLUMN IF NOT EXISTS chime_volume text NOT NULL DEFAULT 'normal';
