@@ -40,21 +40,10 @@ const NEXT: Record<string, { to: string; label: string } | undefined> = {
 };
 
 
+import { playChime } from '@/lib/chimes';
 /** Short soft chime + vibration for a new order. */
-export function chime() {
-  try {
-    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
-    const ctx = new Ctx();
-    [880, 1320].forEach((f, i) => {
-      const o = ctx.createOscillator(); const g = ctx.createGain();
-      o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
-      const t = ctx.currentTime + i * 0.18;
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-      o.start(t); o.stop(t + 0.4);
-    });
-  } catch { /* audio blocked */ }
-  navigator.vibrate?.([200, 100, 200]);
-}
+const chimeCfg = { sound: 'classic', volume: 'normal' };
+export function chime() { playChime(chimeCfg.sound, chimeCfg.volume); }
 const bucket = (s: string) => (s === 'pending' ? 'new' : s === 'completed' || s === 'cancelled' ? 'done' : s);
 
 export default function OrdersBoard() {
@@ -66,8 +55,9 @@ export default function OrdersBoard() {
   const chimeOn = useRef(true);
   const [warnMin, setWarnMin] = useState(15);
   useEffect(() => {
-    supabase.from('store_settings').select('chime_enabled,stale_warn_minutes').eq('id', 1).maybeSingle().then(({ data }) => {
+    supabase.from('store_settings').select('chime_enabled,stale_warn_minutes,chime_sound,chime_volume').eq('id', 1).maybeSingle().then(({ data }) => {
       if (!data) return;
+      chimeCfg.sound = data.chime_sound; chimeCfg.volume = data.chime_volume;
       chimeOn.current = data.chime_enabled;
       setWarnMin(data.stale_warn_minutes);
     });
