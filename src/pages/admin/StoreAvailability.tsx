@@ -14,13 +14,18 @@ const inputCls = 'h-[36px] rounded-[10px] border border-input bg-background px-[
 
 function Slots({ slots, onChange }: { slots: Slot[]; onChange: (s: Slot[]) => void }) {
   return (
-    <div className="space-y-[6px]">
+    <div className="space-y-[8px] w-full min-w-0">
       {slots.map((sl, i) => (
-        <div key={i} className="flex items-center gap-[6px]" dir="ltr">
-          <input type="time" value={sl[0]} onChange={(e) => onChange(slots.map((x, k) => (k === i ? [e.target.value, x[1]] : x)))} className={inputCls} aria-label="من" />
-          <span className="text-[13px]">–</span>
-          <input type="time" value={sl[1]} onChange={(e) => onChange(slots.map((x, k) => (k === i ? [x[0], e.target.value] : x)))} className={inputCls} aria-label="إلى" />
-          <button type="button" onClick={() => onChange(slots.filter((_, k) => k !== i))} className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-destructive hover:bg-destructive/10" aria-label="حذف الفترة"><Trash2 className="w-[15px] h-[15px]" /></button>
+        <div key={i} className="flex items-end gap-[8px] w-full">
+          <label className="flex-1 min-w-0 flex flex-col gap-[2px]">
+            <span className="text-[11px] font-semibold text-muted-foreground">من</span>
+            <input type="time" dir="ltr" value={sl[0]} onChange={(e) => onChange(slots.map((x, k) => (k === i ? [e.target.value, x[1]] : x)))} className={`${inputCls} w-full`} />
+          </label>
+          <label className="flex-1 min-w-0 flex flex-col gap-[2px]">
+            <span className="text-[11px] font-semibold text-muted-foreground">إلى {sl[1] === '00:00' && <span className="font-normal">(منتصف الليل)</span>}</span>
+            <input type="time" dir="ltr" value={sl[1]} onChange={(e) => onChange(slots.map((x, k) => (k === i ? [x[0], e.target.value] : x)))} className={`${inputCls} w-full`} />
+          </label>
+          <button type="button" onClick={() => onChange(slots.filter((_, k) => k !== i))} className="shrink-0 w-[36px] h-[36px] rounded-full flex items-center justify-center text-destructive hover:bg-destructive/10" aria-label="حذف الفترة"><Trash2 className="w-[16px] h-[16px]" /></button>
         </div>
       ))}
       <button type="button" onClick={() => onChange([...slots, ['17:00', '22:00']])} className="text-[12px] font-bold text-primary inline-flex items-center gap-[4px]"><Plus className="w-[14px] h-[14px]" />فترة</button>
@@ -75,7 +80,7 @@ export default function StoreAvailability() {
           <p className="text-[13px] text-muted-foreground mt-[2px]">
             الوضع: {s.mode === 'auto' ? 'تلقائي حسب ساعات العمل' : s.mode === 'open' ? 'مفتوح يدويًا' : 'مغلق يدويًا'}
           </p>
-          <p className="text-[13px] mt-[4px]">ساعات اليوم: <bdi dir="ltr">{s.today?.length ? s.today.map((x) => `${x[0]}–${x[1]}`).join(', ') : 'مغلق'}</bdi></p>
+          <p className="text-[13px] mt-[4px]">ساعات اليوم: <bdi dir="ltr">{s.today?.length ? s.today.map((x) => `${x[0]}–${x[1] === '00:00' ? '24:00' : x[1]}`).join(', ') : 'مغلق'}</bdi></p>
           {s.open_until && <p className="text-[13px]">يغلق تلقائيًا: <bdi dir="ltr">{fmtWhen(s.open_until, 'ar')}</bdi></p>}
           {!s.is_open && s.next_open && <p className="text-[13px]">الفتح القادم حسب الساعات: <bdi dir="ltr">{fmtWhen(s.next_open, 'ar')}</bdi></p>}
         </div>
@@ -98,24 +103,24 @@ export default function StoreAvailability() {
             const slots = week[String(d)] ?? [];
             const open = slots.length > 0;
             return (
-              <div key={d} className="flex items-start gap-[10px] border-t border-outline-variant/60 pt-[10px]">
-                <div className="w-[80px] shrink-0 flex flex-col gap-[6px]">
+              <div key={d} className="flex flex-col sm:flex-row sm:items-start gap-[8px] sm:gap-[10px] border-t border-outline-variant/60 pt-[10px]">
+                <div className="sm:w-[80px] shrink-0 flex sm:flex-col items-center sm:items-start justify-between gap-[6px]">
                   <span className="text-[14px] font-semibold">{name}</span>
                   <Switch checked={open} aria-label={`${name} مفتوح`} onCheckedChange={(v) => setWeek({ ...week, [d]: v ? [['09:00', '22:00']] : [] })} />
                 </div>
-                {open ? <Slots slots={slots} onChange={(x) => setWeek({ ...week, [d]: x })} /> : <span className="text-[13px] text-muted-foreground pt-[2px]">مغلق</span>}
+                {open ? <div className="flex-1 min-w-0"><Slots slots={slots} onChange={(x) => setWeek({ ...week, [d]: x })} /></div> : <span className="text-[13px] text-muted-foreground pt-[2px]">مغلق</span>}
               </div>
             );
           })}
 
           <h3 className="font-bold text-[14px] pt-[6px]">أيام خاصة (عطلة أو ساعات مختلفة)</h3>
           {Object.entries(overrides).sort().map(([date, slots]) => (
-            <div key={date} className="flex items-start gap-[10px] border-t border-outline-variant/60 pt-[10px]">
-              <div className="w-[110px] shrink-0 flex flex-col gap-[6px]">
+            <div key={date} className="flex flex-col sm:flex-row sm:items-start gap-[8px] sm:gap-[10px] border-t border-outline-variant/60 pt-[10px]">
+              <div className="sm:w-[110px] shrink-0 flex sm:flex-col items-center sm:items-start justify-between gap-[6px]">
                 <bdi dir="ltr" className="text-[14px] font-semibold">{date}</bdi>
                 <button type="button" onClick={() => { const o = { ...overrides }; delete o[date]; setOverrides(o); }} className="text-[12px] text-destructive font-bold text-start">إزالة</button>
               </div>
-              <div className="space-y-[4px]">
+              <div className="space-y-[4px] flex-1 min-w-0">
                 {slots.length === 0 && <span className="text-[13px] text-destructive font-semibold block">مغلق طوال اليوم</span>}
                 <Slots slots={slots} onChange={(x) => setOverrides({ ...overrides, [date]: x })} />
               </div>

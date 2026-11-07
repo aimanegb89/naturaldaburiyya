@@ -4,6 +4,7 @@ import Header from './Header';
 import BottomNav from './BottomNav';
 import ScrollToTop from './ScrollToTop';
 import InstallBanner from './InstallBanner';
+import NotificationPrompt from './NotificationPrompt';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -25,6 +26,7 @@ const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <ScrollToTop />
       <BottomNav />
       <InstallBanner />
+      <NotificationPrompt />
     </div>
   );
 };

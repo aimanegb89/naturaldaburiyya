@@ -78,6 +78,13 @@
       "when": 1794076643206,
       "tag": "0010_store_hours_and_cancellation",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794084412602,
+      "tag": "0011_customer_push_devices",
+      "breakpoints": true
     }
   ]
 }

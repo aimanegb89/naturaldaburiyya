@@ -49,6 +49,8 @@ const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { hou
 export function fmtWhen(iso: string, locale: string) {
   const d = new Date(iso);
   const day = (x: Date) => x.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
+  // Closing exactly at midnight belongs to tonight: show "24:00" rather than "Sun 00:00".
+  if (fmtTime(iso) === '00:00' && day(new Date(d.getTime() - 60000)) === day(new Date())) return '24:00';
   if (day(d) === day(new Date())) return fmtTime(iso);
   const wd = d.toLocaleDateString(locale === 'he' ? 'he' : locale === 'en' ? 'en' : 'ar', { weekday: 'short', timeZone: 'Asia/Jerusalem' });
   return `${wd} ${fmtTime(iso)}`;
