@@ -85,6 +85,13 @@
       "when": 1794084412602,
       "tag": "0011_customer_push_devices",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794086555802,
+      "tag": "0012_chime_presets",
+      "breakpoints": true
     }
   ]
 }

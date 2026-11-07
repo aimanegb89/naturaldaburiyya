@@ -521,6 +521,8 @@ export type Database = {
         Row: {
           auto_done_minutes: number
           chime_enabled: boolean
+          chime_sound: string
+          chime_volume: string
           date_overrides: Json
           id: number
           last_reminder_date: string | null
@@ -534,6 +536,8 @@ export type Database = {
         Insert: {
           auto_done_minutes?: number
           chime_enabled?: boolean
+          chime_sound?: string
+          chime_volume?: string
           date_overrides?: Json
           id?: number
           last_reminder_date?: string | null
@@ -547,6 +551,8 @@ export type Database = {
         Update: {
           auto_done_minutes?: number
           chime_enabled?: boolean
+          chime_sound?: string
+          chime_volume?: string
           date_overrides?: Json
           id?: number
           last_reminder_date?: string | null
