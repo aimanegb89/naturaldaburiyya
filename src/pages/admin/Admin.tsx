@@ -5,6 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useAdminManifest } from '@/lib/installPrompt';
+import { StatusPill, useStoreStatus } from '@/lib/storeStatus';
+import { useNavigate } from 'react-router-dom';
+const arTx = (m: { ar: string }) => m.ar;
 
 /** Manager app shell: sign-in + admin gate, top title and Orders | Settings menu. */
 export default function Admin() {
@@ -12,6 +15,8 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [roleError, setRoleError] = useState(false);
   useAdminManifest();
+  const store = useStoreStatus();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsAdmin(null); setRoleError(false);
@@ -53,6 +58,7 @@ export default function Admin() {
       <header className="sticky top-0 z-10 bg-card border-b border-outline-variant px-[16px] pt-[12px] pb-[10px] space-y-[10px]">
         <div className="flex items-center gap-[8px]">
           <h1 className="font-display text-[20px] flex-1">إدارة المتجر</h1>
+          <StatusPill s={store} tx={arTx} lang="ar" onClick={() => { navigate('/admin/settings'); setTimeout(() => document.getElementById('store-availability')?.scrollIntoView({ behavior: 'smooth' }), 100); }} />
           <Button size="icon" variant="ghost" onClick={signOut} aria-label="خروج"><LogOut className="w-[18px] h-[18px]" /></Button>
         </div>
         <nav className="flex gap-[4px] p-[3px] bg-surface-container-high rounded-full max-w-[900px] mx-auto">

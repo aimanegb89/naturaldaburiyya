@@ -6,3 +6,7 @@
 - [x] Theme back to green/white, no gold, dark mode kept
 - [x] Tracking items in current language
 - [x] Random 3-digit order numbers (customer + manager)
+- [x] Admin order cancel with reasons + customer push
+- [x] Working hours, special dates, manual open/closed, server-side order block
+- [x] Live open/closed label in shop and manager headers
+- [ ] Connect admin.naturaldaburiyya.com (needs user in Domains)

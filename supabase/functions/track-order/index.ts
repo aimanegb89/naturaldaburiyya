@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     if (!parsed.success) return json({ error: 'invalid' }, 400);
     const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     if (!(await allow(admin, `track:ip:${clientIp(req)}`, 400))) return json({ error: 'rate_limited' }, 429);
-    const sel = 'tracking_code, order_number, status, total_amount, created_at, updated_at, order_items(product_id, product_name, size, quantity, price)';
+    const sel = 'tracking_code, order_number, status, cancel_reason, total_amount, created_at, updated_at, order_items(product_id, product_name, size, quantity, price)';
     if (parsed.data.codes) {
       const codes = parsed.data.codes.map((c) => c.toUpperCase());
       const { data } = await admin.from('orders').select(sel).in('tracking_code', codes);
