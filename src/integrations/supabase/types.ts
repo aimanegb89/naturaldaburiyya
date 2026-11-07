@@ -79,6 +79,33 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_push_devices: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          last_seen: string
+          locale: string
+          token: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          last_seen?: string
+          locale?: string
+          token: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          last_seen?: string
+          locale?: string
+          token?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -412,6 +439,39 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      push_broadcasts: {
+        Row: {
+          body: Json
+          created_at: string
+          delivered: number
+          id: string
+          link: string
+          sent_by: string | null
+          targeted: number
+          title: Json
+        }
+        Insert: {
+          body: Json
+          created_at?: string
+          delivered?: number
+          id?: string
+          link?: string
+          sent_by?: string | null
+          targeted?: number
+          title: Json
+        }
+        Update: {
+          body?: Json
+          created_at?: string
+          delivered?: number
+          id?: string
+          link?: string
+          sent_by?: string | null
+          targeted?: number
+          title?: Json
         }
         Relationships: []
       }
