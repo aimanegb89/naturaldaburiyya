@@ -12,7 +12,8 @@ import ThemeToggle from './ThemeToggle';
 import SearchCommand from './SearchCommand';
 import { useTx } from '@/lib/i18n';
 import logo from '@/assets/logo.png';
-import { StatusPill, useStoreStatus } from '@/lib/storeStatus';
+import { useStoreStatus } from '@/lib/storeStatus';
+import { StoreHoursPopover } from './StoreHours';
 
 const Badge = ({ n }: { n: number }) =>
   n > 0 ? (
@@ -58,7 +59,7 @@ const Header: React.FC = () => {
         <Link to="/" className="flex items-center gap-[8px] flex-shrink-0">
           <span className="font-display text-[22px] font-semibold text-primary">Natural</span>
         </Link>
-        <StatusPill s={store} tx={tx} lang={language} />
+        <StoreHoursPopover s={store} />
 
         <nav className="hidden md:flex items-center gap-[4px] ms-[16px]">
           {links.map((l) => (

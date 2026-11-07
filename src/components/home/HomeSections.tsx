@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { TodayHours } from '@/components/StoreHours';
 import { Leaf, FlaskConicalOff, Truck, ShieldCheck, ArrowLeft, ArrowRight, Clock, MapPin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCatalog, type CatalogProduct } from '@/lib/catalog';
@@ -129,7 +130,7 @@ export const AboutSection = () => {
           </p>
           <div className="flex flex-col gap-[10px] text-[14px]">
             <span className="flex items-center gap-[10px]"><MapPin className="w-[18px] h-[18px] text-primary" />{tx({ ar: 'شارع السعدية، دبورية', he: 'רחוב א-סעדיה, דבוריה', en: 'Al-Saadiya St, Daburiyya' })}</span>
-            <span className="flex items-center gap-[10px]"><Clock className="w-[18px] h-[18px] text-primary" />{tx({ ar: 'يوميًا 17:00 – 00:00', he: 'כל יום 17:00 – 00:00', en: 'Daily 17:00 – 00:00' })}</span>
+            <span className="flex items-center gap-[10px]"><Clock className="w-[18px] h-[18px] text-primary" /><TodayHours /></span>
           </div>
         </div>
       </div>

@@ -3,14 +3,17 @@ import AppShell from '@/components/AppShell';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTx } from '@/lib/i18n';
 import { WHATSAPP_NUMBER } from '@/lib/constants';
+import { WeeklyHoursList } from '@/components/StoreHours';
+import { useStoreStatus } from '@/lib/storeStatus';
 
 const Contact = () => {
   const { t } = useLanguage();
   const tx = useTx();
+  const store = useStoreStatus();
   const rows = [
     { icon: MapPin, title: t('location'), value: t('address') },
     { icon: Phone, title: t('phone'), value: '+972-54-543-4621', ltr: true, href: 'tel:+972545434621' },
-    { icon: Clock, title: t('openHours'), value: t('openDaily') },
+    { icon: Clock, title: t('openHours'), value: store ? <WeeklyHoursList s={store} /> : t('openDaily') },
   ];
 
   return (
@@ -24,13 +27,13 @@ const Contact = () => {
         <section className="bg-card rounded-[16px] border border-outline-variant divide-y divide-outline-variant">
           {rows.map(({ icon: Icon, title, value, ltr, href }) => {
             const body = (
-              <div className="flex items-center gap-[12px] p-[14px]">
+              <div className="flex items-start gap-[12px] p-[14px]">
                 <span className="w-[40px] h-[40px] rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <Icon className="w-[18px] h-[18px]" />
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-bold text-foreground">{title}</p>
-                  <p className="text-[13px] text-muted-foreground" dir={ltr ? 'ltr' : undefined}>{value}</p>
+                  <div className="text-[13px] text-muted-foreground" dir={ltr ? 'ltr' : undefined}>{value}</div>
                 </div>
               </div>
             );
