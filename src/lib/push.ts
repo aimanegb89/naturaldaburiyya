@@ -88,24 +88,43 @@ export async function enableOrderPush(trackingCode: string): Promise<PushStatus>
 }
 export const orderPushEnabled = (code: string) => { try { return localStorage.getItem(`natural-order-push-${code}`) === '1'; } catch { return false; } };
 
-// Call from a click handler.
-export async function enableAdminPush(userId: string): Promise<PushStatus> {
-  const { firebaseConfig, vapidKey } = await loadConfig();
-  if (!firebaseConfig.apiKey || !firebaseConfig.projectId || !firebaseConfig.appId || !vapidKey || !firebaseConfig.messagingSenderId) return 'not-configured';
-  if (!('Notification' in window) || !(await isSupported())) return 'unsupported';
-  if (window.top !== window.self) return 'open-in-new-tab';
-  const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
-  if (permission !== 'granted') return 'denied';
-  const query = new URLSearchParams(firebaseConfig).toString();
-  const reg = await navigator.serviceWorker.register(`/firebase-messaging-sw.js?${query}`);
-  const app = getApps()[0] ?? initializeApp(firebaseConfig);
-  const token = await getToken(getMessaging(app), { vapidKey, serviceWorkerRegistration: reg });
-  if (!token) return 'denied';
+async function saveAdminToken(userId: string, token: string): Promise<boolean> {
   const { error } = await supabase.from('admin_push_tokens').upsert({ token, user_id: userId });
-  // Fails when this device's token is still registered to another manager account.
-  if (error) { console.error('push token save failed', error); return 'failed'; }
-  try { localStorage.setItem(TOKEN_KEY, token); } catch { /* ignore */ }
-  return 'registered';
+  if (error) { console.error('push token save failed', error); return false; }
+  try {
+    const old = localStorage.getItem(TOKEN_KEY);
+    if (old && old !== token) await supabase.from('admin_push_tokens').delete().eq('token', old);
+    localStorage.setItem(TOKEN_KEY, token);
+  } catch { /* ignore */ }
+  return true;
+}
+
+/** Manager: turn on order notifications on this device. Call from a click handler. */
+export async function enableAdminPush(userId: string): Promise<PushStatus> {
+  try {
+    const r = await deviceToken();
+    if (!r.token) return r.status;
+    return (await saveAdminToken(userId, r.token)) ? 'registered' : 'failed';
+  } catch (e) { console.error(e); return 'failed'; }
+}
+
+/** Manager: silently re-registers (fresh token) on every app open when permission is already granted. */
+export async function syncAdminPush(userId: string): Promise<boolean> {
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted' || window.top !== window.self) return false;
+    const r = await deviceToken();
+    return !!r.token && (await saveAdminToken(userId, r.token));
+  } catch (e) { console.error(e); return false; }
+}
+
+/** Shows a system notification (uses the phone's own notification sound). */
+export async function systemNotify(title: string, body: string) {
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const reg = await navigator.serviceWorker?.getRegistration('/');
+    const opts = { body, icon: '/icon-192.png', tag: `order-${Date.now()}`, requireInteraction: true, vibrate: [200, 100, 200] } as NotificationOptions;
+    if (reg) await reg.showNotification(title, opts); else new Notification(title, opts);
+  } catch (e) { console.error(e); }
 }
 
 /** Removes this device's push token (call before signing out). */

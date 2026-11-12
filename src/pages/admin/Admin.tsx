@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { useAdminManifest } from '@/lib/installPrompt';
 import { StatusPill, useStoreStatus } from '@/lib/storeStatus';
 import { useNavigate } from 'react-router-dom';
+import { enableAdminPush, syncAdminPush } from '@/lib/push';
+import { toast } from 'sonner';
+import { Bell } from 'lucide-react';
 const arTx = (m: { ar: string }) => m.ar;
 
 /** Manager app shell: sign-in + admin gate, top title and Orders | Settings menu. */
@@ -29,6 +32,17 @@ export default function Admin() {
     });
     return () => { cancelled = true; };
   }, [user]);
+
+  const [needPush, setNeedPush] = useState(false);
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+    syncAdminPush(user.id).then((ok) => {
+      if (!ok && 'Notification' in window && Notification.permission !== 'denied' && window.top === window.self) setNeedPush(true);
+    });
+    const onVis = () => { if (document.visibilityState === 'visible') syncAdminPush(user.id); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [user, isAdmin]);
 
   if (loading) return null;
   if (!user) return (
@@ -67,6 +81,17 @@ export default function Admin() {
         </nav>
       </header>
       <div className="max-w-[900px] mx-auto p-[16px]">
+        {needPush && (
+          <div className="mb-[12px] flex items-center gap-[10px] rounded-[14px] border border-primary bg-primary/10 p-[12px]">
+            <Bell className="w-[20px] h-[20px] text-primary shrink-0" />
+            <p className="flex-1 text-[13px] font-semibold">فعّل الإشعارات حتى لا يفوتك أي طلب جديد</p>
+            <Button size="sm" onClick={async () => {
+              const r = await enableAdminPush(user.id);
+              if (r === 'registered') { setNeedPush(false); toast.success('تم تفعيل الإشعارات'); }
+              else toast.error(r === 'denied' ? 'الإشعارات محظورة — فعّلها من إعدادات المتصفح' : 'تعذّر تفعيل الإشعارات على هذا الجهاز');
+            }}>تفعيل</Button>
+          </div>
+        )}
         <Outlet />
       </div>
     </div>

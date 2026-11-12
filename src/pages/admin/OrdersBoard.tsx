@@ -40,10 +40,7 @@ const NEXT: Record<string, { to: string; label: string } | undefined> = {
 };
 
 
-import { playChime } from '@/lib/chimes';
-/** Short soft chime + vibration for a new order. */
-const chimeCfg = { sound: 'classic', volume: 'normal' };
-export function chime() { playChime(chimeCfg.sound, chimeCfg.volume); }
+import { systemNotify } from '@/lib/push';
 const bucket = (s: string) => (s === 'pending' ? 'new' : s === 'completed' || s === 'cancelled' ? 'done' : s);
 
 export default function OrdersBoard() {
@@ -55,9 +52,8 @@ export default function OrdersBoard() {
   const chimeOn = useRef(true);
   const [warnMin, setWarnMin] = useState(15);
   useEffect(() => {
-    supabase.from('store_settings').select('chime_enabled,stale_warn_minutes,chime_sound,chime_volume').eq('id', 1).maybeSingle().then(({ data }) => {
+    supabase.from('store_settings').select('chime_enabled,stale_warn_minutes').eq('id', 1).maybeSingle().then(({ data }) => {
       if (!data) return;
-      chimeCfg.sound = data.chime_sound; chimeCfg.volume = data.chime_volume;
       chimeOn.current = data.chime_enabled;
       setWarnMin(data.stale_warn_minutes);
     });
@@ -72,7 +68,12 @@ export default function OrdersBoard() {
       .order('created_at', { ascending: false }).limit(200);
     const list = (data ?? []) as Order[];
     const ids = new Set(list.map((o) => o.id));
-    if (seen.current && list.some((o) => !seen.current!.has(o.id) && bucket(o.status) === 'new') && chimeOn.current) chime();
+    const fresh = seen.current ? list.filter((o) => !seen.current!.has(o.id) && bucket(o.status) === 'new') : [];
+    // Only when visible: in the background the push from the server already alerts (no duplicates).
+    if (fresh.length && chimeOn.current && document.visibilityState === 'visible') {
+      const o = fresh[0];
+      systemNotify(`طلب جديد #${o.order_number ?? ''} – ₪${o.total_amount}`, o.customer_name ?? '');
+    }
     seen.current = ids;
     setOrders(list);
   };

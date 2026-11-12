@@ -10,8 +10,6 @@ import QrDialog from '@/components/admin/QrDialog';
 import ProductsManager from './ProductsManager';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Switch } from '@/components/ui/switch';
-import { CHIMES, playChime } from '@/lib/chimes';
-import { Play } from 'lucide-react';
 import StoreAvailability from './StoreAvailability';
 import BroadcastPush from './BroadcastPush';
 
@@ -55,16 +53,6 @@ export default function SettingsPage() {
     supabase.from('store_settings').select('chime_enabled,stale_warn_minutes,prep_time_text').eq('id', 1).maybeSingle()
       .then(({ data }) => { if (data) { setChimeOn(data.chime_enabled); setWarnMin(String(data.stale_warn_minutes)); setPrep(data.prep_time_text); } });
   }, []);
-  const [sound, setSound] = useState('classic');
-  const [volume, setVolume] = useState('normal');
-  useEffect(() => {
-    supabase.from('store_settings').select('chime_sound,chime_volume').eq('id', 1).maybeSingle()
-      .then(({ data }) => { if (data) { setSound(data.chime_sound); setVolume(data.chime_volume); } });
-  }, []);
-  const saveSound = async (patch: { chime_sound?: string; chime_volume?: string }) => {
-    const { error } = await supabase.from('store_settings').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', 1);
-    if (error) toast.error('فشل الحفظ');
-  };
   const saveAlerts = async (patch: { chime_enabled?: boolean } = {}) => {
     const n = Math.round(Number(warnMin));
     if (!(n >= 1 && n <= 240)) { toast.error('مدة التنبيه بين 1 و 240 دقيقة'); return; }
@@ -133,25 +121,10 @@ export default function SettingsPage() {
 
       <Section title="تنبيهات الطلبات ووقت التحضير">
         <div className="flex items-center gap-[8px]">
-          <span className="text-[14px] font-semibold flex-1">صوت عند وصول طلب جديد</span>
+          <span className="text-[14px] font-semibold flex-1">إشعار عند وصول طلب جديد</span>
           <Switch checked={chimeOn} onCheckedChange={(v) => { setChimeOn(v); saveAlerts({ chime_enabled: v }); }} aria-label="صوت الطلب الجديد" />
         </div>
-        <div className="grid grid-cols-2 gap-[8px]">
-          {CHIMES.map((c) => (
-            <button key={c.id} type="button" onClick={() => { setSound(c.id); playChime(c.id, volume); saveSound({ chime_sound: c.id }); }}
-              className={`flex items-center gap-[8px] rounded-[12px] border p-[10px] text-start text-[13px] transition-colors ${sound === c.id ? 'border-primary bg-primary/10 font-bold' : 'border-outline-variant'}`}>
-              <Play className="w-[14px] h-[14px] shrink-0 text-primary" />
-              <span className="flex-1">{c.label}</span>
-              {sound === c.id && <Check className="w-[14px] h-[14px] text-primary" />}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-[8px]">
-          {([['normal', 'صوت عادي'], ['loud', 'صوت عالٍ']] as const).map(([v, l]) => (
-            <button key={v} type="button" onClick={() => { setVolume(v); playChime(sound, v); saveSound({ chime_volume: v }); }}
-              className={`flex-1 h-[38px] rounded-[10px] border text-[13px] ${volume === v ? 'border-primary bg-primary/10 font-bold' : 'border-outline-variant'}`}>{l}</button>
-          ))}
-        </div>
+        <p className="text-[12px] text-muted-foreground">يستخدم صوت الإشعارات الافتراضي في هاتفك. لتغييره: إعدادات الهاتف ← التطبيقات ← المتصفح/التطبيق ← الإشعارات.</p>
         <div>
           <p className="text-[12px] text-muted-foreground mb-[6px]">يظهر الطلب بإطار أحمر إذا انتظر أكثر من:</p>
           <div className="flex items-center gap-[8px]">

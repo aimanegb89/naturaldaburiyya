@@ -25,7 +25,7 @@ export async function pushToAdmins(admin: any, title: string, body: string, link
     const res = await fetch(`${GATEWAY_URL}/v1/projects/_/messages:send`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'X-Connection-Api-Key': FCM_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: { token, notification: { title, body }, webpush: { fcm_options: { link } } } }),
+      body: JSON.stringify({ message: { token, notification: { title, body }, webpush: { headers: { Urgency: 'high', TTL: '3600' }, notification: { requireInteraction: true, tag: `n-${Date.now()}` }, fcm_options: { link } } } }),
     });
     if (res.ok) return true;
     const err = await res.text();
@@ -46,7 +46,7 @@ export async function pushToTokens(admin: any, table: string, tokens: string[], 
     const res = await fetch(`${GATEWAY_URL}/v1/projects/_/messages:send`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'X-Connection-Api-Key': FCM_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: { token, notification: { title, body }, webpush: { fcm_options: { link } } } }),
+      body: JSON.stringify({ message: { token, notification: { title, body }, webpush: { headers: { Urgency: 'high', TTL: '3600' }, notification: { requireInteraction: true, tag: `n-${Date.now()}` }, fcm_options: { link } } } }),
     });
     if (res.ok) return true;
     const err = await res.text();
