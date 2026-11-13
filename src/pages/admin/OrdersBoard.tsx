@@ -90,8 +90,9 @@ export default function OrdersBoard() {
 
   const move = async (o: Order, to: string) => {
     setOrders((xs) => xs.map((x) => (x.id === o.id ? { ...x, status: to } : x)));
-    const { error } = await supabase.from('orders').update({ status: to }).eq('id', o.id);
-    if (error) { toast.error('فشل التحديث'); load(); }
+    const { data, error } = await supabase.functions.invoke('update-order-status', { body: { order_id: o.id, status: to } });
+    if (error || !data?.ok) { toast.error('فشل التحديث'); load(); return; }
+    if (data.pushed && to !== 'new') toast.success('تم إعلام الزبون');
   };
 
   const [cancelling, setCancelling] = useState<Order | null>(null);
